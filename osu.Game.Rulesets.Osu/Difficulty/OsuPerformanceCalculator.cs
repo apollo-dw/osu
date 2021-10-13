@@ -227,6 +227,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (mods.Any(m => m is OsuModTouchDevice))
                 rawFlashlight = Math.Pow(rawFlashlight, 0.8);
 
+            if (mods.Any(m => m is OsuModAutopilot))
+                rawFlashlight = Math.Pow(rawFlashlight, 0.6);
+
             double flashlightValue = Math.Pow(rawFlashlight, 2.0) * 25.0;
 
             // Add an additional bonus for HDFL.
