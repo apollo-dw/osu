@@ -35,6 +35,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override int HistoryLength => 32;
 
         private List<double> difficultyValues = new List<double>();
+        private Dictionary<double, int> previousRhythmRatios = new Dictionary<double, int>();
 
         private double difficultyValueOf(DifficultyHitObject current)
         {
@@ -100,7 +101,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                     var tCurrNext = visibleObjects[i].StrainTime;
                     var tPrevCurr = visibleObjects[w].StrainTime;
                     var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
-                    var constantRhythmNerf = 1 - Math.Max(0, -100 * Math.Pow(tRatio - 1, 2) + 1);
+                    //var constantRhythmNerf = 1 - Math.Max(0, -100 * Math.Pow(tRatio - 1, 2) + 1);
 
                     if (Math.Abs(1 - tRatio) > 0.01)
                         rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
@@ -109,8 +110,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                     var changeRatio = distanceRatio * tRatio;
                     var spacingChange = Math.Min(1.2, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
 
-                    overlapness += logistic((18 - visibleObjects[i].NormalisedDistanceTo(visibleObjects[w])) / 5) *
-                                      constantRhythmNerf;
+                    overlapness += logistic((18 - visibleObjects[i].NormalisedDistanceTo(visibleObjects[w])) / 5)
+                                   //* constantRhythmNerf
+                                   * rhythmRepeatNerf(changeRatio);
 
                     overlapness *= spacingChange;
                     overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
@@ -188,6 +190,24 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double windowBackwardsFalloff(double currentTime, double visualTime) => (reading_window_backwards - (currentTime - visualTime)) / reading_window_backwards;
 
         private double windowForwardsFalloff(double currentTime, double visualTime) => (reading_window_forwards - (visualTime - currentTime)) / reading_window_forwards;
+
+        private double rhythmRepeatNerf(double ratio)
+        {
+            int repeats;
+
+            if (previousRhythmRatios.ContainsKey(ratio))
+            {
+                repeats = previousRhythmRatios[ratio];
+                previousRhythmRatios[ratio]++;
+            }
+            else
+            {
+                repeats = 0;
+                previousRhythmRatios.Add(ratio, 0);
+            }
+
+            return 1.0 - repeats / 4.0;
+        }
 
         private double logistic(double x) => 1 / (1 + Math.Pow(Math.E, -x));
 
