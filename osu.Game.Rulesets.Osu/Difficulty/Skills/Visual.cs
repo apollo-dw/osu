@@ -24,8 +24,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             : base(mods)
         {   }
 
-        private const double rhythm_multiplier = 1.6;
-        private const double aim_multiplier = 2.8;
+        private const double rhythm_multiplier = 1.2;
+        private const double aim_multiplier = 1.4;
 
         private const double reading_window_backwards = 250.0;
         private const double reading_window_forwards = 3000.0;
@@ -80,7 +80,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             var strain = readingDensityStrain + Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
 
-            //if (strain > 10)
+            //if (strain > 1)
             //    Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "  " + Math.Round(readingDensityStrain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
 
             return strain;
@@ -89,40 +89,45 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double calculateRhythmReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject prevObject, OsuDifficultyHitObject currentObject)
         {
             var overlapnessTotal = 0.0;
-            var rhythmChanges = 0.0;
 
             // calculate how much visible objects overlap the previous
-            for (int i = 1; i < visibleObjects.Count; i++)
+            for (int i = 0; i < visibleObjects.Count; i++)
             {
-                var overlapness = 0.0;
-
-                for (int w = 1; w < i; w++)
+                for (int w = 0; w < i; w++)
                 {
-                    var tCurrNext = visibleObjects[i].StrainTime;
-                    var tPrevCurr = visibleObjects[w].StrainTime;
-                    var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
-                    //var constantRhythmNerf = 1 - Math.Max(0, -100 * Math.Pow(tRatio - 1, 2) + 1);
+                    var overlapness = 0.0;
 
-                    if (Math.Abs(1 - tRatio) > 0.01)
-                        rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
+                    var tCurrNext = visibleObjects[i].StrainTime;
+                    var tPrevCurr = Math.Abs(visibleObjects[w].StartTime - visibleObjects[i].StartTime) / Math.Abs(w - i);
+                    var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
+                    var constantRhythmNerf = 1 - Math.Max(0, -100 * Math.Pow(tRatio - 1, 2) + 1);
 
                     var distanceRatio = visibleObjects[i].JumpDistance / (visibleObjects[w].JumpDistance + 1e-10);
                     var changeRatio = distanceRatio * tRatio;
-                    var spacingChange = Math.Min(1.2, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
+                    var spacingChange = Math.Min(1, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
 
-                    overlapness += logistic((18 - visibleObjects[i].NormalisedDistanceTo(visibleObjects[w])) / 5)
-                                   //* constantRhythmNerf
-                                   * rhythmRepeatNerf(changeRatio);
+                    overlapness += logistic((18 - visibleObjects[i].NormalisedDistanceTo(visibleObjects[w])) / 5);
+
+                    var distanceToLast = visibleObjects[i].JumpDistance;
+                    var distanceToLastOverlapness = logistic((128 - distanceToLast) / 5);
+
+                    // Stacked successive objects are only hard to read if there's a rhythm difference.
+                    overlapness *= 1 - (distanceToLastOverlapness * (1 - Math.Min(rhythmRepeatNerf(changeRatio), constantRhythmNerf)));
+
+                    // Out-of-order overlaps are buffed by difference in index.
+                    overlapness *= 1 + ((1 - distanceToLastOverlapness) * ((Math.Abs(i - w) / 2) - 1));
 
                     overlapness *= spacingChange;
                     overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
                     overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[w].StartTime);
                     overlapness *= visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
                     overlapness *= visibleObjects[w].GetVisibilityAtTime(currentObject.StartTime);
-                    overlapness *= Math.Abs(1 + i - w) / 4.0; 
-                }
 
-                overlapnessTotal += Math.Max(0, overlapness);
+                    //if (overlapness > 0.5)
+                    //    Console.WriteLine(Math.Round((visibleObjects[i].StartTime / 1000.0), 3).ToString() + "  " + Math.Round((visibleObjects[w].StartTime / 1000.0), 3).ToString() + "  " + (logistic((18 - visibleObjects[i].NormalisedDistanceTo(visibleObjects[w])) / 5)).ToString());
+
+                    overlapnessTotal += Math.Max(0, overlapness);
+                }                
             }
 
             return overlapnessTotal;
@@ -135,18 +140,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             var movementDistance = nextObject.JumpDistance;
 
             // calculate amount of circles intersecting the movement excluding current and next circles
-            for (int i = 1; i < visibleObjects.Count; i++)
+            for (int i = 0; i < visibleObjects.Count; i++)
             {
+                if (visibleObjects[i].StartTime < currentObject.StartTime)
+                    continue;
+
                 var visibleToCurrentDistance = currentObject.NormalisedDistanceTo(visibleObjects[i]);
                 var visibleToNextDistance = nextObject.NormalisedDistanceTo(visibleObjects[i]);
-                var prevVisibleToVisible = visibleObjects[i - 1].NormalisedDistanceTo(visibleObjects[i]);
 
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
                 var intersectionBonus = checkMovementIntersect(currentObject, nextObject, visibleObjects[i]) *
                                         logistic((movementDistance - 78) / 26) *
                                         logistic((visibleToCurrentDistance - 78) / 26) *
                                         logistic((visibleToNextDistance - 78) / 26) *
-                                        logistic((prevVisibleToVisible - 78) / 26) *
                                         visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime) *
                                         nextObject.GetVisibilityAtTime(currentObject.StartTime) *
                                         windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime) *
