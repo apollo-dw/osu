@@ -81,7 +81,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             var strain = readingDensityStrain + Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
 
             //if (strain > 1)
-            Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "  " + Math.Round(readingDensityStrain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
+            //Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "  " + Math.Round(readingDensityStrain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
 
             return strain;
         }
