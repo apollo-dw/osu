@@ -92,8 +92,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
-            preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
-
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
             for (int i = 1; i < beatmap.HitObjects.Count; i++)
@@ -102,7 +100,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 var last = beatmap.HitObjects[i - 1];
                 var current = beatmap.HitObjects[i];
 
-                var visibleObjectsRaw = beatmap.HitObjects.Where(x => x.StartTime / clockRate >= current.StartTime / clockRate && x.StartTime / clockRate < current.StartTime / clockRate + preempt).ToList();
+                var visibleObjectsRaw = beatmap.HitObjects.Where(x => x.StartTime / clockRate >= current.StartTime / clockRate && x.StartTime / clockRate <= (current.StartTime / clockRate) + preempt).ToList();
                 var visibleObjects = CreateDifficultyHitObjects(visibleObjectsRaw, clockRate);
 
                 yield return new OsuDifficultyHitObject(current, lastLast, last, clockRate, visibleObjects, preempt);
@@ -125,15 +123,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             HitWindows hitWindows = new OsuHitWindows();
             hitWindows.SetDifficulty(beatmap.Difficulty.OverallDifficulty);
-
             hitWindowGreat = hitWindows.WindowFor(HitResult.Great) / clockRate;
+
+            preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
 
             return new Skill[]
             {
                 new Aim(mods),
                 new Speed(mods, hitWindowGreat),
                 new Flashlight(mods),
-                new Visual(mods)
+                new Visual(mods, preempt)
             };
         }
 
