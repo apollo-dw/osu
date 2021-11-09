@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             this.preempt = preempt;
         }
 
-        private const double rhythm_multiplier = 1.2;
+        private const double rhythm_multiplier = 1.4;
         private const double aim_multiplier = 1.0;
 
         private const double reading_window_backwards = 250.0;
@@ -123,14 +123,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                     var tPrevVisibleCurr = visibleObjects[w].StrainTime / visibleObjects[w - 1].StrainTime;
                     var constantRhythmNerf = 1 - Math.Max(0, -100 * Math.Pow((tPrevVisibleCurr) - 1, 2) + 1);
 
-                    // Stacked successive objects are only hard to read if there's a rhythm difference.
-                    overlapness *= 1 - (distanceToIOverlapness * (1 - Math.Min(rhythmRepeatNerf(changeRatio), constantRhythmNerf)));
+                    var predictableNerfFactor = 1.0;
+                    var tDifference = Math.Abs(visibleObjects[w].StartTime - visibleObjects[i].StartTime);
+                    var predictedObjTime = visibleObjects[w].StartTime - tDifference;
 
-                    // Stacked consecutive objects are only hard for the first note.
-                    overlapness *= 1 - (distanceToWOverlapness * (1 - constantRhythmNerf));
+                    foreach (OsuDifficultyHitObject obj in visibleObjects.AsEnumerable().Reverse())
+                    {
+                        if (obj.StartTime > visibleObjects[w].StartTime)
+                            continue;
+
+                        if (Math.Abs(obj.StartTime - predictedObjTime) < 25)
+                        {
+                            var objOverlapness = logistic((128 - visibleObjects[w].NormalisedDistanceTo(obj)) / 5);
+                            predictableNerfFactor *= 1 - objOverlapness;
+                            predictedObjTime = obj.StartTime;
+                        }
+                    }
+
+                    // Stacked successive objects are only hard to read if there's a rhythm difference.
+                    overlapness *= 1 - (Math.Max(distanceToIOverlapness, distanceToWOverlapness) * (1 - Math.Min(rhythmRepeatNerf(changeRatio), constantRhythmNerf)));
 
                     // Out-of-order overlaps are buffed by difference in index.
-                    overlapness *= 1 + ((1 - distanceToIOverlapness) * ((Math.Abs(i - w) / 2) - 1));
+                    overlapness *= 1 + predictableNerfFactor * ((1 - Math.Max(distanceToIOverlapness, distanceToWOverlapness)) * ((Math.Abs(i - w) / 2) - 1));
 
                     overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
                     overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[w].StartTime);
