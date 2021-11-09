@@ -9,6 +9,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using osu.Framework.Testing;
 using osu.Game.Database;
+using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Rulesets;
 using osu.Game.Scoring;
 
@@ -47,10 +48,7 @@ namespace osu.Game.Beatmaps
         public BeatmapDifficulty BaseDifficulty { get; set; }
 
         [NotMapped]
-        public BeatmapMetrics Metrics { get; set; }
-
-        [NotMapped]
-        public BeatmapOnlineInfo OnlineInfo { get; set; }
+        public APIBeatmap OnlineInfo { get; set; }
 
         [NotMapped]
         public int? MaxCombo { get; set; }
@@ -178,17 +176,28 @@ namespace osu.Game.Beatmaps
 
         #region Implementation of IHasOnlineID
 
-        public int? OnlineID => OnlineBeatmapID;
+        public int OnlineID => OnlineBeatmapID ?? -1;
 
         #endregion
 
         #region Implementation of IBeatmapInfo
 
+        [JsonIgnore]
         string IBeatmapInfo.DifficultyName => Version;
-        IBeatmapMetadataInfo IBeatmapInfo.Metadata => Metadata;
+
+        [JsonIgnore]
+        IBeatmapMetadataInfo IBeatmapInfo.Metadata => Metadata ?? BeatmapSet?.Metadata ?? new BeatmapMetadata();
+
+        [JsonIgnore]
         IBeatmapDifficultyInfo IBeatmapInfo.Difficulty => BaseDifficulty;
+
+        [JsonIgnore]
         IBeatmapSetInfo IBeatmapInfo.BeatmapSet => BeatmapSet;
+
+        [JsonIgnore]
         IRulesetInfo IBeatmapInfo.Ruleset => Ruleset;
+
+        [JsonIgnore]
         double IBeatmapInfo.StarRating => StarDifficulty;
 
         #endregion

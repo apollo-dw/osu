@@ -15,6 +15,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         public double OverallDifficulty { get; set; }
         public double DrainRate { get; set; }
         public int HitCircleCount { get; set; }
+        public int SliderCount { get; set; }
         public int SpinnerCount { get; set; }
     }
 }

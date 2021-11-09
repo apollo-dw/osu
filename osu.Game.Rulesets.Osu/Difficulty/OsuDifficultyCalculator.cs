@@ -70,6 +70,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             maxCombo += beatmap.HitObjects.OfType<Slider>().Sum(s => s.NestedHitObjects.Count - 1);
 
             int hitCirclesCount = beatmap.HitObjects.Count(h => h is HitCircle);
+            int sliderCount = beatmap.HitObjects.Count(h => h is Slider);
             int spinnerCount = beatmap.HitObjects.Count(h => h is Spinner);
 
             return new OsuDifficultyAttributes
@@ -85,6 +86,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 DrainRate = drainRate,
                 MaxCombo = maxCombo,
                 HitCircleCount = hitCirclesCount,
+                SliderCount = sliderCount,
                 SpinnerCount = spinnerCount,
                 Skills = skills
             };

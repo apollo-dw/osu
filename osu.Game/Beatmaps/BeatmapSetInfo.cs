@@ -26,20 +26,14 @@ namespace osu.Game.Beatmaps
 
         public DateTimeOffset DateAdded { get; set; }
 
-        public BeatmapSetOnlineStatus Status { get; set; } = BeatmapSetOnlineStatus.None;
-
         public BeatmapMetadata Metadata { get; set; }
 
         public List<BeatmapInfo> Beatmaps { get; set; }
 
+        public BeatmapSetOnlineStatus Status { get; set; } = BeatmapSetOnlineStatus.None;
+
         [NotNull]
         public List<BeatmapSetFileInfo> Files { get; set; } = new List<BeatmapSetFileInfo>();
-
-        [NotMapped]
-        public BeatmapSetOnlineInfo OnlineInfo { get; set; }
-
-        [NotMapped]
-        public BeatmapSetMetrics Metrics { get; set; }
 
         /// <summary>
         /// The maximum star difficulty of all beatmaps in this set.
@@ -91,7 +85,7 @@ namespace osu.Game.Beatmaps
 
         #region Implementation of IHasOnlineID
 
-        public int? OnlineID => OnlineBeatmapSetID;
+        public int OnlineID => OnlineBeatmapSetID ?? -1;
 
         #endregion
 
