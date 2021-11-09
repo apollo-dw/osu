@@ -162,7 +162,7 @@ namespace osu.Game.Screens.Edit
             // todo: remove caching of this and consume via editorBeatmap?
             dependencies.Cache(beatDivisor);
 
-            AddInternal(editorBeatmap = new EditorBeatmap(playableBeatmap, loadableBeatmap.GetSkin()));
+            AddInternal(editorBeatmap = new EditorBeatmap(playableBeatmap, loadableBeatmap.GetSkin(), loadableBeatmap.BeatmapInfo));
             dependencies.CacheAs(editorBeatmap);
             changeHandler = new EditorChangeHandler(editorBeatmap);
             dependencies.CacheAs<IEditorChangeHandler>(changeHandler);
@@ -301,7 +301,7 @@ namespace osu.Game.Screens.Edit
 
             editorBeatmap.SelectedHitObjects.BindCollectionChanged((_, __) =>
             {
-                var hasObjects = editorBeatmap.SelectedHitObjects.Count > 0;
+                bool hasObjects = editorBeatmap.SelectedHitObjects.Count > 0;
 
                 cutMenuItem.Action.Disabled = !hasObjects;
                 copyMenuItem.Action.Disabled = !hasObjects;
@@ -333,10 +333,10 @@ namespace osu.Game.Screens.Edit
             isNewBeatmap = false;
 
             // apply any set-level metadata changes.
-            beatmapManager.Update(playableBeatmap.BeatmapInfo.BeatmapSet);
+            beatmapManager.Update(editorBeatmap.BeatmapInfo.BeatmapSet);
 
             // save the loaded beatmap's data stream.
-            beatmapManager.Save(playableBeatmap.BeatmapInfo, editorBeatmap, editorBeatmap.BeatmapSkin);
+            beatmapManager.Save(editorBeatmap.BeatmapInfo, editorBeatmap.PlayableBeatmap, editorBeatmap.BeatmapSkin);
 
             updateLastSavedHash();
         }
@@ -523,7 +523,10 @@ namespace osu.Game.Screens.Edit
             var refetchedBeatmap = beatmapManager.GetWorkingBeatmap(Beatmap.Value.BeatmapInfo);
 
             if (!(refetchedBeatmap is DummyWorkingBeatmap))
+            {
+                Logger.Log("Editor providing re-fetched beatmap post edit session");
                 Beatmap.Value = refetchedBeatmap;
+            }
 
             return base.OnExiting(next);
         }
