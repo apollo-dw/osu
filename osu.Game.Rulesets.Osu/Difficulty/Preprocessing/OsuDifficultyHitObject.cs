@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Objects;
@@ -54,10 +55,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public readonly double StrainTime;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public double NoteDensity { get; private set; }
+
         private readonly OsuHitObject lastLastObject;
         private readonly OsuHitObject lastObject;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastLastObject, HitObject lastObject, double clockRate)
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastLastObject, HitObject lastObject, double clockRate, IEnumerable<HitObject> visibleObjects)
             : base(hitObject, lastObject, clockRate)
         {
             this.lastLastObject = (OsuHitObject)lastLastObject;
@@ -67,6 +73,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             StrainTime = Math.Max(DeltaTime, min_delta_time);
 
             setDistances(clockRate);
+            setNoteDensity(BaseObject.TimePreempt, clockRate, visibleObjects);
         }
 
         private void setDistances(double clockRate)
@@ -122,6 +129,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
                 Angle = Math.Abs(Math.Atan2(det, dot));
             }
+        }
+
+        private void setNoteDensity(double preempt, double clockRate, IEnumerable<HitObject> window)
+        {
+            NoteDensity = 1;
+
+            foreach (var hitObject in window)
+                NoteDensity += 1 - Math.Abs(hitObject.StartTime / clockRate - StartTime) / preempt;
         }
 
         private void computeSliderCursorPosition(Slider slider)

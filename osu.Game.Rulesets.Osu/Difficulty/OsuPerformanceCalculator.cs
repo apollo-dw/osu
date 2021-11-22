@@ -64,12 +64,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double speedValue = computeSpeedValue();
             double accuracyValue = computeAccuracyValue();
             double flashlightValue = computeFlashlightValue();
+            double visualValue = computeVisualValue();
             double totalValue =
                 Math.Pow(
                     Math.Pow(aimValue, 1.1) +
                     Math.Pow(speedValue, 1.1) +
                     Math.Pow(accuracyValue, 1.1) +
-                    Math.Pow(flashlightValue, 1.1), 1.0 / 1.1
+                    Math.Pow(flashlightValue, 1.1) +
+                    Math.Pow(visualValue, 1.1), 1.0 / 1.1
                 ) * multiplier;
 
             if (categoryRatings != null)
@@ -78,6 +80,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 categoryRatings.Add("Speed", speedValue);
                 categoryRatings.Add("Accuracy", accuracyValue);
                 categoryRatings.Add("Flashlight", flashlightValue);
+                categoryRatings.Add("Visual", visualValue);
                 categoryRatings.Add("OD", Attributes.OverallDifficulty);
                 categoryRatings.Add("AR", Attributes.ApproachRate);
                 categoryRatings.Add("Max Combo", Attributes.MaxCombo);
@@ -119,11 +122,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             if (mods.Any(m => m is OsuModBlinds))
                 aimValue *= 1.3 + (totalHits * (0.0016 / (1 + 2 * effectiveMissCount)) * Math.Pow(accuracy, 16)) * (1 - 0.003 * Attributes.DrainRate * Attributes.DrainRate);
-            else if (mods.Any(h => h is OsuModHidden))
-            {
-                // We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
-                aimValue *= 1.0 + 0.04 * (12.0 - Attributes.ApproachRate);
-            }
 
             // We assume 15% of sliders in a map are difficult since there's no way to tell from the performance calculator.
             double estimateDifficultSliders = Attributes.SliderCount * 0.15;
@@ -170,11 +168,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 // Increasing the speed value by object count for Blinds isn't ideal, so the minimum buff is given.
                 speedValue *= 1.12;
             }
-            else if (mods.Any(m => m is OsuModHidden))
-            {
-                // We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
-                speedValue *= 1.0 + 0.04 * (12.0 - Attributes.ApproachRate);
-            }
 
             // Scale the speed value with accuracy and OD.
             speedValue *= (0.95 + Math.Pow(Attributes.OverallDifficulty, 2) / 750) * Math.Pow(accuracy, (14.5 - Math.Max(Attributes.OverallDifficulty, 8)) / 2);
@@ -213,8 +206,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Increasing the accuracy value by object count for Blinds isn't ideal, so the minimum buff is given.
             if (mods.Any(m => m is OsuModBlinds))
                 accuracyValue *= 1.14;
-            else if (mods.Any(m => m is OsuModHidden))
-                accuracyValue *= 1.08;
 
             if (mods.Any(m => m is OsuModFlashlight))
                 accuracyValue *= 1.02;
@@ -256,6 +247,31 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             flashlightValue *= 0.98 + Math.Pow(Attributes.OverallDifficulty, 2) / 2500;
 
             return flashlightValue;
+        }
+
+        private double computeVisualValue()
+        {
+            double rawVisual = Attributes.VisualRating;
+
+            double visualValue = Math.Pow(rawVisual, 2.0) * 25.0;
+
+            if (mods.Any(m => m is OsuModTouchDevice))
+                visualValue = Math.Pow(visualValue, 0.8);
+
+            // Penalize misses by assessing # of misses relative to the total # of objects. Default a 3% reduction for any # of misses.
+            if (countMiss > 0)
+                visualValue *= 0.97 * Math.Pow(1 - Math.Pow((double)countMiss / totalHits, 0.775), countMiss);
+
+            // Combo scaling.
+            if (Attributes.MaxCombo > 0)
+                visualValue *= Math.Min(Math.Pow(scoreMaxCombo, 0.8) / Math.Pow(Attributes.MaxCombo, 0.8), 1.0);
+
+            // Scale the visual value with accuracy _harshly_.
+            visualValue *= Math.Pow(accuracy, 8);
+            // It is important to also consider accuracy difficulty when doing that.
+            visualValue *= 0.98 + Math.Pow(Attributes.OverallDifficulty, 2) / 2500;
+
+            return visualValue;
         }
 
         private int calculateEffectiveMissCount()

@@ -21,6 +21,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         [JsonProperty("flashlight_rating")]
         public double FlashlightRating { get; set; }
 
+        [JsonProperty("visual_rating")]
+        public double VisualRating { get; set; }
+
         [JsonProperty("slider_factor")]
         public double SliderFactor { get; set; }
 
