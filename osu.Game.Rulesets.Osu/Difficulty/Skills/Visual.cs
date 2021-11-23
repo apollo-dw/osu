@@ -16,21 +16,22 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// <summary>
     /// Represents the skill required to read every object in the map.
     /// </summary>
-    public class Visual : Skill
+    public class Visual : OsuStrainSkill
     {
         public Visual(Mod[] mods)
             : base(mods)
         {
         }
 
-        protected double preempt;
         protected override int HistoryLength => 32;
-        private double skillMultiplier => 5;
-        private List<double> difficultyValues = new List<double>();
+        private double skillMultiplier => 25;
+        private double strainDecayBase => 0.1;
+        protected override double DecayWeight => 0.9;
+        private double currentStrain;
 
-        private double difficultyValueOf(DifficultyHitObject current)
+        private double strainValueOf(DifficultyHitObject current)
         {
-            if (current.BaseObject is Spinner || Previous.Count < 2)
+            if (current.BaseObject is Spinner)
                 return 0;
 
             OsuDifficultyHitObject osuCurrent = (OsuDifficultyHitObject)current;
@@ -38,30 +39,26 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double strain = 0.0;
 
             if (Mods.Any(h => h is OsuModHidden))
-                strain += 2.5 * osuCurrent.NoteDensity;
+                strain += 0.1 * osuCurrent.NoteDensity;
 
-            return strain;
+            double preemptStrain = 0.0;
+            if (osuCurrent.preempt < 400)
+                preemptStrain += 0.008 * (400 - osuCurrent.preempt);
+
+            return strain + preemptStrain;
         }
 
-        protected override void Process(DifficultyHitObject current)
+        private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
+
+        protected override double CalculateInitialStrain(double time) => currentStrain * strainDecay(time - Previous[0].StartTime);
+
+        protected override double StrainValueAt(DifficultyHitObject current)
         {
-            difficultyValues.Add(difficultyValueOf(current) * skillMultiplier);
+            currentStrain *= strainDecay(current.DeltaTime);
+            currentStrain += strainValueOf(current) * skillMultiplier;
+
+            return currentStrain;
         }
 
-        public override double DifficultyValue()
-        {
-            double difficulty = 0;
-            double weight = 1;
-
-            // Difficulty is the weighted sum of the highest strains from every section.
-            // We're sorting from highest to lowest strain.
-            foreach (double value in difficultyValues.OrderByDescending(d => d))
-            {
-                difficulty += value * weight;
-                weight *= 0.9;
-            }
-
-            return difficulty;
-        }
     }
 }

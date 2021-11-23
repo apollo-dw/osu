@@ -113,9 +113,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 aimValue *= Math.Min(Math.Pow(scoreMaxCombo, 0.8) / Math.Pow(Attributes.MaxCombo, 0.8), 1.0);
 
             double approachRateFactor = 0.0;
-            if (Attributes.ApproachRate > 10.33)
-                approachRateFactor = 0.3 * (Attributes.ApproachRate - 10.33);
-            else if (Attributes.ApproachRate < 8.0)
+            if (Attributes.ApproachRate < 8.0)
                 approachRateFactor = 0.1 * (8.0 - Attributes.ApproachRate);
 
             aimValue *= 1.0 + approachRateFactor * lengthBonus; // Buff for longer maps with high AR.
@@ -156,12 +154,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Combo scaling.
             if (Attributes.MaxCombo > 0)
                 speedValue *= Math.Min(Math.Pow(scoreMaxCombo, 0.8) / Math.Pow(Attributes.MaxCombo, 0.8), 1.0);
-
-            double approachRateFactor = 0.0;
-            if (Attributes.ApproachRate > 10.33)
-                approachRateFactor = 0.3 * (Attributes.ApproachRate - 10.33);
-
-            speedValue *= 1.0 + approachRateFactor * lengthBonus; // Buff for longer maps with high AR.
 
             if (mods.Any(m => m is OsuModBlinds))
             {
