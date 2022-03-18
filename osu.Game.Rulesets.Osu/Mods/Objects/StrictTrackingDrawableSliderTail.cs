@@ -7,6 +7,6 @@ namespace osu.Game.Rulesets.Osu.Mods.Objects
 {
     public class StrictTrackingDrawableSliderTail : DrawableSliderTail
     {
-
+        public override bool DisplayResult => true;
     }
 }
