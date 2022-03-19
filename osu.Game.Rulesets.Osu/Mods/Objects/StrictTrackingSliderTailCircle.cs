@@ -14,6 +14,6 @@ namespace osu.Game.Rulesets.Osu.Mods.Objects
         {
         }
 
-        public override Judgement CreateJudgement() => new SliderTickJudgement();
+        public override Judgement CreateJudgement() => new OsuJudgement();
     }
 }
