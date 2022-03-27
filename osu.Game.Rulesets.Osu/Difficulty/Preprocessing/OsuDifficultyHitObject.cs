@@ -80,6 +80,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             Distance = (BaseObject.StackedPosition * scalingFactor - lastObject.StackedPosition * scalingFactor).Length;
             TapDistance = (BaseObject.StackedPosition * scalingFactor - lastActiveObject.StackedPosition * scalingFactor).Length;
 
+            if (!Clickable)
+            {
+                Distance *= Math.Clamp((BaseObject.StackedPosition * scalingFactor - lastObject.StackedPosition * scalingFactor).Length / 110, 0, 1);
+            }
+
             if (lastLastObject != null && !(lastLastObject is Spinner))
             {
                 Vector2 lastLastCursorPosition = getEndCursorPosition(lastLastObject);
