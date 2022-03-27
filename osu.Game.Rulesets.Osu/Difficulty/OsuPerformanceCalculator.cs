@@ -113,16 +113,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 aimValue *= 1.0 + 0.04 * (12.0 - attributes.ApproachRate);
             }
 
-            // We assume 15% of sliders in a map are difficult since there's no way to tell from the performance calculator.
-            double estimateDifficultSliders = attributes.SliderCount * 0.15;
-
-            if (attributes.SliderCount > 0)
-            {
-                double estimateSliderEndsDropped = Math.Clamp(Math.Min(countOk + countMeh + countMiss, attributes.MaxCombo - scoreMaxCombo), 0, estimateDifficultSliders);
-                double sliderNerfFactor = (1 - attributes.SliderFactor) * Math.Pow(1 - estimateSliderEndsDropped / estimateDifficultSliders, 3) + attributes.SliderFactor;
-                aimValue *= sliderNerfFactor;
-            }
-
             aimValue *= accuracy;
             // It is important to consider accuracy difficulty when scaling with accuracy.
             aimValue *= 0.98 + Math.Pow(attributes.OverallDifficulty, 2) / 2500;

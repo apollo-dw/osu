@@ -9,6 +9,7 @@ using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
+using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Skills;
 using osu.Game.Rulesets.Osu.Mods;
@@ -34,11 +35,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 return new OsuDifficultyAttributes { Mods = mods };
 
             double aimRating = Math.Sqrt(skills[0].DifficultyValue()) * difficulty_multiplier;
-            double aimRatingNoSliders = Math.Sqrt(skills[1].DifficultyValue()) * difficulty_multiplier;
-            double speedRating = Math.Sqrt(skills[2].DifficultyValue()) * difficulty_multiplier;
-            double flashlightRating = Math.Sqrt(skills[3].DifficultyValue()) * difficulty_multiplier;
-
-            double sliderFactor = aimRating > 0 ? aimRatingNoSliders / aimRating : 1;
+            double speedRating = Math.Sqrt(skills[1].DifficultyValue()) * difficulty_multiplier;
+            double flashlightRating = Math.Sqrt(skills[2].DifficultyValue()) * difficulty_multiplier;
 
             if (mods.Any(h => h is OsuModRelax))
                 speedRating = 0.0;
@@ -77,7 +75,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 AimDifficulty = aimRating,
                 SpeedDifficulty = speedRating,
                 FlashlightDifficulty = flashlightRating,
-                SliderFactor = sliderFactor,
                 ApproachRate = preempt > 1200 ? (1800 - preempt) / 120 : (1200 - preempt) / 150 + 5,
                 OverallDifficulty = (80 - hitWindowGreat) / 6,
                 DrainRate = drainRate,
@@ -90,15 +87,39 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
+            List<HitObject> hitObjects = new List<HitObject>();
+
+            foreach (var hitObject in beatmap.HitObjects)
+            {
+                if (hitObject is Spinner)
+                    continue;
+
+                hitObjects.Add(hitObject);
+
+                foreach (var nestedHitObject in hitObject.NestedHitObjects)
+                {
+                    if (nestedHitObject is SliderHeadCircle)
+                        continue;
+
+                    hitObjects.Add(nestedHitObject);
+                }
+            }
+
+            // Tappable objects are referred to as "active" objects.
+            HitObject lastActive = null;
+
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
-            for (int i = 1; i < beatmap.HitObjects.Count; i++)
+            for (int i = 1; i < hitObjects.Count; i++)
             {
-                var lastLast = i > 1 ? beatmap.HitObjects[i - 2] : null;
-                var last = beatmap.HitObjects[i - 1];
-                var current = beatmap.HitObjects[i];
+                var lastLast = i > 1 ? hitObjects[i - 2] : null;
+                var last = hitObjects[i - 1];
+                var current = hitObjects[i];
 
-                yield return new OsuDifficultyHitObject(current, lastLast, last, clockRate);
+                if (!(last is SliderTick || last is SliderTailCircle || last is SliderRepeat))
+                    lastActive = last;
+
+                yield return new OsuDifficultyHitObject(current, lastLast, last, lastActive, clockRate);
             }
         }
 
@@ -111,8 +132,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             return new Skill[]
             {
-                new Aim(mods, true),
-                new Aim(mods, false),
+                new Aim(mods),
                 new Speed(mods, hitWindowGreat),
                 new Flashlight(mods)
             };

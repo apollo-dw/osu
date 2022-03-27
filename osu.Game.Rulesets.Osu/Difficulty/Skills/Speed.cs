@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
@@ -30,6 +31,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override int ReducedSectionCount => 5;
         protected override double DifficultyMultiplier => 1.04;
         protected override int HistoryLength => 32;
+        protected override List<Type> ExcludedObjectTypes => new List<Type> { typeof(SliderTick), typeof(SliderTailCircle), typeof(SliderRepeat) };
 
         private readonly double greatWindow;
 
@@ -44,9 +46,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         /// </summary>
         private double calculateRhythmBonus(DifficultyHitObject current)
         {
-            if (current.BaseObject is Spinner)
-                return 0;
-
             int previousIslandSize = 0;
 
             double rhythmComplexitySum = 0;
@@ -70,9 +69,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
                 currHistoricalDecay = Math.Min((double)(Previous.Count - i) / Previous.Count, currHistoricalDecay); // either we're limited by time or limited by object count.
 
-                double currDelta = currObj.StrainTime;
-                double prevDelta = prevObj.StrainTime;
-                double lastDelta = lastObj.StrainTime;
+                double currDelta = currObj.TapTime;
+                double prevDelta = prevObj.TapTime;
+                double lastDelta = lastObj.TapTime;
                 double currRatio = 1.0 + 6.0 * Math.Min(0.5, Math.Pow(Math.Sin(Math.PI / (Math.Min(prevDelta, currDelta) / Math.Max(prevDelta, currDelta))), 2)); // fancy function to calculate rhythmbonuses.
 
                 double windowPenalty = Math.Min(1, Math.Max(0, Math.Abs(prevDelta - currDelta) - greatWindow * 0.6) / (greatWindow * 0.6));
@@ -131,20 +130,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainValueOf(DifficultyHitObject current)
         {
-            if (current.BaseObject is Spinner)
-                return 0;
-
             // derive strainTime for calculation
             var osuCurrObj = (OsuDifficultyHitObject)current;
             var osuPrevObj = Previous.Count > 0 ? (OsuDifficultyHitObject)Previous[0] : null;
 
-            double strainTime = osuCurrObj.StrainTime;
+            double strainTime = osuCurrObj.TapTime;
             double greatWindowFull = greatWindow * 2;
             double speedWindowRatio = strainTime / greatWindowFull;
 
             // Aim to nerf cheesy rhythms (Very fast consecutive doubles with large deltatimes between)
-            if (osuPrevObj != null && strainTime < greatWindowFull && osuPrevObj.StrainTime > strainTime)
-                strainTime = Interpolation.Lerp(osuPrevObj.StrainTime, strainTime, speedWindowRatio);
+            if (osuPrevObj != null && strainTime < greatWindowFull && osuPrevObj.TapTime > strainTime)
+                strainTime = Interpolation.Lerp(osuPrevObj.TapTime, strainTime, speedWindowRatio);
 
             // Cap deltatime to the OD 300 hitwindow.
             // 0.93 is derived from making sure 260bpm OD8 streams aren't nerfed harshly, whilst 0.92 limits the effect of the cap.
@@ -156,8 +152,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (strainTime < min_speed_bonus)
                 speedBonus = 1 + 0.75 * Math.Pow((min_speed_bonus - strainTime) / speed_balancing_factor, 2);
 
-            double travelDistance = osuPrevObj?.TravelDistance ?? 0;
-            double distance = Math.Min(single_spacing_threshold, travelDistance + osuCurrObj.MinimumJumpDistance);
+            double distance = Math.Min(single_spacing_threshold, osuCurrObj.TapDistance);
 
             return (speedBonus + speedBonus * Math.Pow(distance / single_spacing_threshold, 3.5)) / strainTime;
         }

@@ -59,7 +59,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                         smallDistNerf = Math.Min(1.0, jumpDistance / 75.0);
 
                     // We also want to nerf stacks so that only the first object of the stack is accounted for.
-                    double stackNerf = Math.Min(1.0, (currentObj.LazyJumpDistance / scalingFactor) / 25.0);
+                    double stackNerf = Math.Min(1.0, (currentObj.Distance / scalingFactor) / 25.0);
 
                     result += stackNerf * scalingFactor * jumpDistance / cumulativeStrainTime;
                 }

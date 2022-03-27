@@ -31,14 +31,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         public double FlashlightDifficulty { get; set; }
 
         /// <summary>
-        /// Describes how much of <see cref="AimDifficulty"/> is contributed to by hitcircles or sliders.
-        /// A value closer to 1.0 indicates most of <see cref="AimDifficulty"/> is contributed by hitcircles.
-        /// A value closer to 0.0 indicates most of <see cref="AimDifficulty"/> is contributed by sliders.
-        /// </summary>
-        [JsonProperty("slider_factor")]
-        public double SliderFactor { get; set; }
-
-        /// <summary>
         /// The perceived approach rate inclusive of rate-adjusting mods (DT/HT/etc).
         /// </summary>
         /// <remarks>
@@ -90,8 +82,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             if (ShouldSerializeFlashlightRating())
                 yield return (ATTRIB_ID_FLASHLIGHT, FlashlightDifficulty);
-
-            yield return (ATTRIB_ID_SLIDER_FACTOR, SliderFactor);
         }
 
         public override void FromDatabaseAttributes(IReadOnlyDictionary<int, double> values)
@@ -105,7 +95,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             MaxCombo = (int)values[ATTRIB_ID_MAX_COMBO];
             StarRating = values[ATTRIB_ID_DIFFICULTY];
             FlashlightDifficulty = values.GetValueOrDefault(ATTRIB_ID_FLASHLIGHT);
-            SliderFactor = values[ATTRIB_ID_SLIDER_FACTOR];
         }
 
         #region Newtonsoft.Json implicit ShouldSerialize() methods

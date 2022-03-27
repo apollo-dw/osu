@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
@@ -27,6 +28,8 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected virtual int HistoryLength => 1;
 
+        protected virtual List<Type> ExcludedObjectTypes => new List<Type>();
+
         /// <summary>
         /// Mods for use in skill calculations.
         /// </summary>
@@ -42,6 +45,9 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
         internal void ProcessInternal(DifficultyHitObject current)
         {
+            if (ExcludedObjectTypes.Contains(current.BaseObject.GetType()))
+                return;
+
             while (Previous.Count > HistoryLength)
                 Previous.Dequeue();
 
