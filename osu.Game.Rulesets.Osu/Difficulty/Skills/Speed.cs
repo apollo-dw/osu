@@ -163,7 +163,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            currentStrain *= strainDecay(current.DeltaTime);
+            var osuCurrObj = (OsuDifficultyHitObject)current;
+
+            currentStrain *= strainDecay(osuCurrObj.TapTime);
             currentStrain += strainValueOf(current) * skillMultiplier;
 
             currentRhythm = calculateRhythmBonus(current);
