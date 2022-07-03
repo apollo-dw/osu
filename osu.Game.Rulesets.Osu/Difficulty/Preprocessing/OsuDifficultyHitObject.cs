@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Mods;
@@ -204,15 +205,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             else
                 endTimeMin %= 1;
 
+            var sliderPoints = generatePointsOnSlider(slider);
+
             slider.LazyEndPosition = slider.StackedPosition + slider.Path.PositionAt(endTimeMin); // temporary lazy end position until a real result can be derived.
             var currCursorPosition = slider.StackedPosition;
             double scalingFactor = normalised_radius / slider.Radius; // lazySliderDistance is coded to be sensitive to scaling, this makes the maths easier with the thresholds being used.
 
-            for (int i = 1; i < slider.NestedHitObjects.Count; i++)
+            for (int i = 0; i < sliderPoints.Count; i++)
             {
-                var currMovementObj = (OsuHitObject)slider.NestedHitObjects[i];
+                var currMovementObj = sliderPoints[i];
 
-                Vector2 currMovement = Vector2.Subtract(currMovementObj.StackedPosition, currCursorPosition);
+                Vector2 currMovement = Vector2.Subtract(currMovementObj.Position, currCursorPosition);
                 double currMovementLength = scalingFactor * currMovement.Length;
 
                 // Amount of movement required so that the cursor position needs to be updated.
@@ -231,7 +234,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
                     currMovementLength = scalingFactor * currMovement.Length;
                 }
-                else if (currMovementObj is SliderRepeat)
+                else if (currMovementObj.BaseObject is SliderRepeat)
                 {
                     // For a slider repeat, assume a tighter movement threshold to better assess repeat sliders.
                     requiredMovement = normalised_radius;
@@ -263,6 +266,39 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
 
             return pos;
+        }
+
+        private List<OsuDifficultySliderPoint> generatePointsOnSlider(Slider slider)
+        {
+            var sliderPoints = new List<OsuDifficultySliderPoint>();
+
+            // If the slider is a StrictTrackingSlider, that means strict tracking is enabled!
+            if (slider is OsuModStrictTracking.StrictTrackingSlider strictTrackingSlider)
+            {
+                // First, let's add sliderends and any repeats.
+                foreach (var nestedObject in slider.NestedHitObjects.Where(x => x is SliderRepeat or SliderTailCircle))
+                {
+                    OsuHitObject nestedHitObject = (OsuHitObject)nestedObject;
+                    sliderPoints.Add(new OsuDifficultySliderPoint(nestedHitObject.StackedPosition, nestedHitObject.StartTime, nestedObject));
+                }
+
+                // Insert points on the slider every 60 ms, equivalent to 1/4 @ 240bpm
+                const int interval = 60;
+
+                for (double time = strictTrackingSlider.StartTime + interval; time < strictTrackingSlider.EndTime; time += interval)
+                {
+                    sliderPoints.Add(new OsuDifficultySliderPoint(slider.StackedPosition + slider.Path.PositionAt(time), time));
+                }
+
+                return sliderPoints.OrderBy(x => x.Time).ToList();
+            }
+
+            foreach (var nestedObject in slider.NestedHitObjects)
+            {
+                sliderPoints.Add(new OsuDifficultySliderPoint(((OsuHitObject)nestedObject).Position, nestedObject.StartTime, nestedObject));
+            }
+
+            return sliderPoints;
         }
     }
 }

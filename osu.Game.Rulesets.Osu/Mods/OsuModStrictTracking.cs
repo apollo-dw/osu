@@ -85,7 +85,7 @@ namespace osu.Game.Rulesets.Osu.Mods
             public override bool DisplayResult => true;
         }
 
-        private class StrictTrackingSlider : Slider
+        public class StrictTrackingSlider : Slider
         {
             public StrictTrackingSlider(Slider original)
             {
