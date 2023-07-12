@@ -5,6 +5,7 @@
 
 using System;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Osu.Difficulty.DifficultyValues;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
 
@@ -26,10 +27,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <item><description>and slider difficulty.</description></item>
         /// </list>
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool withSliders)
+        public static AimDifficultyValue EvaluateDifficultyOf(DifficultyHitObject current, bool withSliders)
         {
             if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
-                return 0;
+                return new AimDifficultyValue(0);
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
             var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
@@ -127,7 +128,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (withSliders)
                 aimStrain += sliderBonus * slider_multiplier;
 
-            return aimStrain;
+            return new AimDifficultyValue(aimStrain);
         }
 
         private static double calcWideAngleBonus(double angle) => Math.Pow(Math.Sin(3.0 / 4 * (Math.Min(5.0 / 6 * Math.PI, Math.Max(Math.PI / 6, angle)) - Math.PI / 6)), 2);
