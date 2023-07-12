@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <item><description>and slider difficulty.</description></item>
         /// </list>
         /// </summary>
-        public static AimDifficultyValue EvaluateDifficultyOf(DifficultyHitObject current, bool withSliders)
+        public static AimDifficultyValue EvaluateDifficultyOf(DifficultyHitObject current)
         {
             if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
                 return new AimDifficultyValue(0);
@@ -40,7 +40,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double currVelocity = osuCurrObj.LazyJumpDistance / osuCurrObj.StrainTime;
 
             // But if the last object is a slider, then we extend the travel velocity through the slider into the current object.
-            if (osuLastObj.BaseObject is Slider && withSliders)
+            if (osuLastObj.BaseObject is Slider)
             {
                 double travelVelocity = osuLastObj.TravelDistance / osuLastObj.TravelTime; // calculate the slider velocity from slider head to slider end.
                 double movementVelocity = osuCurrObj.MinimumJumpDistance / osuCurrObj.MinimumJumpTime; // calculate the movement velocity from slider end to current object
@@ -51,7 +51,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // As above, do the same for the previous hitobject.
             double prevVelocity = osuLastObj.LazyJumpDistance / osuLastObj.StrainTime;
 
-            if (osuLastLastObj.BaseObject is Slider && withSliders)
+            if (osuLastLastObj.BaseObject is Slider)
             {
                 double travelVelocity = osuLastLastObj.TravelDistance / osuLastLastObj.TravelTime;
                 double movementVelocity = osuLastObj.MinimumJumpDistance / osuLastObj.MinimumJumpTime;
@@ -124,11 +124,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // Add in acute angle bonus or wide angle bonus + velocity change bonus, whichever is larger.
             aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier + velocityChangeBonus * velocity_change_multiplier);
 
-            // Add in additional slider velocity bonus.
-            if (withSliders)
-                aimStrain += sliderBonus * slider_multiplier;
+            double aimStrainWithSliders = aimStrain + sliderBonus * slider_multiplier;
 
-            return new AimDifficultyValue(aimStrain);
+            AimDifficultyValue difficulty = new AimDifficultyValue(aimStrainWithSliders)
+            {
+                DifficultyWithoutSliders = aimStrain
+            };
+
+            return difficulty;
         }
 
         private static double calcWideAngleBonus(double angle) => Math.Pow(Math.Sin(3.0 / 4 * (Math.Min(5.0 / 6 * Math.PI, Math.Max(Math.PI / 6, angle)) - Math.PI / 6)), 2);

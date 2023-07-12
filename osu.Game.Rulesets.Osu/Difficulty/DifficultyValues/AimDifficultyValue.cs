@@ -5,15 +5,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.DifficultyValues
 {
     public class AimDifficultyValue : DifficultyValue
     {
-        public double SliderDifficulty { get; set; }
+        public double DifficultyWithoutSliders { get; set; }
 
-        public AimDifficultyValue(double difficulty) : base(difficulty)
+        public AimDifficultyValue(double difficulty)
+            : base(difficulty)
         {
         }
 
         public override double[] GetDifficultyValues()
         {
-            return new double[] { Difficulty, SliderDifficulty };
+            return new double[] { Difficulty, DifficultyWithoutSliders };
         }
     }
 }

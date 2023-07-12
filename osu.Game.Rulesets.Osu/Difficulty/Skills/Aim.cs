@@ -15,14 +15,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Aim : MultiStrainSkill
     {
-        public Aim(Mod[] mods, bool withSliders)
+        public Aim(Mod[] mods)
             : base(mods)
         {
-            this.withSliders = withSliders;
             currentStrain = new double[ConcurrentStrainCount];
         }
-
-        private readonly bool withSliders;
 
         private double[] currentStrain;
 
@@ -37,7 +34,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double[] StrainValuesAt(DifficultyHitObject current)
         {
-            double[] difficulties = AimEvaluator.EvaluateDifficultyOf(current, withSliders).GetDifficultyValues();
+            double[] difficulties = AimEvaluator.EvaluateDifficultyOf(current).GetDifficultyValues();
 
             for (int i = 0; i < ConcurrentStrainCount; i++)
             {
