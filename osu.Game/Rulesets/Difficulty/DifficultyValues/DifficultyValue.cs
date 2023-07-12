@@ -14,7 +14,7 @@ namespace osu.Game.Rulesets.Difficulty.DifficultyValues
 
         public virtual double[] GetDifficultyValues()
         {
-            return new double[] { Difficulty };
+            return new[] { Difficulty };
         }
     }
 }

@@ -16,7 +16,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.DifficultyValues
 
         public override double[] GetDifficultyValues()
         {
-            return new double[] { Difficulty, DifficultyWithoutSliders };
+            return new[] { Difficulty, DifficultyWithoutSliders };
         }
     }
 }

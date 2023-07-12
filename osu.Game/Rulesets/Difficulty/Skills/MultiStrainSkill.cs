@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected virtual int ConcurrentStrainCount => 1;
 
-        private double[] currentSectionPeak; // We also keep track of the peak strain level in the current section.
+        private readonly double[] currentSectionPeak; // We also keep track of the peak strain level in the current section.
 
         private double currentSectionEnd;
 

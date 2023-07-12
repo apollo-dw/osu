@@ -21,7 +21,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             currentStrain = new double[ConcurrentStrainCount];
         }
 
-        private double[] currentStrain;
+        private readonly double[] currentStrain;
 
         private double skillMultiplier => 23.55;
         private double strainDecayBase => 0.15;
