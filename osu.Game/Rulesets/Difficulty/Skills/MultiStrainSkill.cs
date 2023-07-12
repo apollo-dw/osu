@@ -9,6 +9,11 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
+    /// <summary>
+    /// Used to process simultaneous strain values from <see cref="DifficultyHitObject"/>s, keeping track of strain levels
+    /// and using them to calculate a final difficulty value representing total difficulty.
+    /// <seealso cref="StrainSkill"/>
+    /// </summary>
     public abstract class MultiStrainSkill : Skill
     {
         /// <summary>
@@ -22,7 +27,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         protected virtual int SectionLength => 400;
 
         /// <summary>
-        /// The amount of concurrent strains this skill will be handling.
+        /// The amount of concurrent strains this skill will be keeping track of.
         /// </summary>
         protected virtual int ConcurrentStrainCount => 1;
 
@@ -30,6 +35,9 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
         private double currentSectionEnd;
 
+        /// <summary>
+        /// This skill will be handling concurrent strains, so they are all stored in separate lists.
+        /// </summary>
         private readonly List<double>[] strainPeaks;
 
         protected MultiStrainSkill(Mod[] mods)
@@ -75,7 +83,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         }
 
         /// <summary>
-        /// Saves the current peak strain level to the list of strain peaks, which will be used to calculate an overall difficulty.
+        /// Saves the current peak strain level to a list of strain peaks, which will be used to calculate an overall difficulty.
         /// </summary>
         private void saveCurrentPeak(int offset)
         {
@@ -87,7 +95,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         /// <param name="time">The beginning of the new section in milliseconds.</param>
         /// <param name="current">The current hit object.</param>
-        /// <param name="offset">The concurrent strain</param>
+        /// <param name="offset">The specific strain this is affecting.</param>
         private void startNewSectionFrom(double time, DifficultyHitObject current, int offset)
         {
             // The maximum strain of the new section is not zero by default
@@ -100,7 +108,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         /// <param name="time">The time to retrieve the peak strain at.</param>
         /// <param name="current">The current hit object.</param>
-        /// <param name="offset">The concurrent strain</param>
+        /// <param name="offset">The specific strain this is affecting.</param>
         /// <returns>The peak strain.</returns>
         protected abstract double CalculateInitialStrain(double time, DifficultyHitObject current, int offset);
 

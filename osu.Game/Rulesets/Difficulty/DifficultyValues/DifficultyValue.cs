@@ -5,7 +5,7 @@ namespace osu.Game.Rulesets.Difficulty.DifficultyValues
 {
     public class DifficultyValue
     {
-        public double Difficulty { get; set; }
+        public double Difficulty { get; }
 
         public DifficultyValue(double difficulty)
         {
