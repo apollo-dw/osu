@@ -3,8 +3,9 @@
 
 #nullable disable
 
-using System;
+using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
 
@@ -13,31 +14,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// <summary>
     /// Represents the skill required to correctly aim at every object in the map with a uniform CircleSize and normalized distances.
     /// </summary>
-    public class Aim : OsuStrainSkill
+    public class Aim : Skill
     {
-        public Aim(Mod[] mods, bool withSliders)
+        public Aim(Mod[] mods)
             : base(mods)
         {
-            this.withSliders = withSliders;
         }
 
-        private readonly bool withSliders;
-
-        private double currentStrain;
+        private const int strain_count = 2;
+        private readonly StrainSet[] strains = new StrainSet[strain_count].Select(s => new StrainSet()).ToArray();
 
         private double skillMultiplier => 23.55;
-        private double strainDecayBase => 0.15;
 
-        private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
-
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
-
-        protected override double StrainValueAt(DifficultyHitObject current)
+        public sealed override void Process(DifficultyHitObject current)
         {
-            currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += AimEvaluator.EvaluateDifficultyOf(current, withSliders) * skillMultiplier;
+            double[] difficulties = AimEvaluator.EvaluateDifficultyOf(current).GetDifficultyValues();
 
-            return currentStrain;
+            for (int i = 0; i < strain_count; i++)
+                strains[i].AddNewStrain(difficulties[i] * skillMultiplier, current);
         }
+
+        public override double DifficultyValue() => DifficultyValueFor(0);
+
+        public double DifficultyValueFor(int strainIndex) => strains[strainIndex].AggregateDifficulty();
     }
 }
