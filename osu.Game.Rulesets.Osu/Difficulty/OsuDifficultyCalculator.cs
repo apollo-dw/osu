@@ -37,10 +37,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 return new OsuDifficultyAttributes { Mods = mods };
 
             double aimRating = Math.Sqrt(skills[0].DifficultyValue()) * difficulty_multiplier;
-            double aimRatingNoSliders = Math.Sqrt(skills[1].DifficultyValue()) * difficulty_multiplier;
-            double speedRating = Math.Sqrt(skills[2].DifficultyValue()) * difficulty_multiplier;
-            double speedNotes = ((Speed)skills[2]).RelevantNoteCount();
-            double flashlightRating = Math.Sqrt(skills[3].DifficultyValue()) * difficulty_multiplier;
+            double aimRatingNoSliders = Math.Sqrt(((Aim)skills[0]).DifficultyValue(1)) * difficulty_multiplier;
+            double speedRating = Math.Sqrt(skills[1].DifficultyValue()) * difficulty_multiplier;
+            double speedNotes = ((Speed)skills[1]).RelevantNoteCount();
+            double flashlightRating = Math.Sqrt(skills[2].DifficultyValue()) * difficulty_multiplier;
 
             double sliderFactor = aimRating > 0 ? aimRatingNoSliders / aimRating : 1;
 
@@ -124,8 +124,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             return new Skill[]
             {
-                new Aim(mods, true),
-                new Aim(mods, false),
+                new Aim(mods),
                 new Speed(mods),
                 new Flashlight(mods)
             };
