@@ -11,23 +11,29 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
     /// <summary>
     /// Calculates the colour coefficient of taiko difficulty.
     /// </summary>
-    public class Colour : StrainDecaySkill
+    public class Colour : Skill
     {
-        protected override double SkillMultiplier => 0.12;
+        private double skillMultiplier => 0.12;
 
-        // This is set to decay slower than other skills, due to the fact that only the first note of each encoding class
-        //  having any difficulty values, and we want to allow colour difficulty to be able to build up even on
-        // slower maps.
-        protected override double StrainDecayBase => 0.8;
+        public readonly StrainSet Strains = new StrainSet()
+        {
+            // This is set to decay slower than other skills, due to the fact that only the first note of each encoding class
+            // having any difficulty values, and we want to allow colour difficulty to be able to build up even on
+            // slower maps.
+            StrainDecayBase = 0.8,
+        };
 
         public Colour(Mod[] mods)
             : base(mods)
         {
         }
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        public override void Process(DifficultyHitObject current)
         {
-            return ColourEvaluator.EvaluateDifficultyOf(current);
+            double difficulty = ColourEvaluator.EvaluateDifficultyOf(current) * skillMultiplier;
+            Strains.AddNewStrain(difficulty, current);
         }
+
+        public override double DifficultyValue() => Strains.AggregateDifficulty();
     }
 }

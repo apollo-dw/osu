@@ -16,14 +16,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Aim : Skill
     {
-        private const int strain_count = 2;
-
         public Aim(Mod[] mods)
             : base(mods)
         {
         }
 
-        protected StrainSet[] Strains = new StrainSet[strain_count].Select(s => new StrainSet()).ToArray();
+        private const int strain_count = 2;
+        private readonly OsuStrainSet[] strains = new OsuStrainSet[strain_count].Select(s => new OsuStrainSet()).ToArray();
 
         private double skillMultiplier => 23.55;
 
@@ -32,11 +31,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double[] difficulties = AimEvaluator.EvaluateDifficultyOf(current).GetDifficultyValues();
 
             for (int i = 0; i < strain_count; i++)
-                Strains[i].AddNewStrain(difficulties[i] * skillMultiplier, current);
+                strains[i].AddNewStrain(difficulties[i] * skillMultiplier, current);
         }
 
         public override double DifficultyValue() => DifficultyValue(0);
-        public double DifficultyValue(int strainIndex) => Strains[strainIndex].AggregateDifficulty();
+        public double DifficultyValue(int strainIndex) => strains[strainIndex].AggregateDifficulty();
     }
 }
 

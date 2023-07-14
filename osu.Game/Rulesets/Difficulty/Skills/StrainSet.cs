@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using osu.Framework.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
@@ -16,26 +15,15 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         public int SectionLength { get; set; } = 400;
 
-        protected virtual double DecayWeight => 0.9;
-
         /// <summary>
         /// Determines how quickly strain decays for the given skill.
         /// For example a value of 0.15 indicates that strain decays to 15% of its original value in one second.
         /// </summary>
         public double StrainDecayBase { get; set; } = 0.15;
 
-        /// <summary>
-        /// The number of sections with the highest strains, which the peak strain reductions will apply to.
-        /// This is done in order to decrease their impact on the overall difficulty of the map for this skill.
-        /// </summary>
-        protected virtual int ReducedSectionCount => 10;
+        public double DecayWeight { get; set; } = 0.9;
 
-        /// <summary>
-        /// The baseline multiplier applied to the section with the biggest strain.
-        /// </summary>
-        protected virtual double ReducedStrainBaseline => 0.75;
-
-        protected virtual double DifficultyMultiplier => 1.06;
+        public double DifficultyMultiplier { get; set; } = 1.06;
 
         private double currentSectionPeak;
         private double currentSectionEnd;
@@ -44,7 +32,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
         private double currentStrain;
 
-        public void AddNewStrain(double difficulty, DifficultyHitObject current)
+        public virtual void AddNewStrain(double difficulty, DifficultyHitObject current)
         {
             // The first object doesn't generate a strain, so we begin with an incremented section end
             if (current.Index == 0)
@@ -68,7 +56,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
             currentSectionPeak = Math.Max(currentStrain, currentSectionPeak);
         }
 
-        public double AggregateDifficulty()
+        public virtual double AggregateDifficulty()
         {
             double difficulty = 0;
             double weight = 1;
@@ -77,24 +65,15 @@ namespace osu.Game.Rulesets.Difficulty.Skills
             // These sections will not contribute to the difficulty.
             var peaks = GetCurrentStrainPeaks().Where(p => p > 0);
 
-            List<double> strains = peaks.OrderByDescending(d => d).ToList();
-
-            // We are reducing the highest strains first to account for extreme difficulty spikes
-            for (int i = 0; i < Math.Min(strains.Count, ReducedSectionCount); i++)
-            {
-                double scale = Math.Log10(Interpolation.Lerp(1, 10, Math.Clamp((float)i / ReducedSectionCount, 0, 1)));
-                strains[i] *= Interpolation.Lerp(ReducedStrainBaseline, 1.0, scale);
-            }
-
             // Difficulty is the weighted sum of the highest strains from every section.
             // We're sorting from highest to lowest strain.
-            foreach (double strain in strains.OrderByDescending(d => d))
+            foreach (double strain in peaks.OrderByDescending(d => d))
             {
                 difficulty += strain * weight;
                 weight *= DecayWeight;
             }
 
-            return difficulty * DifficultyMultiplier;
+            return difficulty;
         }
 
         public IEnumerable<double> GetCurrentStrainPeaks() => strainPeaks.Append(currentSectionPeak);
