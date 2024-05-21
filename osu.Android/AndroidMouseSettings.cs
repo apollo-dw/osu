@@ -14,7 +14,7 @@ using osu.Game.Overlays.Settings.Sections.Input;
 
 namespace osu.Android
 {
-    public class AndroidMouseSettings : SettingsSubsection
+    public partial class AndroidMouseSettings : SettingsSubsection
     {
         private readonly AndroidMouseHandler mouseHandler;
 
@@ -70,7 +70,7 @@ namespace osu.Android
                 },
                 new SettingsCheckbox
                 {
-                    LabelText = MouseSettingsStrings.DisableMouseButtons,
+                    LabelText = MouseSettingsStrings.DisableClicksDuringGameplay,
                     Current = osuConfig.GetBindable<bool>(OsuSetting.MouseDisableButtons),
                 },
             });

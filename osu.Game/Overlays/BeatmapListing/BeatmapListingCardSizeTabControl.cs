@@ -17,12 +17,16 @@ using osuTK;
 
 namespace osu.Game.Overlays.BeatmapListing
 {
-    public class BeatmapListingCardSizeTabControl : OsuTabControl<BeatmapCardSize>
+    public partial class BeatmapListingCardSizeTabControl : OsuTabControl<BeatmapCardSize>
     {
         public BeatmapListingCardSizeTabControl()
         {
             AutoSizeAxes = Axes.Both;
+
+            Items = new[] { BeatmapCardSize.Normal, BeatmapCardSize.Extra };
         }
+
+        protected override bool AddEnumEntriesAutomatically => false;
 
         protected override TabFillFlowContainer CreateTabFlow() => new TabFillFlowContainer
         {
@@ -35,7 +39,7 @@ namespace osu.Game.Overlays.BeatmapListing
 
         protected override TabItem<BeatmapCardSize> CreateTabItem(BeatmapCardSize value) => new TabItem(value);
 
-        private class TabItem : TabItem<BeatmapCardSize>
+        private partial class TabItem : TabItem<BeatmapCardSize>
         {
             private Box background;
             private SpriteIcon icon;
