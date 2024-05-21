@@ -11,7 +11,7 @@ namespace osu.Game.Beatmaps
     /// <summary>
     /// Ingests any changes that happen externally to the client, reprocessing as required.
     /// </summary>
-    public partial class BeatmapOnlineChangeIngest : Component
+    public class BeatmapOnlineChangeIngest : Component
     {
         private readonly BeatmapUpdater beatmapUpdater;
         private readonly RealmAccess realm;
@@ -36,7 +36,7 @@ namespace osu.Game.Beatmaps
                     var matchingSet = r.All<BeatmapSetInfo>().FirstOrDefault(s => s.OnlineID == id);
 
                     if (matchingSet != null)
-                        beatmapUpdater.Queue(matchingSet.ToLive(realm), MetadataLookupScope.OnlineFirst);
+                        beatmapUpdater.Queue(matchingSet.ToLive(realm), true);
                 }
             });
         }

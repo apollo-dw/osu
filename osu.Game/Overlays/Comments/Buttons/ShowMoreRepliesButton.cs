@@ -15,7 +15,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Comments.Buttons
 {
-    public partial class ShowMoreRepliesButton : LoadingButton
+    public class ShowMoreRepliesButton : LoadingButton
     {
         protected override IEnumerable<Drawable> EffectTargets => new[] { text };
 

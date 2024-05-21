@@ -22,7 +22,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.Settings.Sections.Maintenance
 {
-    public partial class MigrationRunScreen : OsuScreen
+    public class MigrationRunScreen : OsuScreen
     {
         private readonly DirectoryInfo destination;
 

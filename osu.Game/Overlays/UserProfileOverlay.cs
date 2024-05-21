@@ -1,102 +1,54 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
-using System.Diagnostics;
 using System.Linq;
 using osu.Framework.Allocation;
-using osu.Framework.Bindables;
-using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input.Events;
-using osu.Game.Extensions;
-using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
-using osu.Game.Graphics.Cursor;
-using osu.Game.Graphics.Sprites;
-using osu.Game.Graphics.UserInterface;
-using osu.Game.Online;
-using osu.Game.Online.API;
 using osu.Game.Online.API.Requests;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Overlays.Profile;
 using osu.Game.Overlays.Profile.Sections;
-using osu.Game.Rulesets;
 using osu.Game.Users;
 using osuTK;
 using osuTK.Graphics;
 
 namespace osu.Game.Overlays
 {
-    public partial class UserProfileOverlay : FullscreenOverlay<ProfileHeader>
+    public class UserProfileOverlay : FullscreenOverlay<ProfileHeader>
     {
-        protected override Container<Drawable> Content => onlineViewContainer;
+        private ProfileSection lastSection;
+        private ProfileSection[] sections;
+        private GetUserRequest userReq;
+        private ProfileSectionsContainer sectionsContainer;
+        private ProfileSectionTabControl tabs;
 
-        private readonly OnlineViewContainer onlineViewContainer;
-        private readonly LoadingLayer loadingLayer;
-
-        private ProfileSection? lastSection;
-        private ProfileSection[]? sections;
-        private GetUserRequest? userReq;
-        private ProfileSectionsContainer? sectionsContainer;
-        private ProfileSectionTabControl? tabs;
-
-        private IUser? user;
-        private IRulesetInfo? ruleset;
-
-        private readonly IBindable<APIState> apiState = new Bindable<APIState>();
-
-        [Resolved]
-        private RulesetStore rulesets { get; set; } = null!;
+        public const float CONTENT_X_MARGIN = 70;
 
         public UserProfileOverlay()
             : base(OverlayColourScheme.Pink)
         {
-            base.Content.AddRange(new Drawable[]
-            {
-                onlineViewContainer = new OnlineViewContainer($"Sign in to view the {Header.Title.Title}")
-                {
-                    RelativeSizeAxes = Axes.Both
-                },
-                loadingLayer = new LoadingLayer(true)
-            });
-        }
-
-        [BackgroundDependencyLoader]
-        private void load()
-        {
-            apiState.BindTo(API.State);
-            apiState.BindValueChanged(state => Schedule(() =>
-            {
-                if (state.NewValue == APIState.Online && user != null)
-                    Scheduler.AddOnce(fetchAndSetContent);
-            }));
         }
 
         protected override ProfileHeader CreateHeader() => new ProfileHeader();
 
-        protected override Color4 BackgroundColour => ColourProvider.Background5;
+        protected override Color4 BackgroundColour => ColourProvider.Background6;
 
-        public void ShowUser(IUser userToShow, IRulesetInfo? userRuleset = null)
+        public void ShowUser(IUser user)
         {
-            if (userToShow.OnlineID == APIUser.SYSTEM_USER_ID)
+            if (user.OnlineID == APIUser.SYSTEM_USER_ID)
                 return;
 
-            user = userToShow;
-            ruleset = userRuleset;
-
             Show();
-            Scheduler.AddOnce(fetchAndSetContent);
-        }
 
-        private void fetchAndSetContent()
-        {
-            Debug.Assert(user != null);
-
-            if (user.OnlineID == Header.User.Value?.User.Id && ruleset?.MatchesOnlineID(Header.User.Value?.Ruleset) == true)
+            if (user.OnlineID == Header?.User.Value?.Id)
                 return;
 
             if (sectionsContainer != null)
@@ -126,28 +78,23 @@ namespace osu.Game.Overlays
                 Origin = Anchor.TopCentre,
             };
 
-            Add(new OsuContextMenuContainer
+            Add(sectionsContainer = new ProfileSectionsContainer
             {
-                RelativeSizeAxes = Axes.Both,
-                Child = sectionsContainer = new ProfileSectionsContainer
+                ExpandableHeader = Header,
+                FixedHeader = tabs,
+                HeaderBackground = new Box
                 {
-                    ExpandableHeader = Header,
-                    FixedHeader = tabs,
-                    HeaderBackground = new Box
-                    {
-                        // this is only visible as the ProfileTabControl background
-                        Colour = ColourProvider.Background5,
-                        RelativeSizeAxes = Axes.Both
-                    },
-                }
+                    // this is only visible as the ProfileTabControl background
+                    Colour = ColourProvider.Background5,
+                    RelativeSizeAxes = Axes.Both
+                },
             });
-
             sectionsContainer.SelectedSection.ValueChanged += section =>
             {
                 if (lastSection != section.NewValue)
                 {
                     lastSection = section.NewValue;
-                    tabs.Current.Value = lastSection!;
+                    tabs.Current.Value = lastSection;
                 }
             };
 
@@ -170,144 +117,101 @@ namespace osu.Game.Overlays
 
             sectionsContainer.ScrollToTop();
 
-            if (API.State.Value != APIState.Offline)
+            // Check arbitrarily whether this user has already been populated.
+            // This is only generally used by tests, but should be quite safe unless we want to force a refresh on loading a previous user in the future.
+            if (user is APIUser apiUser && apiUser.JoinDate != default)
             {
-                userReq = user.OnlineID > 1 ? new GetUserRequest(user.OnlineID, ruleset) : new GetUserRequest(user.Username, ruleset);
-                userReq.Success += u => userLoadComplete(u, ruleset);
-
-                API.Queue(userReq);
-                loadingLayer.Show();
+                userReq = null;
+                userLoadComplete(apiUser);
+                return;
             }
+
+            userReq = user.OnlineID > 1 ? new GetUserRequest(user.OnlineID) : new GetUserRequest(user.Username);
+            userReq.Success += userLoadComplete;
+            API.Queue(userReq);
         }
 
-        private void userLoadComplete(APIUser loadedUser, IRulesetInfo? userRuleset)
+        private void userLoadComplete(APIUser user)
         {
-            Debug.Assert(sections != null && sectionsContainer != null && tabs != null);
+            Header.User.Value = user;
 
-            var actualRuleset = rulesets.GetRuleset(userRuleset?.ShortName ?? loadedUser.PlayMode).AsNonNull();
-
-            var userProfile = new UserProfileData(loadedUser, actualRuleset);
-            Header.User.Value = userProfile;
-
-            if (loadedUser.ProfileOrder != null)
+            if (user.ProfileOrder != null)
             {
-                foreach (string id in loadedUser.ProfileOrder)
+                foreach (string id in user.ProfileOrder)
                 {
                     var sec = sections.FirstOrDefault(s => s.Identifier == id);
 
                     if (sec != null)
                     {
-                        sec.User.Value = userProfile;
+                        sec.User.Value = user;
 
                         sectionsContainer.Add(sec);
                         tabs.AddItem(sec);
                     }
                 }
             }
-
-            loadingLayer.Hide();
         }
 
-        private partial class ProfileSectionTabControl : OsuTabControl<ProfileSection>
+        private class ProfileSectionTabControl : OverlayTabControl<ProfileSection>
         {
+            private const float bar_height = 2;
+
             public ProfileSectionTabControl()
             {
-                Height = 40;
-                Padding = new MarginPadding { Horizontal = HORIZONTAL_PADDING };
-                TabContainer.Spacing = new Vector2(20);
+                TabContainer.RelativeSizeAxes &= ~Axes.X;
+                TabContainer.AutoSizeAxes |= Axes.X;
+                TabContainer.Anchor |= Anchor.x1;
+                TabContainer.Origin |= Anchor.x1;
+
+                Height = 36 + bar_height;
+                BarHeight = bar_height;
             }
 
-            protected override TabItem<ProfileSection> CreateTabItem(ProfileSection value) => new ProfileSectionTabItem(value);
+            protected override TabItem<ProfileSection> CreateTabItem(ProfileSection value) => new ProfileSectionTabItem(value)
+            {
+                AccentColour = AccentColour,
+            };
+
+            [BackgroundDependencyLoader]
+            private void load(OverlayColourProvider colourProvider)
+            {
+                AccentColour = colourProvider.Highlight1;
+            }
 
             protected override bool OnClick(ClickEvent e) => true;
 
             protected override bool OnHover(HoverEvent e) => true;
 
-            private partial class ProfileSectionTabItem : TabItem<ProfileSection>
+            private class ProfileSectionTabItem : OverlayTabItem
             {
-                private OsuSpriteText text = null!;
-
-                [Resolved]
-                private OverlayColourProvider colourProvider { get; set; } = null!;
-
                 public ProfileSectionTabItem(ProfileSection value)
                     : base(value)
                 {
-                }
-
-                [BackgroundDependencyLoader]
-                private void load()
-                {
-                    AutoSizeAxes = Axes.Both;
-                    Anchor = Anchor.CentreLeft;
-                    Origin = Anchor.CentreLeft;
-
-                    InternalChild = text = new OsuSpriteText
-                    {
-                        Text = Value.Title
-                    };
-
-                    updateState();
-                }
-
-                protected override void OnActivated() => updateState();
-
-                protected override void OnDeactivated() => updateState();
-
-                protected override bool OnHover(HoverEvent e)
-                {
-                    updateState();
-                    return true;
-                }
-
-                protected override void OnHoverLost(HoverLostEvent e) => updateState();
-
-                private void updateState()
-                {
-                    text.Font = OsuFont.Default.With(size: 14, weight: Active.Value ? FontWeight.SemiBold : FontWeight.Regular);
-
-                    Colour4 textColour;
-
-                    if (IsHovered)
-                        textColour = colourProvider.Light1;
-                    else
-                        textColour = Active.Value ? colourProvider.Content1 : colourProvider.Light2;
-
-                    text.FadeColour(textColour, 300, Easing.OutQuint);
+                    Text.Text = value.Title;
+                    Text.Font = Text.Font.With(size: 16);
+                    Text.Margin = new MarginPadding { Bottom = 10 + bar_height };
+                    Bar.ExpandedSize = 10;
+                    Bar.Margin = new MarginPadding { Bottom = bar_height };
                 }
             }
         }
 
-        private partial class ProfileSectionsContainer : SectionsContainer<ProfileSection>
+        private class ProfileSectionsContainer : SectionsContainer<ProfileSection>
         {
-            private OverlayScrollContainer scroll = null!;
-
             public ProfileSectionsContainer()
             {
                 RelativeSizeAxes = Axes.Both;
             }
 
-            protected override UserTrackingScrollContainer CreateScrollContainer() => scroll = new OverlayScrollContainer();
+            protected override UserTrackingScrollContainer CreateScrollContainer() => new OverlayScrollContainer();
 
-            // Reverse child ID is required so expanding beatmap panels can appear above sections below them.
-            // This can also be done by setting Depth when adding new sections above if using ReverseChildID turns out to have any issues.
-            protected override FlowContainer<ProfileSection> CreateScrollContentContainer() => new ReverseChildIDFillFlowContainer<ProfileSection>
+            protected override FlowContainer<ProfileSection> CreateScrollContentContainer() => new FillFlowContainer<ProfileSection>
             {
                 Direction = FillDirection.Vertical,
                 AutoSizeAxes = Axes.Y,
                 RelativeSizeAxes = Axes.X,
-                Spacing = new Vector2(0, 10),
-                Padding = new MarginPadding { Horizontal = 10 },
-                Margin = new MarginPadding { Bottom = 10 },
+                Spacing = new Vector2(0, 20),
             };
-
-            protected override void LoadComplete()
-            {
-                base.LoadComplete();
-
-                // Ensure the scroll-to-top button is displayed above the fixed header.
-                AddInternal(scroll.Button.CreateProxy());
-            }
         }
     }
 }

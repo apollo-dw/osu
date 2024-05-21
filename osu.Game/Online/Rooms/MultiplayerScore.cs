@@ -58,9 +58,6 @@ namespace osu.Game.Online.Rooms
         [JsonProperty("position")]
         public int? Position { get; set; }
 
-        [JsonProperty("has_replay")]
-        public bool HasReplay { get; set; }
-
         /// <summary>
         /// Any scores in the room around this score.
         /// </summary>
@@ -87,7 +84,7 @@ namespace osu.Game.Online.Rooms
                 User = User,
                 Accuracy = Accuracy,
                 Date = EndedAt,
-                HasOnlineReplay = HasReplay,
+                Hash = string.Empty, // todo: temporary?
                 Rank = Rank,
                 Mods = Mods?.Select(m => m.ToMod(rulesetInstance)).ToArray() ?? Array.Empty<Mod>(),
                 Position = Position,

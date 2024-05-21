@@ -26,7 +26,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.BeatmapListing
 {
-    public partial class BeatmapListingFilterControl : CompositeDrawable
+    public class BeatmapListingFilterControl : CompositeDrawable
     {
         /// <summary>
         /// Fired when a search finishes.
@@ -144,12 +144,6 @@ namespace osu.Game.Overlays.BeatmapListing
 
         public void Search(string query)
             => Schedule(() => searchControl.Query.Value = query);
-
-        public void FilterGenre(SearchGenre genre)
-            => Schedule(() => searchControl.Genre.Value = genre);
-
-        public void FilterLanguage(SearchLanguage language)
-            => Schedule(() => searchControl.Language.Value = language);
 
         protected override void LoadComplete()
         {

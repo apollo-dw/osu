@@ -16,7 +16,7 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Taiko.Tests
 {
-    public abstract partial class HitObjectApplicationTestScene : OsuTestScene
+    public abstract class HitObjectApplicationTestScene : OsuTestScene
     {
         [Cached(typeof(IScrollingInfo))]
         private ScrollingTestContainer.TestScrollingInfo info = new ScrollingTestContainer.TestScrollingInfo

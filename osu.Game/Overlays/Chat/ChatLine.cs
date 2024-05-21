@@ -1,34 +1,31 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Collections.Generic;
+using System;
 using System.Linq;
+using System.Collections.Generic;
 using osu.Framework.Allocation;
-using osu.Framework.Bindables;
-using osu.Framework.Extensions;
 using osu.Framework.Extensions.Color4Extensions;
-using osu.Framework.Extensions.LocalisationExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
+using osu.Framework.Graphics.Effects;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
-using osu.Game.Configuration;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
+using osu.Game.Graphics.UserInterface;
+using osu.Game.Online.API;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Online.Chat;
+using osuTK;
 using osuTK.Graphics;
-using Message = osu.Game.Online.Chat.Message;
 
 namespace osu.Game.Overlays.Chat
 {
-    public partial class ChatLine : CompositeDrawable, IHasPopover
+    public class ChatLine : CompositeDrawable
     {
-        private Message message = null!;
-
         public Message Message
         {
             get => message;
@@ -45,62 +42,49 @@ namespace osu.Game.Overlays.Chat
             }
         }
 
-        public IReadOnlyCollection<Drawable> DrawableContentFlow => drawableContentFlow;
+        public LinkFlowContainer ContentFlow { get; private set; } = null!;
 
-        protected virtual float FontSize => 14;
+        protected virtual float TextSize => 20;
 
         protected virtual float Spacing => 15;
 
+        protected virtual float TimestampWidth => 60;
+
         protected virtual float UsernameWidth => 130;
+
+        private Color4 usernameColour;
+
+        private OsuSpriteText timestamp = null!;
+
+        private Message message = null!;
+
+        private OsuSpriteText username = null!;
+
+        private Container? highlight;
+
+        private bool senderHasColour => !string.IsNullOrEmpty(message.Sender.Colour);
+
+        private bool messageHasColour => Message.IsAction && senderHasColour;
 
         [Resolved]
         private ChannelManager? chatManager { get; set; }
 
         [Resolved]
-        private OverlayColourProvider? colourProvider { get; set; }
-
-        private OsuSpriteText drawableTimestamp = null!;
-
-        private DrawableChatUsername drawableUsername = null!;
-
-        private LinkFlowContainer drawableContentFlow = null!;
-
-        private readonly Bindable<bool> prefer24HourTime = new Bindable<bool>();
-
-        private Container? highlight;
-
-        /// <summary>
-        /// The colour used to paint the author's username.
-        /// </summary>
-        /// <remarks>
-        /// The colour can be set explicitly by consumers via the property initialiser.
-        /// If unspecified, the colour is by default initialised to:
-        /// <list type="bullet">
-        /// <item><see cref="APIUser.Colour">message.Sender.Colour</see>, if non-empty,</item>
-        /// <item>a random colour from <see cref="default_username_colours"/> if the above is empty.</item>
-        /// </list>
-        /// </remarks>
-        public Color4 UsernameColour { get; init; }
+        private OsuColour colours { get; set; } = null!;
 
         public ChatLine(Message message)
         {
             Message = message;
-
             RelativeSizeAxes = Axes.X;
             AutoSizeAxes = Axes.Y;
-
-            // initialise using sane defaults.
-            // consumers can use the initialiser of `UsernameColour` to override this if they wish to.
-            UsernameColour = !string.IsNullOrEmpty(message.Sender.Colour)
-                ? Color4Extensions.FromHex(message.Sender.Colour)
-                : default_username_colours[message.SenderId % default_username_colours.Length];
         }
 
         [BackgroundDependencyLoader]
-        private void load(OsuConfigManager configManager)
+        private void load(OverlayColourProvider? colourProvider)
         {
-            configManager.BindWith(OsuSetting.Prefer24HourTime, prefer24HourTime);
-            prefer24HourTime.BindValueChanged(_ => updateTimestamp());
+            usernameColour = senderHasColour
+                ? Color4Extensions.FromHex(message.Sender.Colour)
+                : username_colours[message.Sender.Id % username_colours.Length];
 
             InternalChild = new GridContainer
             {
@@ -109,34 +93,45 @@ namespace osu.Game.Overlays.Chat
                 RowDimensions = new[] { new Dimension(GridSizeMode.AutoSize) },
                 ColumnDimensions = new[]
                 {
-                    new Dimension(GridSizeMode.AutoSize),
-                    new Dimension(GridSizeMode.Absolute, Spacing + UsernameWidth + Spacing),
+                    new Dimension(GridSizeMode.Absolute, TimestampWidth + Spacing + UsernameWidth + Spacing),
                     new Dimension(),
                 },
                 Content = new[]
                 {
                     new Drawable[]
                     {
-                        drawableTimestamp = new OsuSpriteText
+                        new Container
                         {
-                            Shadow = false,
-                            Anchor = Anchor.CentreLeft,
-                            Origin = Anchor.CentreLeft,
-                            Font = OsuFont.GetFont(size: FontSize * 0.75f, weight: FontWeight.SemiBold, fixedWidth: true),
-                            AlwaysPresent = true,
-                        },
-                        drawableUsername = new DrawableChatUsername(message.Sender)
-                        {
-                            Width = UsernameWidth,
-                            FontSize = FontSize,
+                            RelativeSizeAxes = Axes.X,
                             AutoSizeAxes = Axes.Y,
-                            Origin = Anchor.TopRight,
-                            Anchor = Anchor.TopRight,
-                            Margin = new MarginPadding { Horizontal = Spacing },
-                            AccentColour = UsernameColour,
-                            Inverted = !string.IsNullOrEmpty(message.Sender.Colour),
+                            Children = new Drawable[]
+                            {
+                                timestamp = new OsuSpriteText
+                                {
+                                    Shadow = false,
+                                    Anchor = Anchor.CentreLeft,
+                                    Origin = Anchor.CentreLeft,
+                                    Font = OsuFont.GetFont(size: TextSize * 0.75f, weight: FontWeight.SemiBold, fixedWidth: true),
+                                    MaxWidth = TimestampWidth,
+                                    Colour = colourProvider?.Background1 ?? Colour4.White,
+                                },
+                                new MessageSender(message.Sender)
+                                {
+                                    Width = UsernameWidth,
+                                    AutoSizeAxes = Axes.Y,
+                                    Origin = Anchor.TopRight,
+                                    Anchor = Anchor.TopRight,
+                                    Child = createUsername(),
+                                    Margin = new MarginPadding { Horizontal = Spacing },
+                                },
+                            },
                         },
-                        drawableContentFlow = new LinkFlowContainer(styleMessageContent)
+                        ContentFlow = new LinkFlowContainer(t =>
+                        {
+                            t.Shadow = false;
+                            t.Font = t.Font.With(size: TextSize, italics: Message.IsAction);
+                            t.Colour = messageHasColour ? Color4Extensions.FromHex(message.Sender.Colour) : colourProvider?.Content1 ?? Colour4.White;
+                        })
                         {
                             AutoSizeAxes = Axes.Y,
                             RelativeSizeAxes = Axes.X,
@@ -150,24 +145,9 @@ namespace osu.Game.Overlays.Chat
         {
             base.LoadComplete();
 
-            drawableTimestamp.Colour = colourProvider?.Background1 ?? Colour4.White;
-
             updateMessageContent();
             FinishTransforms(true);
-
-            if (this.FindClosestParent<PopoverContainer>() != null)
-            {
-                // This guards against cases like in-game chat where there's no available popover container.
-                // There may be a future where a global one becomes available, at which point this code may be unnecessary.
-                //
-                // See:
-                // https://github.com/ppy/osu/pull/23698
-                // https://github.com/ppy/osu/pull/14554
-                drawableUsername.ReportRequested = this.ShowPopover;
-            }
         }
-
-        public Popover GetPopover() => new ReportChatPopover(message);
 
         /// <summary>
         /// Performs a highlight animation on this <see cref="ChatLine"/>.
@@ -181,7 +161,7 @@ namespace osu.Game.Overlays.Chat
                     CornerRadius = 2f,
                     Masking = true,
                     RelativeSizeAxes = Axes.Both,
-                    Colour = drawableUsername.AccentColour.Darken(1f),
+                    Colour = usernameColour.Darken(1f),
                     Depth = float.MaxValue,
                     Child = new Box { RelativeSizeAxes = Axes.Both }
                 });
@@ -191,36 +171,123 @@ namespace osu.Game.Overlays.Chat
             highlight.Expire();
         }
 
-        private void styleMessageContent(SpriteText text)
-        {
-            text.Shadow = false;
-            text.Font = text.Font.With(size: FontSize, italics: Message.IsAction);
-
-            bool messageHasColour = Message.IsAction && !string.IsNullOrEmpty(message.Sender.Colour);
-            text.Colour = messageHasColour ? Color4Extensions.FromHex(message.Sender.Colour) : colourProvider?.Content1 ?? Colour4.White;
-        }
-
         private void updateMessageContent()
         {
             this.FadeTo(message is LocalEchoMessage ? 0.4f : 1.0f, 500, Easing.OutQuint);
-            drawableTimestamp.FadeTo(message is LocalEchoMessage ? 0 : 1, 500, Easing.OutQuint);
+            timestamp.FadeTo(message is LocalEchoMessage ? 0 : 1, 500, Easing.OutQuint);
 
-            updateTimestamp();
-            drawableUsername.Text = $@"{message.Sender.Username}";
+            timestamp.Text = $@"{message.Timestamp.LocalDateTime:HH:mm:ss}";
+            username.Text = $@"{message.Sender.Username}";
 
             // remove non-existent channels from the link list
             message.Links.RemoveAll(link => link.Action == LinkAction.OpenChannel && chatManager?.AvailableChannels.Any(c => c.Name == link.Argument.ToString()) != true);
 
-            drawableContentFlow.Clear();
-            drawableContentFlow.AddLinks(message.DisplayContent, message.Links);
+            ContentFlow.Clear();
+            ContentFlow.AddLinks(message.DisplayContent, message.Links);
         }
 
-        private void updateTimestamp()
+        private Drawable createUsername()
         {
-            drawableTimestamp.Text = message.Timestamp.LocalDateTime.ToLocalisableString(prefer24HourTime.Value ? @"HH:mm:ss" : @"hh:mm:ss tt");
+            username = new OsuSpriteText
+            {
+                Shadow = false,
+                Colour = senderHasColour ? colours.ChatBlue : usernameColour,
+                Truncate = true,
+                EllipsisString = "…",
+                Font = OsuFont.GetFont(size: TextSize, weight: FontWeight.Bold, italics: true),
+                Anchor = Anchor.TopRight,
+                Origin = Anchor.TopRight,
+                MaxWidth = UsernameWidth,
+            };
+
+            if (!senderHasColour)
+                return username;
+
+            // Background effect
+            return new Container
+            {
+                Anchor = Anchor.TopRight,
+                Origin = Anchor.TopRight,
+                AutoSizeAxes = Axes.Both,
+                Masking = true,
+                CornerRadius = 4,
+                EdgeEffect = new EdgeEffectParameters
+                {
+                    Roundness = 1,
+                    Radius = 1,
+                    Colour = Color4.Black.Opacity(0.3f),
+                    Offset = new Vector2(0, 1),
+                    Type = EdgeEffectType.Shadow,
+                },
+                Child = new Container
+                {
+                    AutoSizeAxes = Axes.Both,
+                    Masking = true,
+                    CornerRadius = 4,
+                    Children = new Drawable[]
+                    {
+                        new Box
+                        {
+                            RelativeSizeAxes = Axes.Both,
+                            Colour = usernameColour,
+                        },
+                        new Container
+                        {
+                            AutoSizeAxes = Axes.Both,
+                            Padding = new MarginPadding { Left = 4, Right = 4, Bottom = 1, Top = -2 },
+                            Child = username
+                        }
+                    }
+                }
+            };
         }
 
-        private static readonly Color4[] default_username_colours =
+        private class MessageSender : OsuClickableContainer, IHasContextMenu
+        {
+            private readonly APIUser sender;
+
+            private Action startChatAction = null!;
+
+            [Resolved]
+            private IAPIProvider api { get; set; } = null!;
+
+            public MessageSender(APIUser sender)
+            {
+                this.sender = sender;
+            }
+
+            [BackgroundDependencyLoader]
+            private void load(UserProfileOverlay? profile, ChannelManager? chatManager, ChatOverlay? chatOverlay)
+            {
+                Action = () => profile?.ShowUser(sender);
+                startChatAction = () =>
+                {
+                    chatManager?.OpenPrivateChannel(sender);
+                    chatOverlay?.Show();
+                };
+            }
+
+            public MenuItem[] ContextMenuItems
+            {
+                get
+                {
+                    if (sender.Equals(APIUser.SYSTEM_USER))
+                        return Array.Empty<MenuItem>();
+
+                    List<MenuItem> items = new List<MenuItem>
+                    {
+                        new OsuMenuItem("View Profile", MenuItemType.Highlighted, Action)
+                    };
+
+                    if (!sender.Equals(api.LocalUser.Value))
+                        items.Add(new OsuMenuItem("Start Chat", MenuItemType.Standard, startChatAction));
+
+                    return items.ToArray();
+                }
+            }
+        }
+
+        private static readonly Color4[] username_colours =
         {
             Color4Extensions.FromHex("588c7e"),
             Color4Extensions.FromHex("b2a367"),

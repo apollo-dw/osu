@@ -13,7 +13,7 @@ using osu.Game.Graphics.Sprites;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneOsuFont : OsuTestScene
+    public class TestSceneOsuFont : OsuTestScene
     {
         private OsuSpriteText spriteText;
 

@@ -10,7 +10,7 @@ using osu.Game.Online.Rooms;
 
 namespace osu.Game.Screens.OnlinePlay.Components
 {
-    public partial class OnlinePlayBackgroundSprite : OnlinePlayComposite
+    public class OnlinePlayBackgroundSprite : OnlinePlayComposite
     {
         protected readonly BeatmapSetCoverType BeatmapSetCoverType;
         private UpdateableBeatmapBackgroundSprite sprite;

@@ -16,7 +16,7 @@ using osu.Game.Online.Rooms.RoomStatuses;
 namespace osu.Game.Online.Rooms
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public partial class Room : IDependencyInjectionCandidate
+    public class Room
     {
         [Cached]
         [JsonProperty("id")]
@@ -112,7 +112,7 @@ namespace osu.Game.Online.Rooms
         public readonly Bindable<PlaylistAggregateScore> UserScore = new Bindable<PlaylistAggregateScore>();
 
         [JsonProperty("has_password")]
-        public readonly Bindable<bool> HasPassword = new Bindable<bool>();
+        public readonly BindableBool HasPassword = new BindableBool();
 
         [Cached]
         [JsonProperty("recent_participants")]
@@ -200,6 +200,9 @@ namespace osu.Game.Online.Rooms
             PlaylistItemStats.Value = other.PlaylistItemStats.Value;
             CurrentPlaylistItem.Value = other.CurrentPlaylistItem.Value;
             AutoSkip.Value = other.AutoSkip.Value;
+
+            if (EndDate.Value != null && DateTimeOffset.Now >= EndDate.Value)
+                Status.Value = new RoomStatusEnded();
 
             other.RemoveExpiredPlaylistItems();
 

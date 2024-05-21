@@ -9,7 +9,7 @@ using osu.Game.Overlays.Volume;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneVolumeOverlay : OsuTestScene
+    public class TestSceneVolumeOverlay : OsuTestScene
     {
         private VolumeOverlay volume;
 

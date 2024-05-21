@@ -22,7 +22,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Online
 {
-    public partial class TestSceneBeatmapSetOverlaySuccessRate : OsuTestScene
+    public class TestSceneBeatmapSetOverlaySuccessRate : OsuTestScene
     {
         private GraphExposingSuccessRate successRate;
 
@@ -104,7 +104,7 @@ namespace osu.Game.Tests.Visual.Online
             AddAssert("graph max values correct", () => successRate.ChildrenOfType<BarGraph>().All(graph => graph.MaxValue == 0));
         }
 
-        private partial class GraphExposingSuccessRate : SuccessRate
+        private class GraphExposingSuccessRate : SuccessRate
         {
             public new FailRetryGraph Graph => base.Graph;
         }

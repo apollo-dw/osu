@@ -21,7 +21,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Tests
 {
-    public partial class TestSceneLegacyBeatmapSkin : LegacyBeatmapSkinColourTest
+    public class TestSceneLegacyBeatmapSkin : LegacyBeatmapSkinColourTest
     {
         [Resolved]
         private AudioManager audio { get; set; }
@@ -31,8 +31,6 @@ namespace osu.Game.Rulesets.Osu.Tests
         {
             config.BindWith(OsuSetting.BeatmapSkins, BeatmapSkins);
             config.BindWith(OsuSetting.BeatmapColours, BeatmapColours);
-
-            config.SetValue(OsuSetting.ComboColourNormalisationAmount, 0f);
         }
 
         [TestCase(true, true)]

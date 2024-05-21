@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Net.Http;
 using osu.Framework.IO.Network;
@@ -10,9 +12,9 @@ namespace osu.Game.Online.Rooms
     public class JoinRoomRequest : APIRequest
     {
         public readonly Room Room;
-        public readonly string? Password;
+        public readonly string Password;
 
-        public JoinRoomRequest(Room room, string? password)
+        public JoinRoomRequest(Room room, string password)
         {
             Room = room;
             Password = password;

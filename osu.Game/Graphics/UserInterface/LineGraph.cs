@@ -15,7 +15,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Graphics.UserInterface
 {
-    public partial class LineGraph : Container
+    public class LineGraph : Container
     {
         /// <summary>
         /// Manually set the max value, otherwise <see cref="Enumerable.Max(IEnumerable{float})"/> will be used.

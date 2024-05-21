@@ -13,7 +13,7 @@ using osu.Game.Input.Bindings;
 
 namespace osu.Game.Graphics.UserInterface
 {
-    public partial class BackButton : VisibilityContainer
+    public class BackButton : VisibilityContainer
     {
         public Action Action;
 
@@ -60,7 +60,7 @@ namespace osu.Game.Graphics.UserInterface
             button.FadeOut(400, Easing.OutQuint);
         }
 
-        public partial class Receptor : Drawable, IKeyBindingHandler<GlobalAction>
+        public class Receptor : Drawable, IKeyBindingHandler<GlobalAction>
         {
             public Action OnBackPressed;
 

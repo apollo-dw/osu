@@ -13,7 +13,6 @@ using osu.Framework.Graphics.Primitives;
 using osu.Framework.Graphics.Rendering;
 using osu.Framework.Graphics.Rendering.Vertices;
 using osu.Framework.Graphics.Shaders;
-using osu.Framework.Graphics.Shaders.Types;
 using osu.Framework.Graphics.Textures;
 using osu.Framework.Input;
 using osu.Framework.Input.Events;
@@ -25,7 +24,7 @@ using osuTK.Graphics.ES30;
 
 namespace osu.Game.Rulesets.Osu.UI.Cursor
 {
-    public partial class CursorTrail : Drawable, IRequireHighFrequencyMousePosition
+    public class CursorTrail : Drawable, IRequireHighFrequencyMousePosition
     {
         private const int max_sprites = 2048;
 
@@ -256,23 +255,15 @@ namespace osu.Game.Rulesets.Osu.UI.Cursor
                 Source.parts.CopyTo(parts, 0);
             }
 
-            private IUniformBuffer<CursorTrailParameters> cursorTrailParameters;
-
-            protected override void Draw(IRenderer renderer)
+            public override void Draw(IRenderer renderer)
             {
                 base.Draw(renderer);
 
                 vertexBatch ??= renderer.CreateQuadBatch<TexturedTrailVertex>(max_sprites, 1);
 
-                cursorTrailParameters ??= renderer.CreateUniformBuffer<CursorTrailParameters>();
-                cursorTrailParameters.Data = cursorTrailParameters.Data with
-                {
-                    FadeClock = time,
-                    FadeExponent = fadeExponent
-                };
-
                 shader.Bind();
-                shader.BindUniformBlock("m_CursorTrailParameters", cursorTrailParameters);
+                shader.GetUniform<float>("g_FadeClock").UpdateValue(ref time);
+                shader.GetUniform<float>("g_FadeExponent").UpdateValue(ref fadeExponent);
 
                 texture.Bind();
 
@@ -332,15 +323,6 @@ namespace osu.Game.Rulesets.Osu.UI.Cursor
                 base.Dispose(isDisposing);
 
                 vertexBatch?.Dispose();
-                cursorTrailParameters?.Dispose();
-            }
-
-            [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            private record struct CursorTrailParameters
-            {
-                public UniformFloat FadeClock;
-                public UniformFloat FadeExponent;
-                private readonly UniformPadding8 pad1;
             }
         }
 

@@ -31,7 +31,7 @@ using osu.Game.Tests.Resources;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public partial class TestSceneMultiplayerMatchSongSelect : MultiplayerTestScene
+    public class TestSceneMultiplayerMatchSongSelect : MultiplayerTestScene
     {
         private BeatmapManager manager;
         private RulesetStore rulesets;
@@ -68,14 +68,6 @@ namespace osu.Game.Tests.Visual.Multiplayer
         }
 
         [Test]
-        public void TestSelectFreeMods()
-        {
-            AddStep("set some freemods", () => songSelect.FreeMods.Value = new OsuRuleset().GetModsFor(ModType.Fun).ToArray());
-            AddStep("set all freemods", () => songSelect.FreeMods.Value = new OsuRuleset().CreateAllMods().ToArray());
-            AddStep("set no freemods", () => songSelect.FreeMods.Value = Array.Empty<Mod>());
-        }
-
-        [Test]
         public void TestBeatmapConfirmed()
         {
             BeatmapInfo selectedBeatmap = null;
@@ -102,30 +94,25 @@ namespace osu.Game.Tests.Visual.Multiplayer
         [TestCase(typeof(OsuModHidden), typeof(OsuModTraceable))] // Incompatible.
         public void TestAllowedModDeselectedWhenRequired(Type allowedMod, Type requiredMod)
         {
-            AddStep("change ruleset", () => Ruleset.Value = new OsuRuleset().RulesetInfo);
             AddStep($"select {allowedMod.ReadableName()} as allowed", () => songSelect.FreeMods.Value = new[] { (Mod)Activator.CreateInstance(allowedMod) });
             AddStep($"select {requiredMod.ReadableName()} as required", () => songSelect.Mods.Value = new[] { (Mod)Activator.CreateInstance(requiredMod) });
 
             AddAssert("freemods empty", () => songSelect.FreeMods.Value.Count == 0);
-
-            // A previous test's mod overlay could still be fading out.
-            AddUntilStep("wait for only one freemod overlay", () => this.ChildrenOfType<FreeModSelectOverlay>().Count() == 1);
-
-            assertFreeModNotShown(allowedMod);
-            assertFreeModNotShown(requiredMod);
+            assertHasFreeModButton(allowedMod, false);
+            assertHasFreeModButton(requiredMod, false);
         }
 
-        private void assertFreeModNotShown(Type type)
+        private void assertHasFreeModButton(Type type, bool hasButton = true)
         {
-            AddAssert($"{type.ReadableName()} not displayed in freemod overlay",
+            AddAssert($"{type.ReadableName()} {(hasButton ? "displayed" : "not displayed")} in freemod overlay",
                 () => this.ChildrenOfType<FreeModSelectOverlay>()
                           .Single()
                           .ChildrenOfType<ModPanel>()
-                          .Where(panel => panel.Visible)
+                          .Where(panel => !panel.Filtered.Value)
                           .All(b => b.Mod.GetType() != type));
         }
 
-        private partial class TestMultiplayerMatchSongSelect : MultiplayerMatchSongSelect
+        private class TestMultiplayerMatchSongSelect : MultiplayerMatchSongSelect
         {
             public new Bindable<IReadOnlyList<Mod>> Mods => base.Mods;
 

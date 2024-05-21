@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using osu.Framework.Allocation;
@@ -11,25 +13,24 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input.Events;
+using osu.Framework.Platform;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
-using osu.Game.Graphics.UserInterface;
 using osu.Game.Online.API.Requests.Responses;
 
 namespace osu.Game.Overlays.News
 {
-    public partial class NewsCard : OsuHoverContainer
+    public class NewsCard : OsuHoverContainer
     {
         protected override IEnumerable<Drawable> EffectTargets => new[] { background };
 
         private readonly APINewsPost post;
 
-        private Box background = null!;
-        private TextFlowContainer main = null!;
+        private Box background;
+        private TextFlowContainer main;
 
         public NewsCard(APINewsPost post)
-            : base(HoverSampleSet.Button)
         {
             this.post = post;
 
@@ -40,14 +41,15 @@ namespace osu.Game.Overlays.News
         }
 
         [BackgroundDependencyLoader]
-        private void load(OverlayColourProvider colourProvider, OsuGame? game)
+        private void load(OverlayColourProvider colourProvider, GameHost host)
         {
             if (post.Slug != null)
             {
                 TooltipText = "view in browser";
-                Action = () => game?.OpenUrlExternally(@"/home/news/" + post.Slug);
+                Action = () => host.OpenUrlExternally("https://osu.ppy.sh/home/news/" + post.Slug);
             }
 
+            NewsPostBackground bg;
             AddRange(new Drawable[]
             {
                 background = new Box
@@ -69,14 +71,14 @@ namespace osu.Game.Overlays.News
                             CornerRadius = 6,
                             Children = new Drawable[]
                             {
-                                new DelayedLoadUnloadWrapper(() => new NewsPostBackground(post.FirstImage)
+                                new DelayedLoadWrapper(bg = new NewsPostBackground(post.FirstImage)
                                 {
                                     RelativeSizeAxes = Axes.Both,
                                     FillMode = FillMode.Fill,
                                     Anchor = Anchor.Centre,
                                     Origin = Anchor.Centre,
                                     Alpha = 0
-                                }, timeBeforeUnload: 5000)
+                                })
                                 {
                                     RelativeSizeAxes = Axes.Both
                                 },
@@ -114,13 +116,15 @@ namespace osu.Game.Overlays.News
             IdleColour = colourProvider.Background4;
             HoverColour = colourProvider.Background3;
 
+            bg.OnLoadComplete += d => d.FadeIn(250, Easing.In);
+
             main.AddParagraph(post.Title, t => t.Font = OsuFont.GetFont(size: 20, weight: FontWeight.SemiBold));
             main.AddParagraph(post.Preview, t => t.Font = OsuFont.GetFont(size: 12)); // Should use sans-serif font
             main.AddParagraph("by ", t => t.Font = OsuFont.GetFont(size: 12));
             main.AddText(post.Author, t => t.Font = OsuFont.GetFont(size: 12, weight: FontWeight.SemiBold));
         }
 
-        private partial class DateContainer : CircularContainer, IHasCustomTooltip<DateTimeOffset>
+        private class DateContainer : CircularContainer, IHasCustomTooltip<DateTimeOffset>
         {
             private readonly DateTimeOffset date;
 

@@ -20,7 +20,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Editing
 {
-    public partial class TestSceneDesignSection : OsuManualInputManagerTestScene
+    public class TestSceneDesignSection : OsuManualInputManagerTestScene
     {
         private TestDesignSection designSection;
         private EditorBeatmap editorBeatmap { get; set; }
@@ -97,7 +97,7 @@ namespace osu.Game.Tests.Visual.Editing
             AddAssert($"beatmap value is {expectedFinalValue}", () => editorBeatmap.BeatmapInfo.CountdownOffset == expectedFinalValue);
         }
 
-        private partial class TestDesignSection : DesignSection
+        private class TestDesignSection : DesignSection
         {
             public new LabelledSwitchButton EnableCountdown => base.EnableCountdown;
 

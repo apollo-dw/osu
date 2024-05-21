@@ -24,7 +24,7 @@ using osuTK;
 namespace osu.Game.Rulesets.Mania.Tests
 {
     [TestFixture]
-    public partial class TestSceneStage : ManiaInputTestScene
+    public class TestSceneStage : ManiaInputTestScene
     {
         private const int columns = 4;
 
@@ -91,7 +91,7 @@ namespace osu.Game.Rulesets.Mania.Tests
         {
             foreach (var stage in stages)
             {
-                for (int i = 0; i < stage.Columns.Length; i++)
+                for (int i = 0; i < stage.Columns.Count; i++)
                 {
                     var obj = new Note { Column = i, StartTime = Time.Current + 2000 };
                     obj.ApplyDefaults(new ControlPointInfo(), new BeatmapDifficulty());
@@ -105,7 +105,7 @@ namespace osu.Game.Rulesets.Mania.Tests
         {
             foreach (var stage in stages)
             {
-                for (int i = 0; i < stage.Columns.Length; i++)
+                for (int i = 0; i < stage.Columns.Count; i++)
                 {
                     var obj = new HoldNote { Column = i, StartTime = Time.Current + 2000, Duration = 500 };
                     obj.ApplyDefaults(new ControlPointInfo(), new BeatmapDifficulty());
@@ -117,16 +117,18 @@ namespace osu.Game.Rulesets.Mania.Tests
 
         private void createBarLine(bool major)
         {
-            var obj = new BarLine
-            {
-                StartTime = Time.Current + 2000,
-                Major = major,
-            };
-
-            obj.ApplyDefaults(new ControlPointInfo(), new BeatmapDifficulty());
-
             foreach (var stage in stages)
+            {
+                var obj = new BarLine
+                {
+                    StartTime = Time.Current + 2000,
+                    Major = major,
+                };
+
+                obj.ApplyDefaults(new ControlPointInfo(), new BeatmapDifficulty());
+
                 stage.Add(obj);
+            }
         }
 
         private ScrollingTestContainer createStage(ScrollingDirection direction, ManiaAction action)

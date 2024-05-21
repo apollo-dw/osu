@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Linq;
 using System.Threading;
@@ -54,7 +56,7 @@ namespace osu.Game.Rulesets.Taiko.Objects
             if (IsStrongBindable.Value != strongSamples.Any())
             {
                 if (IsStrongBindable.Value)
-                    Samples.Add(CreateHitSampleInfo(HitSampleInfo.HIT_FINISH));
+                    Samples.Add(new HitSampleInfo(HitSampleInfo.HIT_FINISH));
                 else
                 {
                     foreach (var sample in strongSamples)

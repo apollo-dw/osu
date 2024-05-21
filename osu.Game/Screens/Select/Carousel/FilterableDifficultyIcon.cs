@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Input.Events;
@@ -8,7 +10,7 @@ using osu.Game.Beatmaps.Drawables;
 
 namespace osu.Game.Screens.Select.Carousel
 {
-    public partial class FilterableDifficultyIcon : DifficultyIcon
+    public class FilterableDifficultyIcon : DifficultyIcon
     {
         private readonly BindableBool filtered = new BindableBool();
 

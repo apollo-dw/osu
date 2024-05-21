@@ -58,7 +58,7 @@ namespace osu.Game.Utils
         /// </param>
         public static int NextInt(int maxValue, int seed, int series = 0)
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxValue);
+            if (maxValue <= 0) throw new ArgumentOutOfRangeException(nameof(maxValue));
 
             return (int)(NextULong(seed, series) % (ulong)maxValue);
         }

@@ -13,7 +13,7 @@ using osu.Game.Screens.Play;
 
 namespace osu.Game.Screens.OnlinePlay.Multiplayer
 {
-    public partial class MultiplayerPlayerLoader : PlayerLoader
+    public class MultiplayerPlayerLoader : PlayerLoader
     {
         public bool GameplayPassed => player?.GameplayState.HasPassed == true;
 

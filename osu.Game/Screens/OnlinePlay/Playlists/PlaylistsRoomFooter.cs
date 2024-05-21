@@ -10,7 +10,7 @@ using osuTK;
 
 namespace osu.Game.Screens.OnlinePlay.Playlists
 {
-    public partial class PlaylistsRoomFooter : CompositeDrawable
+    public class PlaylistsRoomFooter : CompositeDrawable
     {
         public Action OnStart;
 

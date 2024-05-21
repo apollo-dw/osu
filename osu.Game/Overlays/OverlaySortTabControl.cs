@@ -24,7 +24,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays
 {
-    public partial class OverlaySortTabControl<T> : CompositeDrawable, IHasCurrentValue<T>
+    public class OverlaySortTabControl<T> : CompositeDrawable, IHasCurrentValue<T>
     {
         public TabControl<T> TabControl { get; }
 
@@ -74,7 +74,7 @@ namespace osu.Game.Overlays
         [NotNull]
         protected virtual SortTabControl CreateControl() => new SortTabControl();
 
-        protected partial class SortTabControl : OsuTabControl<T>
+        protected class SortTabControl : OsuTabControl<T>
         {
             protected override Dropdown<T> CreateDropdown() => null;
 
@@ -93,7 +93,7 @@ namespace osu.Game.Overlays
             }
         }
 
-        protected partial class SortTabItem : TabItem<T>
+        protected class SortTabItem : TabItem<T>
         {
             public SortTabItem(T value)
                 : base(value)
@@ -117,7 +117,7 @@ namespace osu.Game.Overlays
             }
         }
 
-        public partial class TabButton : HeaderButton
+        protected class TabButton : HeaderButton
         {
             public readonly BindableBool Active = new BindableBool();
 

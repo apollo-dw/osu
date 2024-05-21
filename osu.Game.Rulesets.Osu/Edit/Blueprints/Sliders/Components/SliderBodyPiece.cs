@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Collections.Generic;
 using osu.Framework.Allocation;
@@ -11,7 +13,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
 {
-    public partial class SliderBodyPiece : BlueprintPiece<Slider>
+    public class SliderBodyPiece : BlueprintPiece<Slider>
     {
         private readonly ManualSliderBody body;
 
@@ -19,11 +21,6 @@ namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
         /// Offset in absolute (local) coordinates from the start of the curve.
         /// </summary>
         public Vector2 PathStartLocation => body.PathOffset;
-
-        /// <summary>
-        /// Offset in absolute (local) coordinates from the end of the curve.
-        /// </summary>
-        public Vector2 PathEndLocation => body.PathEndOffset;
 
         public SliderBodyPiece()
         {
@@ -43,23 +40,16 @@ namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
             body.BorderColour = colours.Yellow;
         }
 
-        private int? lastVersion;
-
         public override void UpdateFrom(Slider hitObject)
         {
             base.UpdateFrom(hitObject);
 
             body.PathRadius = hitObject.Scale * OsuHitObject.OBJECT_RADIUS;
 
-            if (lastVersion != hitObject.Path.Version.Value)
-            {
-                lastVersion = hitObject.Path.Version.Value;
+            var vertices = new List<Vector2>();
+            hitObject.Path.GetPathToProgress(vertices, 0, 1);
 
-                var vertices = new List<Vector2>();
-                hitObject.Path.GetPathToProgress(vertices, 0, 1);
-
-                body.SetVertices(vertices);
-            }
+            body.SetVertices(vertices);
 
             Size = body.Size;
             OriginPosition = body.PathOffset;

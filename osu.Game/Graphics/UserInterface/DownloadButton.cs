@@ -12,7 +12,7 @@ using osuTK;
 
 namespace osu.Game.Graphics.UserInterface
 {
-    public partial class DownloadButton : GrayButton
+    public class DownloadButton : GrayButton
     {
         [Resolved]
         private OsuColour colours { get; set; }

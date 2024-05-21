@@ -26,7 +26,7 @@ namespace osu.Game.Screens.Play
     /// <summary>
     /// Displays beatmap metadata inside <see cref="PlayerLoader"/>
     /// </summary>
-    public partial class BeatmapMetadataDisplay : Container
+    public class BeatmapMetadataDisplay : Container
     {
         private readonly IWorkingBeatmap beatmap;
         private readonly Bindable<IReadOnlyList<Mod>> mods;
@@ -109,12 +109,12 @@ namespace osu.Game.Screens.Play
                                 new Sprite
                                 {
                                     RelativeSizeAxes = Axes.Both,
-                                    Texture = beatmap.GetBackground(),
+                                    Texture = beatmap.Background,
                                     Origin = Anchor.Centre,
                                     Anchor = Anchor.Centre,
                                     FillMode = FillMode.Fill,
                                 },
-                                loading = new LoadingLayer(dimBackground: true, blockInput: false)
+                                loading = new LoadingLayer(true)
                             }
                         },
                         versionFlow = new FillFlowContainer
@@ -212,7 +212,7 @@ namespace osu.Game.Screens.Play
             };
         }
 
-        private partial class MetadataLineLabel : OsuSpriteText
+        private class MetadataLineLabel : OsuSpriteText
         {
             public MetadataLineLabel(LocalisableString text)
             {
@@ -224,7 +224,7 @@ namespace osu.Game.Screens.Play
             }
         }
 
-        private partial class MetadataLineInfo : OsuSpriteText
+        private class MetadataLineInfo : OsuSpriteText
         {
             public MetadataLineInfo(string text)
             {

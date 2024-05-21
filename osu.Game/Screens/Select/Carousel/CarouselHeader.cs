@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Audio;
 using osu.Framework.Audio.Sample;
@@ -19,7 +21,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Select.Carousel
 {
-    public partial class CarouselHeader : Container
+    public class CarouselHeader : Container
     {
         public Container BorderContainer;
 
@@ -46,8 +48,7 @@ namespace osu.Game.Screens.Select.Carousel
                 Children = new Drawable[]
                 {
                     Content,
-                    hoverLayer = new HoverLayer(),
-                    new HeaderSounds(),
+                    hoverLayer = new HoverLayer()
                 }
             };
         }
@@ -92,9 +93,11 @@ namespace osu.Game.Screens.Select.Carousel
             }
         }
 
-        public partial class HoverLayer : CompositeDrawable
+        public class HoverLayer : HoverSampleDebounceComponent
         {
-            private Box box = null!;
+            private Sample sampleHover;
+
+            private Box box;
 
             public HoverLayer()
             {
@@ -102,7 +105,7 @@ namespace osu.Game.Screens.Select.Carousel
             }
 
             [BackgroundDependencyLoader]
-            private void load(OsuColour colours)
+            private void load(AudioManager audio, OsuColour colours)
             {
                 InternalChild = box = new Box
                 {
@@ -111,6 +114,8 @@ namespace osu.Game.Screens.Select.Carousel
                     Blending = BlendingParameters.Additive,
                     RelativeSizeAxes = Axes.Both,
                 };
+
+                sampleHover = audio.Samples.Get("UI/default-hover");
             }
 
             public bool InsetForBorder
@@ -143,17 +148,6 @@ namespace osu.Game.Screens.Select.Carousel
             {
                 box.FadeOut(1000, Easing.OutQuint);
                 base.OnHoverLost(e);
-            }
-        }
-
-        private partial class HeaderSounds : HoverSampleDebounceComponent
-        {
-            private Sample? sampleHover;
-
-            [BackgroundDependencyLoader]
-            private void load(AudioManager audio)
-            {
-                sampleHover = audio.Samples.Get("UI/default-hover");
             }
 
             public override void PlayHoverSample()

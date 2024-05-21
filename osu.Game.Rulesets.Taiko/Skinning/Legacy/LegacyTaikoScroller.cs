@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -15,7 +17,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Taiko.Skinning.Legacy
 {
-    public partial class LegacyTaikoScroller : CompositeDrawable
+    public class LegacyTaikoScroller : CompositeDrawable
     {
         public Bindable<JudgementResult> LastResult = new Bindable<JudgementResult>();
 
@@ -25,7 +27,7 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Legacy
         }
 
         [BackgroundDependencyLoader(true)]
-        private void load(GameplayState? gameplayState)
+        private void load(GameplayState gameplayState)
         {
             if (gameplayState != null)
                 ((IBindable<JudgementResult>)LastResult).BindTo(gameplayState.LastJudgementResult);
@@ -87,10 +89,10 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Legacy
             }
         }
 
-        private partial class ScrollerSprite : CompositeDrawable
+        private class ScrollerSprite : CompositeDrawable
         {
-            private Sprite passingSprite = null!;
-            private Sprite failingSprite = null!;
+            private Sprite passingSprite;
+            private Sprite failingSprite;
 
             private bool passing = true;
 

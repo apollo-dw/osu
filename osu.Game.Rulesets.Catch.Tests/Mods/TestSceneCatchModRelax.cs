@@ -4,10 +4,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using osu.Framework.Graphics.Containers;
 using osu.Framework.Testing;
 using osu.Game.Beatmaps;
-using osu.Game.Graphics.Cursor;
 using osu.Game.Rulesets.Catch.Mods;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Catch.UI;
@@ -18,7 +16,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Catch.Tests.Mods
 {
-    public partial class TestSceneCatchModRelax : ModTestScene
+    public class TestSceneCatchModRelax : ModTestScene
     {
         protected override Ruleset CreatePlayerRuleset() => new CatchRuleset();
 
@@ -51,26 +49,11 @@ namespace osu.Game.Rulesets.Catch.Tests.Mods
                     {
                         X = CatchPlayfield.CENTER_X,
                         StartTime = 3000,
-                        Path = new SliderPath(PathType.LINEAR, new[] { Vector2.Zero, Vector2.UnitY * 200 })
+                        Path = new SliderPath(PathType.Linear, new[] { Vector2.Zero, Vector2.UnitY * 200 })
                     }
                 }
             }
         });
-
-        [Test]
-        public void TestGameCursorHidden()
-        {
-            CreateModTest(new ModTestData
-            {
-                Mod = new CatchModRelax(),
-                Autoplay = false,
-                PassCondition = () =>
-                {
-                    InputManager.MoveMouseTo(this.ChildrenOfType<DrawableCatchRuleset>().Single());
-                    return this.ChildrenOfType<MenuCursorContainer>().Single().State.Value == Visibility.Hidden;
-                }
-            });
-        }
 
         private bool passCondition()
         {

@@ -7,7 +7,7 @@ using osu.Game.Overlays.Dialog;
 
 namespace osu.Game.Screens.Menu
 {
-    public partial class ConfirmDiscardChangesDialog : PopupDialog
+    public class ConfirmDiscardChangesDialog : PopupDialog
     {
         /// <summary>
         /// Construct a new discard changes confirmation dialog.

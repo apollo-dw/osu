@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,10 +30,10 @@ using osuTK;
 namespace osu.Game.Rulesets.Osu.Tests
 {
     [TestFixture]
-    public partial class TestSceneSliderSnaking : TestSceneOsuPlayer
+    public class TestSceneSliderSnaking : TestSceneOsuPlayer
     {
         [Resolved]
-        private AudioManager audioManager { get; set; } = null!;
+        private AudioManager audioManager { get; set; }
 
         protected override bool Autoplay => autoplay;
         private bool autoplay;
@@ -39,12 +41,12 @@ namespace osu.Game.Rulesets.Osu.Tests
         private readonly BindableBool snakingIn = new BindableBool();
         private readonly BindableBool snakingOut = new BindableBool();
 
-        private IBeatmap beatmap = null!;
+        private IBeatmap beatmap;
 
         private const double duration_of_span = 3605;
         private const double fade_in_modifier = -1200;
 
-        protected override WorkingBeatmap CreateWorkingBeatmap(IBeatmap beatmap, Storyboard? storyboard = null)
+        protected override WorkingBeatmap CreateWorkingBeatmap(IBeatmap beatmap, Storyboard storyboard = null)
             => new ClockBackedTestWorkingBeatmap(this.beatmap = beatmap, storyboard, new FramedClock(new ManualClock { Rate = 1 }), audioManager);
 
         [BackgroundDependencyLoader]
@@ -55,8 +57,15 @@ namespace osu.Game.Rulesets.Osu.Tests
             config.BindWith(OsuRulesetSetting.SnakingOutSliders, snakingOut);
         }
 
-        private Slider slider = null!;
-        private DrawableSlider? drawableSlider;
+        private Slider slider;
+        private DrawableSlider drawableSlider;
+
+        [SetUp]
+        public void Setup() => Schedule(() =>
+        {
+            slider = null;
+            drawableSlider = null;
+        });
 
         protected override bool HasCustomSteps => true;
 
@@ -126,9 +135,9 @@ namespace osu.Game.Rulesets.Osu.Tests
         }
 
         [Test]
-        public void TestRepeatArrowDoesNotMove([Values] bool useAutoplay)
+        public void TestRepeatArrowDoesNotMoveWhenHit()
         {
-            AddStep($"set autoplay to {useAutoplay}", () => autoplay = useAutoplay);
+            AddStep("enable autoplay", () => autoplay = true);
             setSnaking(true);
             CreateTest();
             // repeat might have a chance to update its position depending on where in the frame its hit,
@@ -136,12 +145,21 @@ namespace osu.Game.Rulesets.Osu.Tests
             addCheckPositionChangeSteps(() => 16600, getSliderRepeat, positionAlmostSame);
         }
 
+        [Test]
+        public void TestRepeatArrowMovesWhenNotHit()
+        {
+            AddStep("disable autoplay", () => autoplay = false);
+            setSnaking(true);
+            CreateTest();
+            addCheckPositionChangeSteps(() => 16600, getSliderRepeat, positionDecreased);
+        }
+
         private void retrieveSlider(int index)
         {
             AddStep("retrieve slider at index", () => slider = (Slider)beatmap.HitObjects[index]);
             addSeekStep(() => slider.StartTime);
             AddUntilStep("retrieve drawable slider", () =>
-                (drawableSlider = (DrawableSlider?)Player.DrawableRuleset.Playfield.AllHitObjects.SingleOrDefault(d => d.HitObject == slider)) != null);
+                (drawableSlider = (DrawableSlider)Player.DrawableRuleset.Playfield.AllHitObjects.SingleOrDefault(d => d.HitObject == slider)) != null);
         }
 
         private void addEnsureSnakingInSteps(Func<double> startTime) => addCheckPositionChangeSteps(startTime, getSliderEnd, positionIncreased);
@@ -161,7 +179,7 @@ namespace osu.Game.Rulesets.Osu.Tests
         private Func<double> timeAtRepeat(Func<double> startTime, int repeatIndex) => () => startTime() + 100 + duration_of_span * repeatIndex;
         private Func<Vector2> positionAtRepeat(int repeatIndex) => repeatIndex % 2 == 0 ? getSliderStart : getSliderEnd;
 
-        private List<Vector2> getSliderCurve() => ((PlaySliderBody)drawableSlider!.Body.Drawable).CurrentCurve;
+        private List<Vector2> getSliderCurve() => ((PlaySliderBody)drawableSlider.Body.Drawable).CurrentCurve;
         private Vector2 getSliderStart() => getSliderCurve().First();
         private Vector2 getSliderEnd() => getSliderCurve().Last();
 
@@ -217,7 +235,7 @@ namespace osu.Game.Rulesets.Osu.Tests
             {
                 StartTime = 3000,
                 Position = new Vector2(100, 100),
-                Path = new SliderPath(PathType.PERFECT_CURVE, new[]
+                Path = new SliderPath(PathType.PerfectCurve, new[]
                 {
                     Vector2.Zero,
                     new Vector2(300, 200)
@@ -227,7 +245,7 @@ namespace osu.Game.Rulesets.Osu.Tests
             {
                 StartTime = 13000,
                 Position = new Vector2(100, 100),
-                Path = new SliderPath(PathType.PERFECT_CURVE, new[]
+                Path = new SliderPath(PathType.PerfectCurve, new[]
                 {
                     Vector2.Zero,
                     new Vector2(300, 200)
@@ -238,7 +256,7 @@ namespace osu.Game.Rulesets.Osu.Tests
             {
                 StartTime = 23000,
                 Position = new Vector2(100, 100),
-                Path = new SliderPath(PathType.PERFECT_CURVE, new[]
+                Path = new SliderPath(PathType.PerfectCurve, new[]
                 {
                     Vector2.Zero,
                     new Vector2(300, 200)

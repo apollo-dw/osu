@@ -19,7 +19,7 @@ using osu.Game.Screens.OnlinePlay.Match;
 
 namespace osu.Game.Screens.OnlinePlay.Playlists
 {
-    public partial class PlaylistsLoungeSubScreen : LoungeSubScreen
+    public class PlaylistsLoungeSubScreen : LoungeSubScreen
     {
         [Resolved]
         private IAPIProvider api { get; set; }

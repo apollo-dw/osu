@@ -10,7 +10,7 @@ using osu.Game.Online.API.Requests.Responses;
 
 namespace osu.Game.Beatmaps.Drawables.Cards.Buttons
 {
-    public partial class GoToBeatmapButton : BeatmapCardIconButton
+    public class GoToBeatmapButton : BeatmapCardIconButton
     {
         public IBindable<DownloadState> State => state;
         private readonly Bindable<DownloadState> state = new Bindable<DownloadState>();

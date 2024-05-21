@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Game.Graphics;
@@ -7,7 +9,7 @@ using osu.Game.Skinning;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public partial class DefaultAccuracyCounter : GameplayAccuracyCounter, ISerialisableDrawable
+    public class DefaultAccuracyCounter : GameplayAccuracyCounter, ISkinnableDrawable
     {
         public bool UsesFixedAnchor { get; set; }
 

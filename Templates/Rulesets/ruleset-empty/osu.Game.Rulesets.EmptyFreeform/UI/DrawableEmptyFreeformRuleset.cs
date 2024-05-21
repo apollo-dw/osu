@@ -17,7 +17,7 @@ using osu.Game.Rulesets.UI;
 namespace osu.Game.Rulesets.EmptyFreeform.UI
 {
     [Cached]
-    public partial class DrawableEmptyFreeformRuleset : DrawableRuleset<EmptyFreeformHitObject>
+    public class DrawableEmptyFreeformRuleset : DrawableRuleset<EmptyFreeformHitObject>
     {
         public DrawableEmptyFreeformRuleset(EmptyFreeformRuleset ruleset, IBeatmap beatmap, IReadOnlyList<Mod> mods = null)
             : base(ruleset, beatmap, mods)

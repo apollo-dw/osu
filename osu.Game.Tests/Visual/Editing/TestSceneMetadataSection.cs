@@ -13,7 +13,7 @@ using osu.Game.Screens.Edit.Setup;
 
 namespace osu.Game.Tests.Visual.Editing
 {
-    public partial class TestSceneMetadataSection : OsuTestScene
+    public class TestSceneMetadataSection : OsuTestScene
     {
         [Cached]
         private EditorBeatmap editorBeatmap = new EditorBeatmap(new Beatmap
@@ -141,7 +141,7 @@ namespace osu.Game.Tests.Visual.Editing
             AddAssert($"romanised title is {(editable ? "" : "not ")}editable", () => metadataSection.RomanisedTitleTextBox.ReadOnly == !editable);
         }
 
-        private partial class TestMetadataSection : MetadataSection
+        private class TestMetadataSection : MetadataSection
         {
             public new LabelledTextBox ArtistTextBox => base.ArtistTextBox;
             public new LabelledTextBox RomanisedArtistTextBox => base.RomanisedArtistTextBox;

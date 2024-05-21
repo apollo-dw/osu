@@ -12,7 +12,7 @@ using osu.Game.Online.Multiplayer;
 
 namespace osu.Game.Online.Spectator
 {
-    public partial class OnlineSpectatorClient : SpectatorClient
+    public class OnlineSpectatorClient : SpectatorClient
     {
         private readonly string endpoint;
 
@@ -41,15 +41,13 @@ namespace osu.Game.Online.Spectator
                     connection.On<int, SpectatorState>(nameof(ISpectatorClient.UserBeganPlaying), ((ISpectatorClient)this).UserBeganPlaying);
                     connection.On<int, FrameDataBundle>(nameof(ISpectatorClient.UserSentFrames), ((ISpectatorClient)this).UserSentFrames);
                     connection.On<int, SpectatorState>(nameof(ISpectatorClient.UserFinishedPlaying), ((ISpectatorClient)this).UserFinishedPlaying);
-                    connection.On<int, long>(nameof(ISpectatorClient.UserScoreProcessed), ((ISpectatorClient)this).UserScoreProcessed);
-                    connection.On(nameof(IStatefulUserHubClient.DisconnectRequested), ((IStatefulUserHubClient)this).DisconnectRequested);
                 };
 
                 IsConnected.BindTo(connector.IsConnected);
             }
         }
 
-        protected override async Task BeginPlayingInternal(long? scoreToken, SpectatorState state)
+        protected override async Task BeginPlayingInternal(SpectatorState state)
         {
             if (!IsConnected.Value)
                 return;
@@ -58,7 +56,7 @@ namespace osu.Game.Online.Spectator
 
             try
             {
-                await connection.InvokeAsync(nameof(ISpectatorServer.BeginPlaySession), scoreToken, state).ConfigureAwait(false);
+                await connection.InvokeAsync(nameof(ISpectatorServer.BeginPlaySession), state);
             }
             catch (Exception exception)
             {
@@ -66,8 +64,8 @@ namespace osu.Game.Online.Spectator
                 {
                     Debug.Assert(connector != null);
 
-                    await connector.Reconnect().ConfigureAwait(false);
-                    await BeginPlayingInternal(scoreToken, state).ConfigureAwait(false);
+                    await connector.Reconnect();
+                    await BeginPlayingInternal(state);
                 }
 
                 // Exceptions can occur if, for instance, the locally played beatmap doesn't have a server-side counterpart.
@@ -113,16 +111,6 @@ namespace osu.Game.Online.Spectator
             Debug.Assert(connection != null);
 
             return connection.InvokeAsync(nameof(ISpectatorServer.EndWatchingUser), userId);
-        }
-
-        protected override async Task DisconnectInternal()
-        {
-            await base.DisconnectInternal().ConfigureAwait(false);
-
-            if (connector == null)
-                return;
-
-            await connector.Disconnect().ConfigureAwait(false);
         }
     }
 }

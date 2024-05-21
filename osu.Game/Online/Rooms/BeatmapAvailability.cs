@@ -34,7 +34,6 @@ namespace osu.Game.Online.Rooms
             DownloadProgress = downloadProgress;
         }
 
-        public static BeatmapAvailability Unknown() => new BeatmapAvailability(DownloadState.Unknown);
         public static BeatmapAvailability NotDownloaded() => new BeatmapAvailability(DownloadState.NotDownloaded);
         public static BeatmapAvailability Downloading(float progress) => new BeatmapAvailability(DownloadState.Downloading, progress);
         public static BeatmapAvailability Importing() => new BeatmapAvailability(DownloadState.Importing);

@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -8,12 +10,12 @@ using osu.Game.Tournament.Models;
 
 namespace osu.Game.Tournament.Screens
 {
-    public abstract partial class TournamentScreen : CompositeDrawable
+    public abstract class TournamentScreen : CompositeDrawable
     {
         public const double FADE_DELAY = 200;
 
         [Resolved]
-        protected LadderInfo LadderInfo { get; private set; } = null!;
+        protected LadderInfo LadderInfo { get; private set; }
 
         protected TournamentScreen()
         {

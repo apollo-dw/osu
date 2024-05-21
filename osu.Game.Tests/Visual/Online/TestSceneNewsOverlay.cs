@@ -15,7 +15,7 @@ using osu.Game.Overlays;
 
 namespace osu.Game.Tests.Visual.Online
 {
-    public partial class TestSceneNewsOverlay : OsuTestScene
+    public class TestSceneNewsOverlay : OsuTestScene
     {
         private DummyAPIAccess dummyAPI => (DummyAPIAccess)API;
 

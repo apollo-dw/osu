@@ -3,12 +3,13 @@
 
 using osu.Framework.Graphics;
 using osu.Game.Rulesets.Objects.Drawables;
+using osu.Game.Rulesets.Scoring;
 using osuTK;
 using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.EmptyScrolling.Objects.Drawables
 {
-    public partial class DrawableEmptyScrollingHitObject : DrawableHitObject<EmptyScrollingHitObject>
+    public class DrawableEmptyScrollingHitObject : DrawableHitObject<EmptyScrollingHitObject>
     {
         public DrawableEmptyScrollingHitObject(EmptyScrollingHitObject hitObject)
             : base(hitObject)
@@ -23,7 +24,7 @@ namespace osu.Game.Rulesets.EmptyScrolling.Objects.Drawables
         {
             if (timeOffset >= 0)
                 // todo: implement judgement logic
-                ApplyMaxResult();
+                ApplyResult(r => r.Type = HitResult.Perfect);
         }
 
         protected override void UpdateHitStateTransforms(ArmedState state)

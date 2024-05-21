@@ -1,7 +1,10 @@
-// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
+using JetBrains.Annotations;
 using osuTK;
 using osuTK.Graphics;
 using osu.Framework.Allocation;
@@ -16,20 +19,23 @@ using osu.Game.Overlays;
 
 namespace osu.Game.Graphics.UserInterface
 {
-    public partial class Nub : Container, IHasCurrentValue<bool>, IHasAccentColour
+    public class Nub : Container, IHasCurrentValue<bool>, IHasAccentColour
     {
         public const float HEIGHT = 15;
 
-        public const float DEFAULT_EXPANDED_SIZE = 50;
+        public const float EXPANDED_SIZE = 50;
 
         private const float border_width = 3;
+
+        private const double animate_in_duration = 200;
+        private const double animate_out_duration = 500;
 
         private readonly Box fill;
         private readonly Container main;
 
-        public Nub(float expandedSize = DEFAULT_EXPANDED_SIZE)
+        public Nub()
         {
-            Size = new Vector2(expandedSize, HEIGHT);
+            Size = new Vector2(EXPANDED_SIZE, HEIGHT);
 
             InternalChildren = new[]
             {
@@ -55,7 +61,7 @@ namespace osu.Game.Graphics.UserInterface
         }
 
         [BackgroundDependencyLoader(true)]
-        private void load(OverlayColourProvider? colourProvider, OsuColour colours)
+        private void load([CanBeNull] OverlayColourProvider colourProvider, OsuColour colours)
         {
             AccentColour = colourProvider?.Highlight1 ?? colours.Pink;
             GlowingAccentColour = colourProvider?.Highlight1.Lighten(0.2f) ?? colours.PinkLighter;
@@ -66,7 +72,7 @@ namespace osu.Game.Graphics.UserInterface
                 Colour = GlowColour.Opacity(0),
                 Type = EdgeEffectType.Glow,
                 Radius = 8,
-                Roundness = 4,
+                Roundness = 5,
             };
         }
 
@@ -88,18 +94,13 @@ namespace osu.Game.Graphics.UserInterface
 
                 if (value)
                 {
-                    main.FadeColour(GlowingAccentColour.Lighten(0.5f), 40, Easing.OutQuint)
-                        .Then()
-                        .FadeColour(GlowingAccentColour, 800, Easing.OutQuint);
-
-                    main.FadeEdgeEffectTo(Color4.White.Opacity(0.1f), 40, Easing.OutQuint)
-                        .Then()
-                        .FadeEdgeEffectTo(GlowColour.Opacity(0.1f), 800, Easing.OutQuint);
+                    main.FadeColour(GlowingAccentColour, animate_in_duration, Easing.OutQuint);
+                    main.FadeEdgeEffectTo(0.2f, animate_in_duration, Easing.OutQuint);
                 }
                 else
                 {
-                    main.FadeEdgeEffectTo(GlowColour.Opacity(0), 800, Easing.OutQuint);
-                    main.FadeColour(AccentColour, 800, Easing.OutQuint);
+                    main.FadeEdgeEffectTo(0, animate_out_duration, Easing.OutQuint);
+                    main.FadeColour(AccentColour, animate_out_duration, Easing.OutQuint);
                 }
             }
         }
@@ -111,7 +112,8 @@ namespace osu.Game.Graphics.UserInterface
             get => current;
             set
             {
-                ArgumentNullException.ThrowIfNull(value);
+                if (value == null)
+                    throw new ArgumentNullException(nameof(value));
 
                 current.UnbindBindings();
                 current.BindTo(value);
@@ -161,20 +163,14 @@ namespace osu.Game.Graphics.UserInterface
 
         private void onCurrentValueChanged(ValueChangedEvent<bool> filled)
         {
-            const double duration = 200;
-
-            fill.FadeTo(filled.NewValue ? 1 : 0, duration, Easing.OutQuint);
+            fill.FadeTo(filled.NewValue ? 1 : 0, 200, Easing.OutQuint);
 
             if (filled.NewValue)
-            {
-                main.ResizeWidthTo(1, duration, Easing.OutElasticHalf);
-                main.TransformTo(nameof(BorderThickness), 8.5f, duration, Easing.OutElasticHalf);
-            }
+                main.ResizeWidthTo(1, animate_in_duration, Easing.OutElasticHalf);
             else
-            {
-                main.ResizeWidthTo(0.75f, duration, Easing.OutQuint);
-                main.TransformTo(nameof(BorderThickness), border_width, duration, Easing.OutQuint);
-            }
+                main.ResizeWidthTo(0.9f, animate_out_duration, Easing.OutElastic);
+
+            main.TransformTo(nameof(BorderThickness), filled.NewValue ? 8.5f : border_width, 200, Easing.OutQuint);
         }
     }
 }

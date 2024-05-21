@@ -21,7 +21,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.OSD
 {
-    public partial class TrackedSettingToast : Toast
+    public class TrackedSettingToast : Toast
     {
         private const int lights_bottom_margin = 40;
 
@@ -129,7 +129,7 @@ namespace osu.Game.Overlays.OSD
             sampleChange = audio.Samples.Get("UI/osd-change");
         }
 
-        private partial class OptionLight : Container
+        private class OptionLight : Container
         {
             private Color4 glowingColour, idleColour;
 

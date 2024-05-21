@@ -16,7 +16,7 @@ using osuTK;
 
 namespace osu.Game.Storyboards.Drawables
 {
-    public partial class DrawableStoryboardAnimation : TextureAnimation, IFlippable, IVectorScalable
+    public class DrawableStoryboardAnimation : TextureAnimation, IFlippable, IVectorScalable
     {
         public StoryboardAnimation Animation { get; }
 
@@ -85,7 +85,7 @@ namespace osu.Game.Storyboards.Drawables
             Loop = animation.LoopType == AnimationLoopType.LoopForever;
 
             LifetimeStart = animation.StartTime;
-            LifetimeEnd = animation.EndTimeForDisplay;
+            LifetimeEnd = animation.EndTime;
         }
 
         [Resolved]
@@ -94,19 +94,27 @@ namespace osu.Game.Storyboards.Drawables
         [Resolved]
         private IBeatSyncProvider beatSyncProvider { get; set; }
 
-        [Resolved]
-        private TextureStore textureStore { get; set; }
-
         [BackgroundDependencyLoader]
-        private void load(Storyboard storyboard)
+        private void load(TextureStore textureStore, Storyboard storyboard)
         {
-            if (storyboard.UseSkinSprites)
+            int frameIndex = 0;
+
+            Texture frameTexture = storyboard.GetTextureFromPath(getFramePath(frameIndex), textureStore);
+
+            if (frameTexture != null)
             {
+                // sourcing from storyboard.
+                for (frameIndex = 0; frameIndex < Animation.FrameCount; frameIndex++)
+                {
+                    AddFrame(storyboard.GetTextureFromPath(getFramePath(frameIndex), textureStore), Animation.FrameDelay);
+                }
+            }
+            else if (storyboard.UseSkinSprites)
+            {
+                // fallback to skin if required.
                 skin.SourceChanged += skinSourceChanged;
                 skinSourceChanged();
             }
-            else
-                addFramesFromStoryboardSource();
 
             Animation.ApplyTransforms(this);
         }
@@ -120,7 +128,7 @@ namespace osu.Game.Storyboards.Drawables
             //
             // In the case of storyboard animations, we want to synchronise with game time perfectly
             // so let's get a correct time based on gameplay clock and earliest transform.
-            PlaybackPosition = beatSyncProvider.Clock.CurrentTime - Animation.EarliestTransformTime;
+            PlaybackPosition = (beatSyncProvider.Clock?.CurrentTime ?? Clock.CurrentTime) - Animation.EarliestTransformTime;
         }
 
         private void skinSourceChanged()
@@ -129,28 +137,11 @@ namespace osu.Game.Storyboards.Drawables
 
             // When reading from a skin, we match stables weird behaviour where `FrameCount` is ignored
             // and resources are retrieved until the end of the animation.
-            var skinTextures = skin.GetTextures(Path.ChangeExtension(Animation.Path, null), default, default, true, string.Empty, null, out _);
-
-            if (skinTextures.Length > 0)
-            {
-                foreach (var texture in skinTextures)
-                    AddFrame(texture, Animation.FrameDelay);
-            }
-            else
-            {
-                addFramesFromStoryboardSource();
-            }
+            foreach (var texture in skin.GetTextures(Path.GetFileNameWithoutExtension(Animation.Path), default, default, true, string.Empty, out _))
+                AddFrame(texture, Animation.FrameDelay);
         }
 
-        private void addFramesFromStoryboardSource()
-        {
-            int frameIndex;
-            // sourcing from storyboard.
-            for (frameIndex = 0; frameIndex < Animation.FrameCount; frameIndex++)
-                AddFrame(textureStore.Get(getFramePath(frameIndex)), Animation.FrameDelay);
-
-            string getFramePath(int i) => Animation.Path.Replace(".", $"{i}.");
-        }
+        private string getFramePath(int i) => Animation.Path.Replace(".", $"{i}.");
 
         protected override void Dispose(bool isDisposing)
         {

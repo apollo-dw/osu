@@ -10,7 +10,7 @@ using osu.Game.Screens.Edit.Setup;
 
 namespace osu.Game.Rulesets.Osu.Edit.Setup
 {
-    public partial class OsuSetupSection : RulesetSetupSection
+    public class OsuSetupSection : RulesetSetupSection
     {
         private LabelledSliderBar<float> stackLeniency;
 

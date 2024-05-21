@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
@@ -20,7 +21,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning
 {
-    public abstract partial class SmokeSegment : Drawable, ITexturedShaderDrawable
+    public abstract class SmokeSegment : Drawable, ITexturedShaderDrawable
     {
         // fade anim values
         private const double initial_fade_out_duration = 4000;
@@ -48,16 +49,15 @@ namespace osu.Game.Rulesets.Osu.Skinning
         private const float max_rotation = 0.25f;
 
         public IShader? TextureShader { get; private set; }
+        public IShader? RoundedTextureShader { get; private set; }
 
         protected Texture? Texture { get; set; }
 
-        private float height => Texture?.DisplayHeight * 0.165f ?? 3;
-
-        private float width => Texture?.DisplayWidth * 0.165f ?? 3;
+        private float radius => Texture?.DisplayWidth * 0.165f ?? 3;
 
         protected readonly List<SmokePoint> SmokePoints = new List<SmokePoint>();
 
-        private float pointInterval => width * 7f / 8;
+        private float pointInterval => radius * 7f / 8;
 
         private double smokeStartTime { get; set; } = double.MinValue;
 
@@ -69,6 +69,7 @@ namespace osu.Game.Rulesets.Osu.Skinning
         [BackgroundDependencyLoader]
         private void load(ShaderManager shaders)
         {
+            RoundedTextureShader = shaders.Load(VertexShaderDescriptor.TEXTURE_2, FragmentShaderDescriptor.TEXTURE_ROUNDED);
             TextureShader = shaders.Load(VertexShaderDescriptor.TEXTURE_2, FragmentShaderDescriptor.TEXTURE);
         }
 
@@ -180,8 +181,7 @@ namespace osu.Game.Rulesets.Osu.Skinning
 
             private readonly List<SmokePoint> points = new List<SmokePoint>();
             private IVertexBatch<TexturedVertex2D>? quadBatch;
-            private float width;
-            private float height;
+            private float radius;
             private Vector2 drawSize;
             private Texture? texture;
             private int rotationSeed;
@@ -204,8 +204,7 @@ namespace osu.Game.Rulesets.Osu.Skinning
             {
                 base.ApplyState();
 
-                width = Source.width;
-                height = Source.height;
+                radius = Source.radius;
                 drawSize = Source.DrawSize;
                 texture = Source.Texture;
 
@@ -227,12 +226,10 @@ namespace osu.Game.Rulesets.Osu.Skinning
                 int futurePointIndex = ~Source.SmokePoints.BinarySearch(new SmokePoint { Time = CurrentTime }, new SmokePoint.UpperBoundComparer());
 
                 points.Clear();
-
-                for (int i = firstVisiblePointIndex; i < futurePointIndex; i++)
-                    points.Add(Source.SmokePoints[i]);
+                points.AddRange(Source.SmokePoints.Skip(firstVisiblePointIndex).Take(futurePointIndex - firstVisiblePointIndex));
             }
 
-            protected sealed override void Draw(IRenderer renderer)
+            public sealed override void Draw(IRenderer renderer)
             {
                 base.Draw(renderer);
 
@@ -250,17 +247,18 @@ namespace osu.Game.Rulesets.Osu.Skinning
                 texture ??= renderer.WhitePixel;
                 RectangleF textureRect = texture.GetTextureRect();
 
+                var shader = GetAppropriateShader(renderer);
+
                 renderer.SetBlend(BlendingParameters.Additive);
                 renderer.PushLocalMatrix(DrawInfo.Matrix);
 
-                BindTextureShader(renderer);
-
+                shader.Bind();
                 texture.Bind();
 
                 for (int i = 0; i < points.Count; i++)
-                    drawPointQuad(renderer, points[i], textureRect, i + firstVisiblePointIndex);
+                    drawPointQuad(points[i], textureRect, i + firstVisiblePointIndex);
 
-                UnbindTextureShader(renderer);
+                shader.Unbind();
                 renderer.PopLocalMatrix();
             }
 
@@ -326,7 +324,7 @@ namespace osu.Game.Rulesets.Osu.Skinning
 
             private float getRotation(int index) => max_rotation * (StatelessRNG.NextSingle(rotationSeed, index) * 2 - 1);
 
-            private void drawPointQuad(IRenderer renderer, SmokePoint point, RectangleF textureRect, int index)
+            private void drawPointQuad(SmokePoint point, RectangleF textureRect, int index)
             {
                 Debug.Assert(quadBatch != null);
 
@@ -340,33 +338,31 @@ namespace osu.Game.Rulesets.Osu.Skinning
 
                 var dir = PointDirection(point, index);
                 var ortho = dir.PerpendicularLeft;
-                dir *= scale * width;
-                ortho *= scale * height;
 
-                var localTopLeft = point.Position - ortho - dir;
-                var localTopRight = point.Position - ortho + dir;
-                var localBotLeft = point.Position + ortho - dir;
-                var localBotRight = point.Position + ortho + dir;
+                var localTopLeft = point.Position + (radius * scale * (-ortho - dir));
+                var localTopRight = point.Position + (radius * scale * (-ortho + dir));
+                var localBotLeft = point.Position + (radius * scale * (ortho - dir));
+                var localBotRight = point.Position + (radius * scale * (ortho + dir));
 
-                quadBatch.Add(new TexturedVertex2D(renderer)
+                quadBatch.Add(new TexturedVertex2D
                 {
                     Position = localTopLeft,
                     TexturePosition = textureRect.TopLeft,
                     Colour = Color4Extensions.Multiply(ColourAtPosition(localTopLeft), colour),
                 });
-                quadBatch.Add(new TexturedVertex2D(renderer)
+                quadBatch.Add(new TexturedVertex2D
                 {
                     Position = localTopRight,
                     TexturePosition = textureRect.TopRight,
                     Colour = Color4Extensions.Multiply(ColourAtPosition(localTopRight), colour),
                 });
-                quadBatch.Add(new TexturedVertex2D(renderer)
+                quadBatch.Add(new TexturedVertex2D
                 {
                     Position = localBotRight,
                     TexturePosition = textureRect.BottomRight,
                     Colour = Color4Extensions.Multiply(ColourAtPosition(localBotRight), colour),
                 });
-                quadBatch.Add(new TexturedVertex2D(renderer)
+                quadBatch.Add(new TexturedVertex2D
                 {
                     Position = localBotLeft,
                     TexturePosition = textureRect.BottomLeft,

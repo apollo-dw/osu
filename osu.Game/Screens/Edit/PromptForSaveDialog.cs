@@ -1,18 +1,19 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using osu.Framework.Graphics.Sprites;
 using osu.Game.Overlays.Dialog;
-using osu.Game.Localisation;
 
 namespace osu.Game.Screens.Edit
 {
-    public partial class PromptForSaveDialog : PopupDialog
+    public class PromptForSaveDialog : PopupDialog
     {
         public PromptForSaveDialog(Action exit, Action saveAndExit, Action cancel)
         {
-            HeaderText = EditorDialogsStrings.SaveDialogHeader;
+            HeaderText = "Did you want to save your changes?";
 
             Icon = FontAwesome.Regular.Save;
 
@@ -20,17 +21,17 @@ namespace osu.Game.Screens.Edit
             {
                 new PopupDialogOkButton
                 {
-                    Text = EditorDialogsStrings.Save,
+                    Text = @"Save my masterpiece!",
                     Action = saveAndExit
                 },
                 new PopupDialogDangerousButton
                 {
-                    Text = EditorDialogsStrings.ForgetAllChanges,
+                    Text = @"Forget all changes",
                     Action = exit
                 },
                 new PopupDialogCancelButton
                 {
-                    Text = EditorDialogsStrings.ContinueEditing,
+                    Text = @"Oops, continue editing",
                     Action = cancel
                 },
             };

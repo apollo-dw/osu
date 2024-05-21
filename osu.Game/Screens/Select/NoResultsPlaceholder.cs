@@ -17,7 +17,7 @@ using osuTK;
 
 namespace osu.Game.Screens.Select
 {
-    public partial class NoResultsPlaceholder : VisibilityContainer
+    public class NoResultsPlaceholder : VisibilityContainer
     {
         private FilterCriteria? filter;
 

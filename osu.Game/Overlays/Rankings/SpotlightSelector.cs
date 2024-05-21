@@ -24,7 +24,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Rankings
 {
-    public partial class SpotlightSelector : CompositeDrawable, IHasCurrentValue<APISpotlight>
+    public class SpotlightSelector : CompositeDrawable, IHasCurrentValue<APISpotlight>
     {
         private readonly BindableWithCurrent<APISpotlight> current = new BindableWithCurrent<APISpotlight>();
         public readonly Bindable<RankingsSortCriteria> Sort = new Bindable<RankingsSortCriteria>();
@@ -63,7 +63,7 @@ namespace osu.Game.Overlays.Rankings
                 {
                     RelativeSizeAxes = Axes.X,
                     AutoSizeAxes = Axes.Y,
-                    Padding = new MarginPadding { Horizontal = WaveOverlayContainer.HORIZONTAL_PADDING },
+                    Padding = new MarginPadding { Horizontal = UserProfileOverlay.CONTENT_X_MARGIN },
                     Child = new FillFlowContainer
                     {
                         RelativeSizeAxes = Axes.X,
@@ -133,7 +133,7 @@ namespace osu.Game.Overlays.Rankings
 
         private LocalisableString dateToString(DateTimeOffset date) => date.ToLocalisableString(@"yyyy-MM-dd");
 
-        private partial class InfoColumn : FillFlowContainer
+        private class InfoColumn : FillFlowContainer
         {
             public LocalisableString Value
             {
@@ -175,7 +175,7 @@ namespace osu.Game.Overlays.Rankings
             }
         }
 
-        private partial class SpotlightsDropdown : OsuDropdown<APISpotlight>
+        private class SpotlightsDropdown : OsuDropdown<APISpotlight>
         {
             private OsuDropdownMenu menu;
 
@@ -192,7 +192,7 @@ namespace osu.Game.Overlays.Rankings
                 Padding = new MarginPadding { Vertical = 20 };
             }
 
-            private partial class SpotlightsDropdownHeader : OsuDropdownHeader
+            private class SpotlightsDropdownHeader : OsuDropdownHeader
             {
                 public SpotlightsDropdownHeader()
                 {

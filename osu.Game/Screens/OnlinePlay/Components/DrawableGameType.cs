@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Framework.Extensions;
@@ -17,7 +19,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.OnlinePlay.Components
 {
-    public partial class DrawableGameType : CircularContainer, IHasTooltip
+    public class DrawableGameType : CircularContainer, IHasTooltip
     {
         private readonly MatchType type;
 
@@ -39,7 +41,7 @@ namespace osu.Game.Screens.OnlinePlay.Components
         }
 
         [Resolved]
-        private OsuColour colours { get; set; } = null!;
+        private OsuColour colours { get; set; }
 
         [BackgroundDependencyLoader]
         private void load()
@@ -130,7 +132,7 @@ namespace osu.Game.Screens.OnlinePlay.Components
             }
         }
 
-        private partial class VersusRow : FillFlowContainer
+        private class VersusRow : FillFlowContainer
         {
             public VersusRow(Color4 first, Color4 second, float size)
             {

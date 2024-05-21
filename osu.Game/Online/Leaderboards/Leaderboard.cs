@@ -31,7 +31,7 @@ namespace osu.Game.Online.Leaderboards
     /// </summary>
     /// <typeparam name="TScope">The scope of the leaderboard (ie. global or local).</typeparam>
     /// <typeparam name="TScoreInfo">The score model class.</typeparam>
-    public abstract partial class Leaderboard<TScope, TScoreInfo> : CompositeDrawable
+    public abstract class Leaderboard<TScope, TScoreInfo> : CompositeDrawable
     {
         /// <summary>
         /// The currently displayed scores.
@@ -153,15 +153,6 @@ namespace osu.Game.Online.Leaderboards
         public void RefetchScores() => Scheduler.AddOnce(refetchScores);
 
         /// <summary>
-        /// Clear all scores from the display.
-        /// </summary>
-        public void ClearScores()
-        {
-            cancelPendingWork();
-            SetScores(null);
-        }
-
-        /// <summary>
         /// Call when a retrieval or display failure happened to show a relevant message to the user.
         /// </summary>
         /// <param name="state">The state to display.</param>
@@ -229,7 +220,9 @@ namespace osu.Game.Online.Leaderboards
         {
             Debug.Assert(ThreadSafety.IsUpdateThread);
 
-            ClearScores();
+            cancelPendingWork();
+
+            SetScores(null);
             setState(LeaderboardState.Retrieving);
 
             currentFetchCancellationSource = new CancellationTokenSource();
@@ -287,7 +280,7 @@ namespace osu.Game.Online.Leaderboards
 
                 double delay = 0;
 
-                foreach (var s in scoreFlowContainer)
+                foreach (var s in scoreFlowContainer.Children)
                 {
                     using (s.BeginDelayedSequence(delay))
                         s.Show();
@@ -384,7 +377,7 @@ namespace osu.Game.Online.Leaderboards
             if (scoreFlowContainer == null)
                 return;
 
-            foreach (var c in scoreFlowContainer)
+            foreach (var c in scoreFlowContainer.Children)
             {
                 float topY = c.ToSpaceOfOtherDrawable(Vector2.Zero, scoreFlowContainer).Y;
                 float bottomY = topY + LeaderboardScore.HEIGHT;

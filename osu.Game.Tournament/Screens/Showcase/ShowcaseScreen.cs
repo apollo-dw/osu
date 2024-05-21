@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -12,7 +14,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tournament.Screens.Showcase
 {
-    public partial class ShowcaseScreen : BeatmapInfoScreen
+    public class ShowcaseScreen : BeatmapInfoScreen
     {
         [BackgroundDependencyLoader]
         private void load()
@@ -42,7 +44,7 @@ namespace osu.Game.Tournament.Screens.Showcase
             });
         }
 
-        protected override void CurrentMatchChanged(ValueChangedEvent<TournamentMatch?> match)
+        protected override void CurrentMatchChanged(ValueChangedEvent<TournamentMatch> match)
         {
             // showcase screen doesn't care about a match being selected.
             // base call intentionally omitted to not show match warning.

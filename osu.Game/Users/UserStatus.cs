@@ -1,8 +1,8 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
-using System.ComponentModel;
+#nullable disable
+
 using osu.Framework.Localisation;
 using osuTK.Graphics;
 using osu.Game.Graphics;
@@ -10,36 +10,32 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Users
 {
-    public enum UserStatus
+    public abstract class UserStatus
     {
-        [LocalisableDescription(typeof(UsersStrings), nameof(UsersStrings.StatusOffline))]
-        Offline,
-
-        [Description("Do not disturb")]
-        DoNotDisturb,
-
-        [LocalisableDescription(typeof(UsersStrings), nameof(UsersStrings.StatusOnline))]
-        Online,
+        public abstract LocalisableString Message { get; }
+        public abstract Color4 GetAppropriateColour(OsuColour colours);
     }
 
-    public static class UserStatusExtensions
+    public class UserStatusOnline : UserStatus
     {
-        public static Color4 GetAppropriateColour(this UserStatus userStatus, OsuColour colours)
-        {
-            switch (userStatus)
-            {
-                case UserStatus.Offline:
-                    return Color4.Black;
+        public override LocalisableString Message => UsersStrings.StatusOnline;
+        public override Color4 GetAppropriateColour(OsuColour colours) => colours.GreenLight;
+    }
 
-                case UserStatus.DoNotDisturb:
-                    return colours.RedDark;
+    public abstract class UserStatusBusy : UserStatusOnline
+    {
+        public override Color4 GetAppropriateColour(OsuColour colours) => colours.YellowDark;
+    }
 
-                case UserStatus.Online:
-                    return colours.GreenDark;
+    public class UserStatusOffline : UserStatus
+    {
+        public override LocalisableString Message => UsersStrings.StatusOffline;
+        public override Color4 GetAppropriateColour(OsuColour colours) => Color4.Black;
+    }
 
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(userStatus), userStatus, "Unsupported user status");
-            }
-        }
+    public class UserStatusDoNotDisturb : UserStatus
+    {
+        public override LocalisableString Message => "Do not disturb";
+        public override Color4 GetAppropriateColour(OsuColour colours) => colours.RedDark;
     }
 }

@@ -20,7 +20,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.OnlinePlay.Multiplayer.Participants
 {
-    internal partial class TeamDisplay : MultiplayerRoomComposite
+    internal class TeamDisplay : MultiplayerRoomComposite
     {
         private readonly MultiplayerRoomUser user;
 

@@ -23,12 +23,9 @@ namespace osu.Game.Online.Multiplayer
 
                     Debug.Assert(exception != null);
 
-                    if (exception.GetHubExceptionMessage() is string message)
-                        // Hub exceptions generally contain something we can show the user directly.
-                        Logger.Log(message, level: LogLevel.Important);
-                    else
-                        Logger.Error(exception, $"Unobserved exception occurred via {nameof(FireAndForget)} call: {exception.Message}");
+                    string message = exception.GetHubExceptionMessage() ?? exception.Message;
 
+                    Logger.Log(message, level: LogLevel.Important);
                     onError?.Invoke(exception);
                 }
                 else

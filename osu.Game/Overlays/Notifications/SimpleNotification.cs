@@ -14,7 +14,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.Notifications
 {
-    public partial class SimpleNotification : Notification
+    public class SimpleNotification : Notification
     {
         private LocalisableString text;
 

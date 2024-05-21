@@ -13,7 +13,7 @@ using osu.Game.Graphics.UserInterface;
 
 namespace osu.Game.Graphics.UserInterfaceV2
 {
-    public partial class LabelledTextBox : LabelledComponent<OsuTextBox, string>
+    public class LabelledTextBox : LabelledComponent<OsuTextBox, string>
     {
         public event TextBox.OnCommitHandler OnCommit;
 
@@ -35,7 +35,6 @@ namespace osu.Game.Graphics.UserInterfaceV2
 
         public string Text
         {
-            get => Component.Text;
             set => Component.Text = value;
         }
 

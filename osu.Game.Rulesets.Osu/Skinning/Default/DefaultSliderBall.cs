@@ -15,7 +15,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Default
 {
-    public partial class DefaultSliderBall : CompositeDrawable
+    public class DefaultSliderBall : CompositeDrawable
     {
         private Box box = null!;
 

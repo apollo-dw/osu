@@ -20,7 +20,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneSectionsContainer : OsuManualInputManagerTestScene
+    public class TestSceneSectionsContainer : OsuManualInputManagerTestScene
     {
         private SectionsContainer<TestSection> container;
         private float custom;
@@ -78,24 +78,6 @@ namespace osu.Game.Tests.Visual.UserInterface
                     Height = 200,
                     BackgroundColour = new OsuColour().Green4,
                 });
-        }
-
-        [Test]
-        public void TestCorrectScrollToWhenContentLoads()
-        {
-            AddRepeatStep("add many sections", () => append(1f), 3);
-
-            AddStep("add section with delayed load content", () =>
-            {
-                container.Add(new TestDelayedLoadSection("delayed"));
-            });
-
-            AddStep("add final section", () => append(0.5f));
-
-            AddStep("scroll to final section", () => container.ScrollTo(container.Children.Last()));
-
-            AddUntilStep("correct section selected", () => container.SelectedSection.Value == container.Children.Last());
-            AddUntilStep("wait for scroll to section", () => container.ScreenSpaceDrawQuad.AABBFloat.Contains(container.Children.Last().ScreenSpaceDrawQuad.AABBFloat));
         }
 
         [Test]
@@ -214,34 +196,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             InputManager.ScrollVerticalBy(direction);
         }
 
-        private partial class TestDelayedLoadSection : TestSection
-        {
-            public TestDelayedLoadSection(string label)
-                : base(label)
-            {
-                BackgroundColour = default_colour;
-                Width = 300;
-                AutoSizeAxes = Axes.Y;
-            }
-
-            protected override void LoadComplete()
-            {
-                base.LoadComplete();
-
-                Box box;
-
-                Add(box = new Box
-                {
-                    Alpha = 0.01f,
-                    RelativeSizeAxes = Axes.X,
-                });
-
-                // Emulate an operation that will be inhibited by IsMaskedAway.
-                box.ResizeHeightTo(2000, 50);
-            }
-        }
-
-        private partial class TestSection : TestBox
+        private class TestSection : TestBox
         {
             public bool Selected
             {
@@ -255,7 +210,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             }
         }
 
-        private partial class TestBox : Container
+        private class TestBox : Container
         {
             private readonly Box background;
             private readonly OsuSpriteText text;

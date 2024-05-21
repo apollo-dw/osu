@@ -12,14 +12,13 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Localisation;
-using osu.Game.Graphics;
 using osu.Game.Localisation;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Changelog
 {
-    public partial class ChangelogHeader : BreadcrumbControlOverlayHeader
+    public class ChangelogHeader : BreadcrumbControlOverlayHeader
     {
         public readonly Bindable<APIChangelogBuild> Build = new Bindable<APIChangelogBuild>();
 
@@ -94,7 +93,7 @@ namespace osu.Game.Overlays.Changelog
                     AutoSizeAxes = Axes.Y,
                     Padding = new MarginPadding
                     {
-                        Horizontal = WaveOverlayContainer.HORIZONTAL_PADDING - ChangelogUpdateStreamItem.PADDING,
+                        Horizontal = 65,
                         Vertical = 20
                     },
                     Child = Streams = new ChangelogUpdateStreamControl { Current = currentStream },
@@ -118,13 +117,13 @@ namespace osu.Game.Overlays.Changelog
             currentStream.Value = Streams.Items.FirstOrDefault(s => s.Name == Build.Value.UpdateStream.Name);
         }
 
-        private partial class ChangelogHeaderTitle : OverlayTitle
+        private class ChangelogHeaderTitle : OverlayTitle
         {
             public ChangelogHeaderTitle()
             {
                 Title = PageTitleStrings.MainChangelogControllerDefault;
                 Description = NamedOverlayComponentStrings.ChangelogDescription;
-                Icon = OsuIcon.ChangelogB;
+                IconTexture = "Icons/Hexacons/devtools";
             }
         }
     }

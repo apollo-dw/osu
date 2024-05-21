@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.UserInterface;
@@ -16,7 +18,7 @@ using osu.Game.Graphics.Containers;
 
 namespace osu.Game.Overlays
 {
-    public partial class OverlayRulesetTabItem : TabItem<RulesetInfo>, IHasTooltip
+    public class OverlayRulesetTabItem : TabItem<RulesetInfo>, IHasTooltip
     {
         private Color4 accentColour;
 
@@ -33,7 +35,7 @@ namespace osu.Game.Overlays
         protected override Container<Drawable> Content { get; }
 
         [Resolved]
-        private OverlayColourProvider colourProvider { get; set; } = null!;
+        private OverlayColourProvider colourProvider { get; set; }
 
         private readonly Drawable icon;
 

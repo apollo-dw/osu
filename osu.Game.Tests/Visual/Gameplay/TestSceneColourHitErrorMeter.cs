@@ -19,7 +19,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {
-    public partial class TestSceneColourHitErrorMeter : OsuTestScene
+    public class TestSceneColourHitErrorMeter : OsuTestScene
     {
         private DependencyProvidingContainer dependencyContainer = null!;
 

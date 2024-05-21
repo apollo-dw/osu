@@ -15,7 +15,7 @@ using osu.Game.Rulesets.Osu.Objects.Drawables;
 
 namespace osu.Game.Rulesets.Osu.Tests.Mods
 {
-    public partial class TestSceneOsuModDifficultyAdjust : OsuModTestScene
+    public class TestSceneOsuModDifficultyAdjust : OsuModTestScene
     {
         [Test]
         public void TestNoAdjustment() => CreateModTest(new ModTestData

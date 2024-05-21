@@ -7,12 +7,12 @@ using osu.Game.Overlays.Dialog;
 
 namespace osu.Game.Screens.Edit
 {
-    public partial class DeleteDifficultyConfirmationDialog : DangerousActionDialog
+    public class DeleteDifficultyConfirmationDialog : DeleteConfirmationDialog
     {
         public DeleteDifficultyConfirmationDialog(BeatmapInfo beatmapInfo, Action deleteAction)
         {
             BodyText = $"\"{beatmapInfo.DifficultyName}\" difficulty";
-            DangerousAction = deleteAction;
+            DeleteAction = deleteAction;
         }
     }
 }

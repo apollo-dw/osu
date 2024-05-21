@@ -10,7 +10,6 @@ using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Layout;
-using osu.Game.Configuration;
 using osu.Game.Graphics;
 using osu.Game.Rulesets.Edit;
 using osu.Game.Rulesets.Objects;
@@ -22,7 +21,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
     /// <summary>
     /// A grid which takes user input and returns a quantized ("snapped") position and time.
     /// </summary>
-    public abstract partial class DistanceSnapGrid : CompositeDrawable
+    public abstract class DistanceSnapGrid : CompositeDrawable
     {
         /// <summary>
         /// The spacing between each tick of the beat snapping grid.
@@ -61,18 +60,6 @@ namespace osu.Game.Screens.Edit.Compose.Components
         [Resolved]
         private BindableBeatDivisor beatDivisor { get; set; }
 
-        /// <summary>
-        /// When enabled, distance snap should only snap to the current time (as per the editor clock).
-        /// This is to emulate stable behaviour.
-        /// </summary>
-        protected Bindable<bool> LimitedDistanceSnap { get; private set; }
-
-        [BackgroundDependencyLoader]
-        private void load(OsuConfigManager config)
-        {
-            LimitedDistanceSnap = config.GetBindable<bool>(OsuSetting.EditorLimitedDistanceSnap);
-        }
-
         private readonly LayoutValue gridCache = new LayoutValue(Invalidation.RequiredParentSizeToFit);
 
         protected readonly HitObject ReferenceObject;
@@ -110,7 +97,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
         private void updateSpacing()
         {
             float distanceSpacingMultiplier = (float)DistanceSpacingMultiplier.Value;
-            float beatSnapDistance = SnapProvider.GetBeatSnapDistanceAt(ReferenceObject, false);
+            float beatSnapDistance = SnapProvider.GetBeatSnapDistanceAt(ReferenceObject);
 
             DistanceBetweenTicks = beatSnapDistance * distanceSpacingMultiplier;
 

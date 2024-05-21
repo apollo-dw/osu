@@ -13,15 +13,16 @@ using osuTK;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Localisation;
+using osu.Game.Graphics.UserInterface;
 using osu.Framework.Screens;
 using osu.Game.Graphics.Containers;
 using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.Settings.Sections.Maintenance
 {
-    public abstract partial class DirectorySelectScreen : OsuScreen
+    public abstract class DirectorySelectScreen : OsuScreen
     {
-        private RoundedButton selectionButton;
+        private TriangleButton selectionButton;
 
         private OsuDirectorySelector directorySelector;
 
@@ -100,7 +101,7 @@ namespace osu.Game.Overlays.Settings.Sections.Maintenance
                             },
                             new Drawable[]
                             {
-                                selectionButton = new RoundedButton
+                                selectionButton = new TriangleButton
                                 {
                                     Anchor = Anchor.Centre,
                                     Origin = Anchor.Centre,

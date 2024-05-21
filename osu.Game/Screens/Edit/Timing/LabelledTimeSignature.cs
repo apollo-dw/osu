@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -14,7 +16,7 @@ using osu.Game.Graphics.UserInterfaceV2;
 
 namespace osu.Game.Screens.Edit.Timing
 {
-    public partial class LabelledTimeSignature : LabelledComponent<LabelledTimeSignature.TimeSignatureBox, TimeSignature>
+    public class LabelledTimeSignature : LabelledComponent<LabelledTimeSignature.TimeSignatureBox, TimeSignature>
     {
         public LabelledTimeSignature()
             : base(false)
@@ -23,7 +25,7 @@ namespace osu.Game.Screens.Edit.Timing
 
         protected override TimeSignatureBox CreateComponent() => new TimeSignatureBox();
 
-        public partial class TimeSignatureBox : CompositeDrawable, IHasCurrentValue<TimeSignature>
+        public class TimeSignatureBox : CompositeDrawable, IHasCurrentValue<TimeSignature>
         {
             private readonly BindableWithCurrent<TimeSignature> current = new BindableWithCurrent<TimeSignature>(TimeSignature.SimpleQuadruple);
 
@@ -33,7 +35,7 @@ namespace osu.Game.Screens.Edit.Timing
                 set => current.Current = value;
             }
 
-            private OsuNumberBox numeratorBox = null!;
+            private OsuNumberBox numeratorBox;
 
             [BackgroundDependencyLoader]
             private void load()

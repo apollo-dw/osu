@@ -7,7 +7,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Argon
 {
-    public partial class ArgonSliderBody : PlaySliderBody
+    public class ArgonSliderBody : PlaySliderBody
     {
         protected override void LoadComplete()
         {
@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
 
         protected override Default.DrawableSliderPath CreateSliderPath() => new DrawableSliderPath();
 
-        private partial class DrawableSliderPath : Default.DrawableSliderPath
+        private class DrawableSliderPath : Default.DrawableSliderPath
         {
             protected override Color4 ColourAt(float position)
             {

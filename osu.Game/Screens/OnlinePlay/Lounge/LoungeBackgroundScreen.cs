@@ -5,12 +5,13 @@ using osu.Framework.Bindables;
 using osu.Framework.Screens;
 using osu.Game.Online.Rooms;
 using osu.Game.Screens.OnlinePlay.Components;
+using PlaylistItem = osu.Game.Online.Rooms.PlaylistItem;
 
 namespace osu.Game.Screens.OnlinePlay.Lounge
 {
-    public partial class LoungeBackgroundScreen : OnlinePlayBackgroundScreen
+    public class LoungeBackgroundScreen : OnlinePlayBackgroundScreen
     {
-        public readonly Bindable<Room?> SelectedRoom = new Bindable<Room?>();
+        public readonly Bindable<Room> SelectedRoom = new Bindable<Room>();
         private readonly BindableList<PlaylistItem> playlist = new BindableList<PlaylistItem>();
 
         public LoungeBackgroundScreen()
@@ -19,7 +20,7 @@ namespace osu.Game.Screens.OnlinePlay.Lounge
             playlist.BindCollectionChanged((_, _) => PlaylistItem = playlist.GetCurrentItem());
         }
 
-        private void onSelectedRoomChanged(ValueChangedEvent<Room?> room)
+        private void onSelectedRoomChanged(ValueChangedEvent<Room> room)
         {
             if (room.OldValue != null)
                 playlist.UnbindFrom(room.OldValue.Playlist);

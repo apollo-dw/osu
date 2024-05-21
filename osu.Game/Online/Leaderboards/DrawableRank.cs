@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Extensions;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
@@ -16,7 +18,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Online.Leaderboards
 {
-    public partial class DrawableRank : CompositeDrawable
+    public class DrawableRank : CompositeDrawable
     {
         private readonly ScoreRank rank;
 
@@ -95,12 +97,8 @@ namespace osu.Game.Online.Leaderboards
                 case ScoreRank.C:
                     return Color4Extensions.FromHex(@"473625");
 
-                case ScoreRank.D:
-                    return Color4Extensions.FromHex(@"512525");
-
-                case ScoreRank.F:
                 default:
-                    return Color4Extensions.FromHex(@"CC3333");
+                    return Color4Extensions.FromHex(@"512525");
             }
         }
     }

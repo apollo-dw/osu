@@ -15,7 +15,7 @@ using osuTK.Input;
 namespace osu.Game.Tests.Visual.Gameplay
 {
     [Description("'Hold to Quit' UI element")]
-    public partial class TestSceneHoldForMenuButton : OsuManualInputManagerTestScene
+    public class TestSceneHoldForMenuButton : OsuManualInputManagerTestScene
     {
         private bool exitAction;
 

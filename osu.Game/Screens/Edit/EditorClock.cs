@@ -21,13 +21,13 @@ namespace osu.Game.Screens.Edit
     /// <summary>
     /// A decoupled clock which adds editor-specific functionality, such as snapping to a user-defined beat divisor.
     /// </summary>
-    public partial class EditorClock : CompositeComponent, IFrameBasedClock, IAdjustableClock, ISourceChangeableClock
+    public class EditorClock : CompositeComponent, IFrameBasedClock, IAdjustableClock, ISourceChangeableClock
     {
         public IBindable<Track> Track => track;
 
         private readonly Bindable<Track> track = new Bindable<Track>();
 
-        public double TrackLength => track.Value?.IsLoaded == true ? track.Value.Length : 60000;
+        public double TrackLength => track.Value?.Length ?? 60000;
 
         public ControlPointInfo ControlPointInfo => Beatmap.ControlPointInfo;
 
@@ -54,7 +54,7 @@ namespace osu.Game.Screens.Edit
 
             this.beatDivisor = beatDivisor ?? new BindableBeatDivisor();
 
-            underlyingClock = new FramedBeatmapClock(applyOffsets: true, requireDecoupling: true);
+            underlyingClock = new FramedBeatmapClock(applyOffsets: true) { IsCoupled = false };
             AddInternal(underlyingClock);
         }
 
@@ -158,6 +158,8 @@ namespace osu.Game.Screens.Edit
 
         public double CurrentTime => underlyingClock.CurrentTime;
 
+        public double TotalAppliedOffset => underlyingClock.TotalAppliedOffset;
+
         public void Reset()
         {
             ClearTransforms();
@@ -229,6 +231,8 @@ namespace osu.Game.Screens.Edit
 
         public double FramesPerSecond => underlyingClock.FramesPerSecond;
 
+        public FrameTimeInfo TimeInfo => underlyingClock.TimeInfo;
+
         public void ChangeSource(IClock source)
         {
             track.Value = source as Track;
@@ -266,7 +270,7 @@ namespace osu.Game.Screens.Edit
             {
                 IsSeeking &= Transforms.Any();
 
-                if (!IsRunning)
+                if (track.Value?.IsRunning != true)
                 {
                     // seeking in the editor can happen while the track isn't running.
                     // in this case we always want to expose ourselves as seeking (to avoid sample playback).

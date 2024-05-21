@@ -19,7 +19,7 @@ using osuTK.Graphics;
 namespace osu.Game.Tests.Visual.Components
 {
     [HeadlessTest]
-    public partial class TestScenePollingComponent : OsuTestScene
+    public class TestScenePollingComponent : OsuTestScene
     {
         private Container pollBox;
         private TestPoller poller;
@@ -132,7 +132,7 @@ namespace osu.Game.Tests.Visual.Components
 
         protected override double TimePerAction => 500;
 
-        public partial class TestPoller : PollingComponent
+        public class TestPoller : PollingComponent
         {
             public event Action OnPoll;
 
@@ -143,7 +143,7 @@ namespace osu.Game.Tests.Visual.Components
             }
         }
 
-        public partial class TestSlowPoller : TestPoller
+        public class TestSlowPoller : TestPoller
         {
             protected override Task Poll() => Task.Delay((int)(TimeBetweenPolls.Value / 2f / Clock.Rate)).ContinueWith(_ => base.Poll());
         }

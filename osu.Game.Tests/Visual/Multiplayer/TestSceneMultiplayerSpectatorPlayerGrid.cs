@@ -14,7 +14,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public partial class TestSceneMultiplayerSpectatorPlayerGrid : OsuManualInputManagerTestScene
+    public class TestSceneMultiplayerSpectatorPlayerGrid : OsuManualInputManagerTestScene
     {
         private PlayerGrid grid;
 
@@ -105,7 +105,7 @@ namespace osu.Game.Tests.Visual.Multiplayer
             bool checkAction() => Precision.AlmostEquals(grid.MaximisedFacade.DrawSize, grid.Content.ElementAt(index).DrawSize, 10) == shouldBeMaximised;
         }
 
-        private partial class GridContent : Box
+        private class GridContent : Box
         {
             public GridContent()
             {

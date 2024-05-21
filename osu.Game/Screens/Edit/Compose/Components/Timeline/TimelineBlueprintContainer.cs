@@ -24,7 +24,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 {
-    internal partial class TimelineBlueprintContainer : EditorBlueprintContainer
+    internal class TimelineBlueprintContainer : EditorBlueprintContainer
     {
         [Resolved(CanBeNull = true)]
         private Timeline timeline { get; set; }
@@ -83,9 +83,8 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
             {
                 placementBlueprint = CreateBlueprintFor(obj.NewValue).AsNonNull();
 
-                placementBlueprint.Colour = OsuColour.Gray(0.9f);
+                placementBlueprint.Colour = Color4.MediumPurple;
 
-                // TODO: this is out of order, causing incorrect stacking height.
                 SelectionBlueprints.Add(placementBlueprint);
             }
         }
@@ -116,8 +115,6 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
             updateStacking();
         }
 
-        private readonly Stack<HitObject> currentConcurrentObjects = new Stack<HitObject>();
-
         private void updateStacking()
         {
             // because only blueprints of objects which are alive (via pooling) are displayed in the timeline, it's feasible to do this every-update.
@@ -127,12 +124,10 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
             // after the stack gets this tall, we can presume there is space underneath to draw subsequent blueprints.
             const int stack_reset_count = 3;
 
-            currentConcurrentObjects.Clear();
+            Stack<HitObject> currentConcurrentObjects = new Stack<HitObject>();
 
-            for (int i = SelectionBlueprints.Count - 1; i >= 0; i--)
+            foreach (var b in SelectionBlueprints.Reverse())
             {
-                var b = SelectionBlueprints[i];
-
                 // remove objects from the stack as long as their end time is in the past.
                 while (currentConcurrentObjects.TryPeek(out HitObject hitObject))
                 {
@@ -203,7 +198,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                 timeline.ScrollBy((float)((mouseX - timelineQuad.TopLeft.X) / 10 * Clock.ElapsedFrameTime));
         }
 
-        private partial class SelectableAreaBackground : CompositeDrawable
+        private class SelectableAreaBackground : CompositeDrawable
         {
             [Resolved]
             private OsuColour colours { get; set; }
@@ -251,7 +246,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
             }
         }
 
-        protected partial class TimelineSelectionBlueprintContainer : Container<SelectionBlueprint<HitObject>>
+        protected class TimelineSelectionBlueprintContainer : Container<SelectionBlueprint<HitObject>>
         {
             protected override Container<SelectionBlueprint<HitObject>> Content { get; }
 

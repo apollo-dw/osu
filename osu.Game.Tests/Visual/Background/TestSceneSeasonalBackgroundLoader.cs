@@ -20,7 +20,7 @@ using osu.Game.Online.API.Requests.Responses;
 
 namespace osu.Game.Tests.Visual.Background
 {
-    public partial class TestSceneSeasonalBackgroundLoader : ScreenTestScene
+    public class TestSceneSeasonalBackgroundLoader : ScreenTestScene
     {
         [Resolved]
         private OsuConfigManager config { get; set; }

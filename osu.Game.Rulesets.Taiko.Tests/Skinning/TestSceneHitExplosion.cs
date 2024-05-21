@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Extensions.IEnumerableExtensions;
@@ -11,12 +13,11 @@ using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.Taiko.Objects;
 using osu.Game.Rulesets.Taiko.UI;
-using osu.Game.Screens.Ranking;
 
 namespace osu.Game.Rulesets.Taiko.Tests.Skinning
 {
     [TestFixture]
-    public partial class TestSceneHitExplosion : TaikoSkinnableTestScene
+    public class TestSceneHitExplosion : TaikoSkinnableTestScene
     {
         protected override double TimePerAction => 100;
 
@@ -48,19 +49,11 @@ namespace osu.Game.Rulesets.Taiko.Tests.Skinning
                     // the hit needs to be added to hierarchy in order for nested objects to be created correctly.
                     // setting zero alpha is supposed to prevent the test from looking broken.
                     hit.With(h => h.Alpha = 0),
-
-                    new AspectContainer
+                    new HitExplosion(hit.Type)
                     {
-                        RelativeSizeAxes = Axes.X,
                         Anchor = Anchor.Centre,
                         Origin = Anchor.Centre,
-                        Child =
-                            new HitExplosion(hit.Type)
-                            {
-                                Anchor = Anchor.Centre,
-                                Origin = Anchor.Centre,
-                            }.With(explosion => explosion.Apply(hit))
-                    }
+                    }.With(explosion => explosion.Apply(hit))
                 }
             };
         }

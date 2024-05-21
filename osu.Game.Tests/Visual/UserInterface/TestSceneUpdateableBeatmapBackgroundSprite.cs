@@ -21,7 +21,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneUpdateableBeatmapBackgroundSprite : OsuTestScene
+    public class TestSceneUpdateableBeatmapBackgroundSprite : OsuTestScene
     {
         protected override bool UseOnlineAPI => true;
 
@@ -138,7 +138,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             AddUntilStep("all unloaded", () => !loadedBackgrounds.Any());
         }
 
-        private partial class TestUpdateableBeatmapBackgroundSprite : UpdateableBeatmapBackgroundSprite
+        private class TestUpdateableBeatmapBackgroundSprite : UpdateableBeatmapBackgroundSprite
         {
             protected override double UnloadDelay => 2000;
 

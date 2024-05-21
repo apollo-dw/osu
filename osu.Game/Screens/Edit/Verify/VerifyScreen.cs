@@ -13,7 +13,7 @@ using osu.Game.Rulesets.Edit.Checks.Components;
 namespace osu.Game.Screens.Edit.Verify
 {
     [Cached]
-    public partial class VerifyScreen : EditorScreen
+    public class VerifyScreen : EditorScreen
     {
         public readonly Bindable<Issue> SelectedIssue = new Bindable<Issue>();
 
@@ -34,29 +34,27 @@ namespace osu.Game.Screens.Edit.Verify
             InterpretedDifficulty.Default = StarDifficulty.GetDifficultyRating(EditorBeatmap.BeatmapInfo.StarRating);
             InterpretedDifficulty.SetDefault();
 
-            Child = new GridContainer
+            Child = new Container
             {
                 RelativeSizeAxes = Axes.Both,
-                ColumnDimensions = new[]
+                Child = new GridContainer
                 {
-                    new Dimension(),
-                    new Dimension(GridSizeMode.Absolute, 250),
-                },
-                Content = new[]
-                {
-                    new Drawable[]
+                    RelativeSizeAxes = Axes.Both,
+                    ColumnDimensions = new[]
                     {
-                        IssueList = new IssueList(),
-                        new IssueSettings(),
+                        new Dimension(),
+                        new Dimension(GridSizeMode.Absolute, 250),
                     },
+                    Content = new[]
+                    {
+                        new Drawable[]
+                        {
+                            IssueList = new IssueList(),
+                            new IssueSettings(),
+                        },
+                    }
                 }
             };
-        }
-
-        protected override void PopIn()
-        {
-            base.PopIn();
-            IssueList.Refresh();
         }
     }
 }

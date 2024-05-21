@@ -23,7 +23,7 @@ namespace osu.Game.Graphics.UserInterfaceV2
     /// <summary>
     /// A component which displays a collection of colours in individual <see cref="ColourDisplay"/>s.
     /// </summary>
-    public partial class ColourPalette : CompositeDrawable
+    public class ColourPalette : CompositeDrawable
     {
         public BindableList<Colour4> Colours { get; } = new BindableList<Colour4>();
 
@@ -119,7 +119,7 @@ namespace osu.Game.Graphics.UserInterfaceV2
             }
         }
 
-        internal partial class AddColourButton : CompositeDrawable
+        internal class AddColourButton : CompositeDrawable
         {
             public Action Action
             {

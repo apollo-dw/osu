@@ -13,7 +13,7 @@ using osu.Game.Skinning;
 
 namespace osu.Game.Screens.Play
 {
-    public partial class ComboEffects : CompositeDrawable
+    public class ComboEffects : CompositeDrawable
     {
         private readonly ScoreProcessor processor;
 
@@ -53,7 +53,7 @@ namespace osu.Game.Screens.Play
             if (gameplayClock.CurrentTime < firstBreakTime)
                 firstBreakTime = null;
 
-            if (gameplayClock.IsRewinding)
+            if (gameplayClock.ElapsedFrameTime < 0)
                 return;
 
             if (combo.NewValue == 0 && (combo.OldValue > 20 || (alwaysPlayFirst.Value && firstBreakTime == null)))

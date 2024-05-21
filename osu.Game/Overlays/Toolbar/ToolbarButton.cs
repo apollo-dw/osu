@@ -1,19 +1,23 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Extensions.EnumExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
+using osu.Framework.Graphics.Effects;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Graphics.Textures;
 using osu.Framework.Input;
 using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
-using osu.Framework.Localisation;
 using osu.Game.Database;
+using osu.Framework.Localisation;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Backgrounds;
 using osu.Game.Graphics.Containers;
@@ -24,10 +28,8 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.Toolbar
 {
-    public abstract partial class ToolbarButton : OsuClickableContainer, IKeyBindingHandler<GlobalAction>
+    public abstract class ToolbarButton : OsuClickableContainer, IKeyBindingHandler<GlobalAction>
     {
-        public const float PADDING = 3;
-
         protected GlobalAction? Hotkey { get; set; }
 
         public void SetIcon(Drawable icon)
@@ -37,12 +39,15 @@ namespace osu.Game.Overlays.Toolbar
         }
 
         [Resolved]
-        private ReadableKeyCombinationProvider keyCombinationProvider { get; set; } = null!;
+        private TextureStore textures { get; set; }
 
-        public void SetIcon(IconUsage icon) =>
-            SetIcon(new SpriteIcon
+        [Resolved]
+        private ReadableKeyCombinationProvider keyCombinationProvider { get; set; }
+
+        public void SetIcon(string texture) =>
+            SetIcon(new Sprite
             {
-                Icon = icon,
+                Texture = textures.Get(texture),
             });
 
         public LocalisableString Text
@@ -65,7 +70,6 @@ namespace osu.Game.Overlays.Toolbar
 
         protected virtual Anchor TooltipAnchor => Anchor.TopLeft;
 
-        protected readonly Container ButtonContent;
         protected ConstrainedIconContainer IconContainer;
         protected SpriteText DrawableText;
         protected Box HoverBackground;
@@ -76,73 +80,52 @@ namespace osu.Game.Overlays.Toolbar
         private readonly SpriteText keyBindingTooltip;
         protected FillFlowContainer Flow;
 
-        protected readonly Container BackgroundContent;
-
         [Resolved]
-        private RealmAccess realm { get; set; } = null!;
+        private RealmAccess realm { get; set; }
 
         protected ToolbarButton()
         {
-            AutoSizeAxes = Axes.X;
+            Width = Toolbar.HEIGHT;
             RelativeSizeAxes = Axes.Y;
 
             Children = new Drawable[]
             {
-                ButtonContent = new Container
+                HoverBackground = new Box
                 {
-                    Width = Toolbar.HEIGHT,
+                    RelativeSizeAxes = Axes.Both,
+                    Colour = OsuColour.Gray(80).Opacity(180),
+                    Blending = BlendingParameters.Additive,
+                    Alpha = 0,
+                },
+                flashBackground = new Box
+                {
+                    RelativeSizeAxes = Axes.Both,
+                    Alpha = 0,
+                    Colour = Color4.White.Opacity(100),
+                    Blending = BlendingParameters.Additive,
+                },
+                Flow = new FillFlowContainer
+                {
+                    Direction = FillDirection.Horizontal,
+                    Spacing = new Vector2(5),
+                    Anchor = Anchor.TopCentre,
+                    Origin = Anchor.TopCentre,
+                    Padding = new MarginPadding { Left = Toolbar.HEIGHT / 2, Right = Toolbar.HEIGHT / 2 },
                     RelativeSizeAxes = Axes.Y,
-                    Padding = new MarginPadding(PADDING),
+                    AutoSizeAxes = Axes.X,
                     Children = new Drawable[]
                     {
-                        BackgroundContent = new Container
+                        IconContainer = new ConstrainedIconContainer
                         {
-                            RelativeSizeAxes = Axes.Both,
-                            Masking = true,
-                            CornerRadius = 6,
-                            CornerExponent = 3f,
-                            Children = new Drawable[]
-                            {
-                                HoverBackground = new Box
-                                {
-                                    RelativeSizeAxes = Axes.Both,
-                                    Colour = OsuColour.Gray(80).Opacity(180),
-                                    Blending = BlendingParameters.Additive,
-                                    Alpha = 0,
-                                },
-                                flashBackground = new Box
-                                {
-                                    RelativeSizeAxes = Axes.Both,
-                                    Alpha = 0,
-                                    Colour = Color4.White.Opacity(100),
-                                    Blending = BlendingParameters.Additive,
-                                },
-                            }
+                            Anchor = Anchor.CentreLeft,
+                            Origin = Anchor.CentreLeft,
+                            Size = new Vector2(26),
+                            Alpha = 0,
                         },
-                        Flow = new FillFlowContainer
+                        DrawableText = new OsuSpriteText
                         {
-                            Direction = FillDirection.Horizontal,
-                            Spacing = new Vector2(5),
-                            Anchor = Anchor.TopCentre,
-                            Origin = Anchor.TopCentre,
-                            Padding = new MarginPadding { Left = Toolbar.HEIGHT / 2, Right = Toolbar.HEIGHT / 2 },
-                            RelativeSizeAxes = Axes.Y,
-                            AutoSizeAxes = Axes.X,
-                            Children = new Drawable[]
-                            {
-                                IconContainer = new ConstrainedIconContainer
-                                {
-                                    Anchor = Anchor.CentreLeft,
-                                    Origin = Anchor.CentreLeft,
-                                    Size = new Vector2(20),
-                                    Alpha = 0,
-                                },
-                                DrawableText = new OsuSpriteText
-                                {
-                                    Anchor = Anchor.CentreLeft,
-                                    Origin = Anchor.CentreLeft,
-                                },
-                            },
+                            Anchor = Anchor.CentreLeft,
+                            Origin = Anchor.CentreLeft,
                         },
                     },
                 },
@@ -180,30 +163,23 @@ namespace osu.Game.Overlays.Toolbar
             };
         }
 
-        [BackgroundDependencyLoader]
-        private void load()
-        {
-            if (Hotkey != null)
-            {
-                realm.SubscribeToPropertyChanged(r => r.All<RealmKeyBinding>().FirstOrDefault(rkb => rkb.RulesetName == null && rkb.ActionInt == (int)Hotkey.Value), kb => kb.KeyCombinationString, updateKeyBindingTooltip);
-            }
-        }
-
         protected override bool OnMouseDown(MouseDownEvent e) => false;
 
         protected override bool OnClick(ClickEvent e)
         {
-            flashBackground.FadeIn(50).Then().FadeOutFromOne(800, Easing.OutQuint);
+            flashBackground.FadeOutFromOne(800, Easing.OutQuint);
             tooltipContainer.FadeOut(100);
             return base.OnClick(e);
         }
 
         protected override bool OnHover(HoverEvent e)
         {
+            updateKeyBindingTooltip();
+
             HoverBackground.FadeIn(200);
             tooltipContainer.FadeIn(100);
 
-            return true;
+            return base.OnHover(e);
         }
 
         protected override void OnHoverLost(HoverLostEvent e)
@@ -227,21 +203,35 @@ namespace osu.Game.Overlays.Toolbar
         {
         }
 
-        private void updateKeyBindingTooltip(string keyCombination)
+        private void updateKeyBindingTooltip()
         {
-            string keyBindingString = keyCombinationProvider.GetReadableString(keyCombination);
+            if (Hotkey == null) return;
 
-            keyBindingTooltip.Text = !string.IsNullOrEmpty(keyBindingString)
-                ? $" ({keyBindingString})"
-                : string.Empty;
+            var realmKeyBinding = realm.Realm.All<RealmKeyBinding>().FirstOrDefault(rkb => rkb.RulesetName == null && rkb.ActionInt == (int)Hotkey.Value);
+
+            if (realmKeyBinding != null)
+            {
+                string keyBindingString = keyCombinationProvider.GetReadableString(realmKeyBinding.KeyCombination);
+
+                if (!string.IsNullOrEmpty(keyBindingString))
+                    keyBindingTooltip.Text = $" ({keyBindingString})";
+            }
         }
     }
 
-    public partial class OpaqueBackground : Container
+    public class OpaqueBackground : Container
     {
         public OpaqueBackground()
         {
             RelativeSizeAxes = Axes.Both;
+            Masking = true;
+            MaskingSmoothness = 0;
+            EdgeEffect = new EdgeEffectParameters
+            {
+                Type = EdgeEffectType.Shadow,
+                Colour = Color4.Black.Opacity(40),
+                Radius = 5,
+            };
 
             Children = new Drawable[]
             {

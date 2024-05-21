@@ -17,14 +17,14 @@ namespace osu.Game.Screens.Edit.Compose.Components
     /// Represents the base appearance for UI controls of the <see cref="SelectionBox"/>,
     /// such as scale handles, rotation handles, buttons, etc...
     /// </summary>
-    public abstract partial class SelectionBoxControl : CompositeDrawable
+    public abstract class SelectionBoxControl : CompositeDrawable
     {
         public const double TRANSFORM_DURATION = 100;
 
         public event Action OperationStarted;
         public event Action OperationEnded;
 
-        protected Circle Circle { get; private set; }
+        private Circle circle;
 
         /// <summary>
         /// Whether the user is currently holding the control with mouse.
@@ -41,7 +41,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
 
             InternalChildren = new Drawable[]
             {
-                Circle = new Circle
+                circle = new Circle
                 {
                     RelativeSizeAxes = Axes.Both,
                     Anchor = Anchor.Centre,
@@ -85,9 +85,9 @@ namespace osu.Game.Screens.Edit.Compose.Components
         protected virtual void UpdateHoverState()
         {
             if (IsHeld)
-                Circle.FadeColour(Colours.GrayF, TRANSFORM_DURATION, Easing.OutQuint);
+                circle.FadeColour(Colours.GrayF, TRANSFORM_DURATION, Easing.OutQuint);
             else
-                Circle.FadeColour(IsHovered ? Colours.Red : Colours.YellowDark, TRANSFORM_DURATION, Easing.OutQuint);
+                circle.FadeColour(IsHovered ? Colours.Red : Colours.YellowDark, TRANSFORM_DURATION, Easing.OutQuint);
 
             this.ScaleTo(IsHeld || IsHovered ? 1.5f : 1, TRANSFORM_DURATION, Easing.OutQuint);
         }

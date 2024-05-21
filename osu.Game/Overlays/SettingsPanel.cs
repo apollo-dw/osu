@@ -10,30 +10,26 @@ using System.Threading.Tasks;
 using osuTK;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
-using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Cursor;
-using osu.Framework.Graphics.Effects;
 using osu.Framework.Graphics.Primitives;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input.Events;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Overlays.Settings;
-using osuTK.Graphics;
 
 namespace osu.Game.Overlays
 {
     [Cached]
-    public abstract partial class SettingsPanel : OsuFocusedOverlayContainer
+    public abstract class SettingsPanel : OsuFocusedOverlayContainer
     {
         public const float CONTENT_MARGINS = 20;
 
         public const float TRANSITION_LENGTH = 600;
 
-        private const float sidebar_width = SettingsSidebar.EXPANDED_WIDTH;
+        private const float sidebar_width = SettingsSidebar.DEFAULT_WIDTH;
 
         /// <summary>
         /// The width of the settings panel content, excluding the sidebar.
@@ -57,9 +53,8 @@ namespace osu.Game.Overlays
         private SeekLimitedSearchTextBox searchTextBox;
 
         protected override string PopInSampleName => "UI/settings-pop-in";
-        protected override double PopInOutSampleBalance => -OsuGameBase.SFX_STEREO_STRENGTH;
 
-        private readonly bool showBackButton;
+        private readonly bool showSidebar;
 
         private LoadingLayer loading;
 
@@ -72,9 +67,9 @@ namespace osu.Game.Overlays
         [Cached]
         private OverlayColourProvider colourProvider = new OverlayColourProvider(OverlayColourScheme.Purple);
 
-        protected SettingsPanel(bool showBackButton)
+        protected SettingsPanel(bool showSidebar)
         {
-            this.showBackButton = showBackButton;
+            this.showSidebar = showSidebar;
             RelativeSizeAxes = Axes.Y;
             AutoSizeAxes = Axes.X;
         }
@@ -107,50 +102,37 @@ namespace osu.Game.Overlays
                 }
             };
 
-            Add(new PopoverContainer
+            Add(SectionsContainer = new SettingsSectionsContainer
             {
+                Masking = true,
                 RelativeSizeAxes = Axes.Both,
-                Child = SectionsContainer = new SettingsSectionsContainer
+                ExpandableHeader = CreateHeader(),
+                SelectedSection = { BindTarget = CurrentSection },
+                FixedHeader = new Container
                 {
-                    Masking = true,
-                    EdgeEffect = new EdgeEffectParameters
+                    RelativeSizeAxes = Axes.X,
+                    AutoSizeAxes = Axes.Y,
+                    Padding = new MarginPadding
                     {
-                        Colour = Color4.Black.Opacity(0),
-                        Type = EdgeEffectType.Shadow,
-                        Hollow = true,
-                        Radius = 10
+                        Vertical = 20,
+                        Horizontal = CONTENT_MARGINS
                     },
-                    MaskingSmoothness = 0,
-                    RelativeSizeAxes = Axes.Both,
-                    ExpandableHeader = CreateHeader(),
-                    SelectedSection = { BindTarget = CurrentSection },
-                    FixedHeader = new Container
+                    Anchor = Anchor.TopCentre,
+                    Origin = Anchor.TopCentre,
+                    Child = searchTextBox = new SeekLimitedSearchTextBox
                     {
                         RelativeSizeAxes = Axes.X,
-                        AutoSizeAxes = Axes.Y,
-                        Padding = new MarginPadding
-                        {
-                            Vertical = 20,
-                            Horizontal = CONTENT_MARGINS
-                        },
-                        Anchor = Anchor.TopCentre,
                         Origin = Anchor.TopCentre,
-                        Child = searchTextBox = new SettingsSearchTextBox
-                        {
-                            RelativeSizeAxes = Axes.X,
-                            Origin = Anchor.TopCentre,
-                            Anchor = Anchor.TopCentre,
-                        }
-                    },
-                    Footer = CreateFooter().With(f => f.Alpha = 0)
-                }
+                        Anchor = Anchor.TopCentre,
+                    }
+                },
+                Footer = CreateFooter().With(f => f.Alpha = 0)
             });
 
-            AddInternal(Sidebar = new SettingsSidebar(showBackButton)
+            if (showSidebar)
             {
-                BackButtonAction = Hide,
-                Width = sidebar_width
-            });
+                AddInternal(Sidebar = new SettingsSidebar { Width = sidebar_width });
+            }
 
             CreateSections()?.ForEach(AddSection);
         }
@@ -170,9 +152,9 @@ namespace osu.Game.Overlays
 
         protected override void PopIn()
         {
-            ContentContainer.MoveToX(ExpandedPosition, TRANSITION_LENGTH, Easing.OutQuint);
+            base.PopIn();
 
-            SectionsContainer.FadeEdgeEffectTo(WaveContainer.SHADOW_OPACITY, WaveContainer.APPEAR_DURATION, Easing.Out);
+            ContentContainer.MoveToX(ExpandedPosition, TRANSITION_LENGTH, Easing.OutQuint);
 
             // delay load enough to ensure it doesn't overlap with the initial animation.
             // this is done as there is still a brief stutter during load completion which is more visible if the transition is in progress.
@@ -181,7 +163,7 @@ namespace osu.Game.Overlays
             Scheduler.AddDelayed(loadSections, TRANSITION_LENGTH / 3);
 
             Sidebar?.MoveToX(0, TRANSITION_LENGTH, Easing.OutQuint);
-            this.FadeTo(1, TRANSITION_LENGTH / 2, Easing.OutQuint);
+            this.FadeTo(1, TRANSITION_LENGTH, Easing.OutQuint);
 
             searchTextBox.TakeFocus();
             searchTextBox.HoldFocus = true;
@@ -193,11 +175,10 @@ namespace osu.Game.Overlays
         {
             base.PopOut();
 
-            SectionsContainer.FadeEdgeEffectTo(0, WaveContainer.DISAPPEAR_DURATION, Easing.In);
             ContentContainer.MoveToX(-WIDTH + ExpandedPosition, TRANSITION_LENGTH, Easing.OutQuint);
 
             Sidebar?.MoveToX(-sidebar_width, TRANSITION_LENGTH, Easing.OutQuint);
-            this.FadeTo(0, TRANSITION_LENGTH / 2, Easing.OutQuint);
+            this.FadeTo(0, TRANSITION_LENGTH, Easing.OutQuint);
 
             searchTextBox.HoldFocus = false;
             if (searchTextBox.HasFocus)
@@ -286,18 +267,19 @@ namespace osu.Game.Overlays
                             return;
 
                         SectionsContainer.ScrollTo(section);
+                        Sidebar.Expanded.Value = false;
                     },
                 };
             }
         }
 
-        private partial class NonMaskedContent : Container<Drawable>
+        private class NonMaskedContent : Container<Drawable>
         {
             // masking breaks the pan-out transform with nested sub-settings panels.
             protected override bool ComputeIsMaskedAway(RectangleF maskingBounds) => false;
         }
 
-        public partial class SettingsSectionsContainer : SectionsContainer<SettingsSection>
+        public class SettingsSectionsContainer : SectionsContainer<SettingsSection>
         {
             public SearchContainer<SettingsSection> SearchContainer;
 
@@ -332,7 +314,7 @@ namespace osu.Game.Overlays
                 base.UpdateAfterChildren();
 
                 // no null check because the usage of this class is strict
-                HeaderBackground!.Alpha = -ExpandableHeader!.Y / ExpandableHeader.LayoutSize.Y;
+                HeaderBackground.Alpha = -ExpandableHeader.Y / ExpandableHeader.LayoutSize.Y;
             }
         }
     }

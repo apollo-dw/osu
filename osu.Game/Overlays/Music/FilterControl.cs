@@ -13,7 +13,7 @@ using osu.Framework.Allocation;
 
 namespace osu.Game.Overlays.Music
 {
-    public partial class FilterControl : Container
+    public class FilterControl : Container
     {
         public Action<FilterCriteria> FilterChanged;
 
@@ -58,7 +58,7 @@ namespace osu.Game.Overlays.Music
             Collection = collectionDropdown.Current.Value?.Collection
         };
 
-        public partial class FilterTextBox : BasicSearchTextBox
+        public class FilterTextBox : BasicSearchTextBox
         {
             protected override bool AllowCommit => true;
 

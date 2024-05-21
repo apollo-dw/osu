@@ -13,6 +13,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Textures;
 using osu.Framework.Localisation;
+using osu.Framework.Screens;
 using osu.Game.Beatmaps;
 using osu.Game.Configuration;
 using osu.Game.Graphics;
@@ -31,7 +32,7 @@ using osuTK;
 namespace osu.Game.Overlays.FirstRunSetup
 {
     [LocalisableDescription(typeof(GraphicsSettingsStrings), nameof(GraphicsSettingsStrings.UIScaling))]
-    public partial class ScreenUIScale : FirstRunSetupScreen
+    public class ScreenUIScale : FirstRunSetupScreen
     {
         [BackgroundDependencyLoader]
         private void load(OsuConfigManager config)
@@ -57,7 +58,7 @@ namespace osu.Game.Overlays.FirstRunSetup
                     Anchor = Anchor.TopCentre,
                     Origin = Anchor.TopCentre,
                     RelativeSizeAxes = Axes.None,
-                    Size = new Vector2(screen_width, screen_width / 16f * 9),
+                    Size = new Vector2(screen_width, screen_width / 16f * 9 / 2),
                     Children = new Drawable[]
                     {
                         new GridContainer
@@ -67,6 +68,7 @@ namespace osu.Game.Overlays.FirstRunSetup
                             {
                                 new Drawable[]
                                 {
+                                    new SampleScreenContainer(new PinnedMainMenu()),
                                     new SampleScreenContainer(new NestedSongSelect()),
                                 },
                                 // TODO: add more screens here in the future (gameplay / results)
@@ -78,7 +80,7 @@ namespace osu.Game.Overlays.FirstRunSetup
             };
         }
 
-        private partial class InverseScalingDrawSizePreservingFillContainer : ScalingContainer.ScalingDrawSizePreservingFillContainer
+        private class InverseScalingDrawSizePreservingFillContainer : ScalingContainer.ScalingDrawSizePreservingFillContainer
         {
             private Vector2 initialSize;
 
@@ -100,19 +102,30 @@ namespace osu.Game.Overlays.FirstRunSetup
             }
         }
 
-        private partial class NestedSongSelect : PlaySongSelect
+        private class NestedSongSelect : PlaySongSelect
         {
             protected override bool ControlGlobalMusic => false;
 
-            public override bool? ApplyModTrackAdjustments => false;
+            public override bool? AllowTrackAdjustments => false;
         }
 
-        private partial class UIScaleSlider : RoundedSliderBar<float>
+        private class PinnedMainMenu : MainMenu
+        {
+            public override void OnEntering(ScreenTransitionEvent e)
+            {
+                base.OnEntering(e);
+
+                Buttons.ReturnToTopOnIdle = false;
+                Buttons.State = ButtonSystemState.TopLevel;
+            }
+        }
+
+        private class UIScaleSlider : OsuSliderBar<float>
         {
             public override LocalisableString TooltipText => base.TooltipText + "x";
         }
 
-        private partial class SampleScreenContainer : CompositeDrawable
+        private class SampleScreenContainer : CompositeDrawable
         {
             private readonly OsuScreen screen;
 
@@ -220,7 +233,7 @@ namespace osu.Game.Overlays.FirstRunSetup
                 return parentDependencies.Get(type, info);
             }
 
-            public void Inject<T>(T instance) where T : class, IDependencyInjectionCandidate
+            public void Inject<T>(T instance) where T : class
             {
                 parentDependencies.Inject(instance);
             }

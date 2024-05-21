@@ -11,7 +11,6 @@ using osu.Framework.Graphics.Cursor;
 using osu.Framework.Localisation;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
-using osu.Game.Rulesets.UI;
 using osuTK;
 using osuTK.Graphics;
 
@@ -20,9 +19,9 @@ namespace osu.Game.Screens.Play
     /// <summary>
     /// An overlay which can be used to require further user actions before gameplay is resumed.
     /// </summary>
-    public abstract partial class ResumeOverlay : VisibilityContainer
+    public abstract class ResumeOverlay : VisibilityContainer
     {
-        public GameplayCursorContainer GameplayCursor { get; set; }
+        public CursorContainer GameplayCursor { get; set; }
 
         /// <summary>
         /// The action to be performed to complete resuming.

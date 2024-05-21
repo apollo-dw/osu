@@ -13,16 +13,14 @@ using osu.Framework.Layout;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Objects.Types;
-using osu.Game.Rulesets.UI.Scrolling.Algorithms;
 using osuTK;
 
 namespace osu.Game.Rulesets.UI.Scrolling
 {
-    public partial class ScrollingHitObjectContainer : HitObjectContainer
+    public class ScrollingHitObjectContainer : HitObjectContainer
     {
         private readonly IBindable<double> timeRange = new BindableDouble();
         private readonly IBindable<ScrollingDirection> direction = new Bindable<ScrollingDirection>();
-        private readonly IBindable<IScrollAlgorithm> algorithm = new Bindable<IScrollAlgorithm>();
 
         /// <summary>
         /// Whether the scrolling direction is horizontal or vertical.
@@ -61,11 +59,9 @@ namespace osu.Game.Rulesets.UI.Scrolling
         {
             direction.BindTo(scrollingInfo.Direction);
             timeRange.BindTo(scrollingInfo.TimeRange);
-            algorithm.BindTo(scrollingInfo.Algorithm);
 
             direction.ValueChanged += _ => layoutCache.Invalidate();
             timeRange.ValueChanged += _ => layoutCache.Invalidate();
-            algorithm.ValueChanged += _ => layoutCache.Invalidate();
         }
 
         /// <summary>
@@ -77,7 +73,7 @@ namespace osu.Game.Rulesets.UI.Scrolling
         public double TimeAtPosition(float localPosition, double currentTime)
         {
             float scrollPosition = axisInverted ? -localPosition : localPosition;
-            return algorithm.Value.TimeAt(scrollPosition, currentTime, timeRange.Value, scrollLength);
+            return scrollingInfo.Algorithm.TimeAt(scrollPosition, currentTime, timeRange.Value, scrollLength);
         }
 
         /// <summary>
@@ -99,7 +95,7 @@ namespace osu.Game.Rulesets.UI.Scrolling
         /// </summary>
         public float PositionAtTime(double time, double currentTime, double? originTime = null)
         {
-            float scrollPosition = algorithm.Value.PositionAt(time, currentTime, timeRange.Value, scrollLength, originTime);
+            float scrollPosition = scrollingInfo.Algorithm.PositionAt(time, currentTime, timeRange.Value, scrollLength, originTime);
             return axisInverted ? -scrollPosition : scrollPosition;
         }
 
@@ -126,7 +122,7 @@ namespace osu.Game.Rulesets.UI.Scrolling
         /// </summary>
         public float LengthAtTime(double startTime, double endTime)
         {
-            return algorithm.Value.GetLength(startTime, endTime, timeRange.Value, scrollLength);
+            return scrollingInfo.Algorithm.GetLength(startTime, endTime, timeRange.Value, scrollLength);
         }
 
         private float scrollLength => scrollingAxis == Direction.Horizontal ? DrawWidth : DrawHeight;
@@ -136,7 +132,7 @@ namespace osu.Game.Rulesets.UI.Scrolling
             // Scroll info is not available until loaded.
             // The lifetime of all entries will be updated in the first Update.
             if (IsLoaded)
-                setComputedLifetime(entry);
+                setComputedLifetimeStart(entry);
 
             base.Add(entry);
         }
@@ -171,9 +167,9 @@ namespace osu.Game.Rulesets.UI.Scrolling
             layoutComputed.Clear();
 
             foreach (var entry in Entries)
-                setComputedLifetime(entry);
+                setComputedLifetimeStart(entry);
 
-            algorithm.Value.Reset();
+            scrollingInfo.Algorithm.Reset();
 
             layoutCache.Validate();
         }
@@ -184,12 +180,9 @@ namespace osu.Game.Rulesets.UI.Scrolling
 
             // We need to calculate hit object positions (including nested hit objects) as soon as possible after lifetimes
             // to prevent hit objects displayed in a wrong position for one frame.
-            // Only AliveEntries need to be considered for layout (reduces overhead in the case of scroll speed changes).
-            // We are not using AliveObjects directly to avoid selection/sorting overhead since we don't care about the order at which positions will be updated.
-            foreach (var entry in AliveEntries)
+            // Only AliveObjects need to be considered for layout (reduces overhead in the case of scroll speed changes).
+            foreach (var obj in AliveObjects)
             {
-                var obj = entry.Value;
-
                 updatePosition(obj, Time.Current);
 
                 if (layoutComputed.Contains(obj))
@@ -231,23 +224,16 @@ namespace osu.Game.Rulesets.UI.Scrolling
                     break;
             }
 
-            return algorithm.Value.GetDisplayStartTime(entry.HitObject.StartTime, startOffset, timeRange.Value, scrollLength);
+            return scrollingInfo.Algorithm.GetDisplayStartTime(entry.HitObject.StartTime, startOffset, timeRange.Value, scrollLength);
         }
 
-        private void setComputedLifetime(HitObjectLifetimeEntry entry)
+        private void setComputedLifetimeStart(HitObjectLifetimeEntry entry)
         {
             double computedStartTime = computeDisplayStartTime(entry);
 
             // always load the hitobject before its first judgement offset
-            entry.LifetimeStart = Math.Min(entry.HitObject.StartTime - entry.HitObject.MaximumJudgementOffset, computedStartTime);
-
-            // This is likely not entirely correct, but sets a sane expectation of the ending lifetime.
-            // A more correct lifetime will be overwritten after a DrawableHitObject is assigned via DrawableHitObject.updateState.
-            //
-            // It is required that we set a lifetime end here to ensure that in scenarios like loading a Player instance to a seeked
-            // location in a beatmap doesn't churn every hit object into a DrawableHitObject. Even in a pooled scenario, the overhead
-            // of this can be quite crippling.
-            entry.LifetimeEnd = entry.HitObject.GetEndTime() + timeRange.Value;
+            double judgementOffset = entry.HitObject.HitWindows?.WindowFor(Scoring.HitResult.Miss) ?? 0;
+            entry.LifetimeStart = Math.Min(entry.HitObject.StartTime - judgementOffset, computedStartTime);
         }
 
         private void updateLayoutRecursive(DrawableHitObject hitObject, double? parentHitObjectStartTime = null)
@@ -269,7 +255,7 @@ namespace osu.Game.Rulesets.UI.Scrolling
 
                 // Nested hitobjects don't need to scroll, but they do need accurate positions and start lifetime
                 updatePosition(obj, hitObject.HitObject.StartTime, parentHitObjectStartTime);
-                setComputedLifetime(obj.Entry);
+                setComputedLifetimeStart(obj.Entry);
             }
         }
 

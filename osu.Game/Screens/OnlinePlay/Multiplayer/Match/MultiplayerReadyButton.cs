@@ -12,13 +12,16 @@ using osu.Framework.Audio.Sample;
 using osu.Framework.Localisation;
 using osu.Framework.Threading;
 using osu.Game.Graphics;
+using osu.Game.Graphics.Backgrounds;
 using osu.Game.Online.Multiplayer;
 using osu.Game.Screens.OnlinePlay.Components;
 
 namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
 {
-    public partial class MultiplayerReadyButton : ReadyButton
+    public class MultiplayerReadyButton : ReadyButton
     {
+        public new Triangles Triangles => base.Triangles;
+
         [Resolved]
         private MultiplayerClient multiplayerClient { get; set; }
 
@@ -149,19 +152,16 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
             {
                 switch (localUser?.State)
                 {
-                    case MultiplayerUserState.Spectating:
-                    case MultiplayerUserState.Ready:
-                        Text = multiplayerClient.IsHost
-                            ? $"Start match {countText}"
-                            : $"Waiting for host... {countText}";
+                    default:
+                        Text = "Ready";
                         break;
 
-                    default:
-                        // Show the abort button for the host as long as gameplay is in progress.
-                        if (multiplayerClient.IsHost && room.State != MultiplayerRoomState.Open)
-                            Text = "Abort the match";
-                        else
-                            Text = "Ready";
+                    case MultiplayerUserState.Spectating:
+                    case MultiplayerUserState.Ready:
+                        Text = room.Host?.Equals(localUser) == true
+                            ? $"Start match {countText}"
+                            : $"Waiting for host... {countText}";
+
                         break;
                 }
             }
@@ -196,16 +196,12 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
             switch (localUser?.State)
             {
                 default:
-                    // Show the abort button for the host as long as gameplay is in progress.
-                    if (multiplayerClient.IsHost && room.State != MultiplayerRoomState.Open)
-                        setRed();
-                    else
-                        setGreen();
+                    setGreen();
                     break;
 
                 case MultiplayerUserState.Spectating:
                 case MultiplayerUserState.Ready:
-                    if (multiplayerClient.IsHost && !room.ActiveCountdowns.Any(c => c is MatchStartCountdown))
+                    if (room?.Host?.Equals(localUser) == true && !room.ActiveCountdowns.Any(c => c is MatchStartCountdown))
                         setGreen();
                     else
                         setYellow();
@@ -213,11 +209,19 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                     break;
             }
 
-            void setYellow() => BackgroundColour = colours.YellowDark;
+            void setYellow()
+            {
+                BackgroundColour = colours.YellowDark;
+                Triangles.ColourDark = colours.YellowDark;
+                Triangles.ColourLight = colours.Yellow;
+            }
 
-            void setGreen() => BackgroundColour = colours.Green;
-
-            void setRed() => BackgroundColour = colours.Red;
+            void setGreen()
+            {
+                BackgroundColour = colours.Green;
+                Triangles.ColourDark = colours.Green;
+                Triangles.ColourLight = colours.GreenLight;
+            }
         }
 
         protected override void Dispose(bool isDisposing)

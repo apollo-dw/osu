@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Bindables;
@@ -11,16 +13,16 @@ using osu.Game.Online.API.Requests.Responses;
 
 namespace osu.Game.Overlays.Profile.Sections.Historical
 {
-    public abstract partial class ChartProfileSubsection : ProfileSubsection
+    public abstract class ChartProfileSubsection : ProfileSubsection
     {
-        private ProfileLineChart chart = null!;
+        private ProfileLineChart chart;
 
         /// <summary>
         /// Text describing the value being plotted on the graph, which will be displayed as a prefix to the value in the history graph tooltip.
         /// </summary>
         protected abstract LocalisableString GraphCounterName { get; }
 
-        protected ChartProfileSubsection(Bindable<UserProfileData?> user, LocalisableString headerText)
+        protected ChartProfileSubsection(Bindable<APIUser> user, LocalisableString headerText)
             : base(user, headerText)
         {
         }
@@ -44,9 +46,9 @@ namespace osu.Game.Overlays.Profile.Sections.Historical
             User.BindValueChanged(onUserChanged, true);
         }
 
-        private void onUserChanged(ValueChangedEvent<UserProfileData?> e)
+        private void onUserChanged(ValueChangedEvent<APIUser> e)
         {
-            var values = GetValues(e.NewValue?.User);
+            var values = GetValues(e.NewValue);
 
             if (values == null || values.Length <= 1)
             {
@@ -84,6 +86,6 @@ namespace osu.Game.Overlays.Profile.Sections.Historical
             return filledHistoryEntries.ToArray();
         }
 
-        protected abstract APIUserHistoryCount[]? GetValues(APIUser? user);
+        protected abstract APIUserHistoryCount[] GetValues(APIUser user);
     }
 }

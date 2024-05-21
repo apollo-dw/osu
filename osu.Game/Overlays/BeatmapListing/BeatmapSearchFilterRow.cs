@@ -1,19 +1,24 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
+using JetBrains.Annotations;
+using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.UserInterface;
 using osu.Game.Graphics;
+using osu.Game.Graphics.Sprites;
+using osu.Game.Graphics.UserInterface;
 using osuTK;
 using osu.Framework.Extensions.EnumExtensions;
 using osu.Framework.Localisation;
-using osu.Game.Graphics.Containers;
 
 namespace osu.Game.Overlays.BeatmapListing
 {
-    public partial class BeatmapSearchFilterRow<T> : CompositeDrawable, IHasCurrentValue<T>
+    public class BeatmapSearchFilterRow<T> : CompositeDrawable, IHasCurrentValue<T>
     {
         private readonly BindableWithCurrent<T> current = new BindableWithCurrent<T>();
 
@@ -45,10 +50,11 @@ namespace osu.Game.Overlays.BeatmapListing
                 {
                     new[]
                     {
-                        new OsuTextFlowContainer(t => t.Font = OsuFont.GetFont(size: 13))
+                        new OsuSpriteText
                         {
-                            RelativeSizeAxes = Axes.X,
-                            AutoSizeAxes = Axes.Y,
+                            Anchor = Anchor.BottomLeft,
+                            Origin = Anchor.BottomLeft,
+                            Font = OsuFont.GetFont(size: 13),
                             Text = header
                         },
                         filter = CreateFilter()
@@ -60,14 +66,17 @@ namespace osu.Game.Overlays.BeatmapListing
                 Current = filterWithValue.Current;
         }
 
+        [NotNull]
         protected virtual Drawable CreateFilter() => new BeatmapSearchFilter();
 
-        protected partial class BeatmapSearchFilter : TabControl<T>
+        protected class BeatmapSearchFilter : TabControl<T>
         {
             public BeatmapSearchFilter()
             {
+                Anchor = Anchor.BottomLeft;
+                Origin = Anchor.BottomLeft;
                 RelativeSizeAxes = Axes.X;
-                AutoSizeAxes = Axes.Y;
+                Height = 15;
 
                 TabContainer.Spacing = new Vector2(10, 0);
 
@@ -78,16 +87,33 @@ namespace osu.Game.Overlays.BeatmapListing
                 }
             }
 
-            protected override Dropdown<T> CreateDropdown() => null!;
+            [BackgroundDependencyLoader]
+            private void load(OverlayColourProvider colourProvider)
+            {
+                if (Dropdown is FilterDropdown fd)
+                    fd.AccentColour = colourProvider.Light2;
+            }
+
+            protected override Dropdown<T> CreateDropdown() => new FilterDropdown();
 
             protected override TabItem<T> CreateTabItem(T value) => new FilterTabItem<T>(value);
 
-            protected override TabFillFlowContainer CreateTabFlow() => new TabFillFlowContainer
+            private class FilterDropdown : OsuTabDropdown<T>
             {
-                RelativeSizeAxes = Axes.X,
-                AutoSizeAxes = Axes.Y,
-                AllowMultiline = true,
-            };
+                protected override DropdownHeader CreateHeader() => new FilterHeader
+                {
+                    Anchor = Anchor.TopRight,
+                    Origin = Anchor.TopRight
+                };
+
+                private class FilterHeader : OsuTabDropdownHeader
+                {
+                    public FilterHeader()
+                    {
+                        Background.Height = 1;
+                    }
+                }
+            }
         }
     }
 }

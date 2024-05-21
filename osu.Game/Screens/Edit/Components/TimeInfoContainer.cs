@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Graphics;
 using osu.Game.Graphics.Sprites;
 using osu.Framework.Allocation;
@@ -11,16 +13,16 @@ using osuTK;
 
 namespace osu.Game.Screens.Edit.Components
 {
-    public partial class TimeInfoContainer : BottomBarContainer
+    public class TimeInfoContainer : BottomBarContainer
     {
-        private OsuSpriteText trackTimer = null!;
-        private OsuSpriteText bpm = null!;
+        private OsuSpriteText trackTimer;
+        private OsuSpriteText bpm;
 
         [Resolved]
-        private EditorBeatmap editorBeatmap { get; set; } = null!;
+        private EditorBeatmap editorBeatmap { get; set; }
 
         [Resolved]
-        private EditorClock editorClock { get; set; } = null!;
+        private EditorClock editorClock { get; set; }
 
         [BackgroundDependencyLoader]
         private void load(OsuColour colours, OverlayColourProvider colourProvider)
@@ -47,26 +49,11 @@ namespace osu.Game.Screens.Edit.Components
             };
         }
 
-        private double? lastTime;
-        private double? lastBPM;
-
         protected override void Update()
         {
             base.Update();
-
-            if (lastTime != editorClock.CurrentTime)
-            {
-                lastTime = editorClock.CurrentTime;
-                trackTimer.Text = editorClock.CurrentTime.ToEditorFormattedString();
-            }
-
-            double newBPM = editorBeatmap.ControlPointInfo.TimingPointAt(editorClock.CurrentTime).BPM;
-
-            if (lastBPM != newBPM)
-            {
-                lastBPM = newBPM;
-                bpm.Text = @$"{newBPM:0} BPM";
-            }
+            trackTimer.Text = editorClock.CurrentTime.ToEditorFormattedString();
+            bpm.Text = @$"{editorBeatmap.ControlPointInfo.TimingPointAt(editorClock.CurrentTime).BPM:0} BPM";
         }
     }
 }

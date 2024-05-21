@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Linq;
 using Markdig.Extensions.CustomContainers;
@@ -7,18 +9,15 @@ using Markdig.Extensions.Yaml;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using osu.Framework.Graphics.Containers;
+using osu.Framework.Graphics.Containers.Markdown;
 using osu.Game.Graphics.Containers.Markdown;
 
 namespace osu.Game.Overlays.Wiki.Markdown
 {
-    public partial class WikiMarkdownContainer : OsuMarkdownContainer
+    public class WikiMarkdownContainer : OsuMarkdownContainer
     {
-        protected override OsuMarkdownContainerOptions Options => new OsuMarkdownContainerOptions
-        {
-            Footnotes = true,
-            CustomContainers = true,
-            BlockAttributes = true
-        };
+        protected override bool Footnotes => true;
+        protected override bool CustomContainers => true;
 
         public string CurrentPath
         {
@@ -52,9 +51,9 @@ namespace osu.Game.Overlays.Wiki.Markdown
             base.AddMarkdownComponent(markdownObject, container, level);
         }
 
-        public override OsuMarkdownTextFlowContainer CreateTextFlow() => new WikiMarkdownTextFlowContainer();
+        public override MarkdownTextFlowContainer CreateTextFlow() => new WikiMarkdownTextFlowContainer();
 
-        private partial class WikiMarkdownTextFlowContainer : OsuMarkdownTextFlowContainer
+        private class WikiMarkdownTextFlowContainer : OsuMarkdownTextFlowContainer
         {
             protected override void AddImage(LinkInline linkInline) => AddDrawable(new WikiMarkdownImage(linkInline));
         }

@@ -19,11 +19,6 @@ namespace osu.Game.Localisation
         /// </summary>
         public static LocalisableString HeaderDescription => new TranslatableString(getKey(@"header_description"), @"join the real-time discussion");
 
-        /// <summary>
-        /// "Mention"
-        /// </summary>
-        public static LocalisableString MentionUser => new TranslatableString(getKey(@"mention_user"), @"Mention");
-
         private static string getKey(string key) => $"{prefix}:{key}";
     }
 }

@@ -8,13 +8,12 @@ using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
-using osu.Game.Configuration;
 using osu.Game.Overlays.Settings;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneSafeAreaHandling : OsuGameTestScene
+    public class TestSceneSafeAreaHandling : OsuGameTestScene
     {
         private SafeAreaDefiningContainer safeAreaContainer;
 
@@ -24,8 +23,6 @@ namespace osu.Game.Tests.Visual.UserInterface
         private readonly Bindable<float> safeAreaPaddingBottom = new BindableFloat { MinValue = 0, MaxValue = 200 };
         private readonly Bindable<float> safeAreaPaddingLeft = new BindableFloat { MinValue = 0, MaxValue = 200 };
         private readonly Bindable<float> safeAreaPaddingRight = new BindableFloat { MinValue = 0, MaxValue = 200 };
-
-        private readonly Bindable<bool> applySafeAreaConsiderations = new Bindable<bool>(true);
 
         protected override void LoadComplete()
         {
@@ -87,11 +84,6 @@ namespace osu.Game.Tests.Visual.UserInterface
                                     Current = safeAreaPaddingRight,
                                     LabelText = "Right"
                                 },
-                                new SettingsCheckbox
-                                {
-                                    LabelText = "Apply",
-                                    Current = applySafeAreaConsiderations,
-                                },
                             }
                         }
                     }
@@ -101,7 +93,6 @@ namespace osu.Game.Tests.Visual.UserInterface
                 safeAreaPaddingBottom.BindValueChanged(_ => updateSafeArea());
                 safeAreaPaddingLeft.BindValueChanged(_ => updateSafeArea());
                 safeAreaPaddingRight.BindValueChanged(_ => updateSafeArea());
-                applySafeAreaConsiderations.BindValueChanged(_ => updateSafeArea());
             });
 
             base.SetUpSteps();
@@ -116,8 +107,6 @@ namespace osu.Game.Tests.Visual.UserInterface
                 Left = safeAreaPaddingLeft.Value,
                 Right = safeAreaPaddingRight.Value,
             };
-
-            Game.LocalConfig.SetValue(OsuSetting.SafeAreaConsiderations, applySafeAreaConsiderations.Value);
         }
 
         [Test]

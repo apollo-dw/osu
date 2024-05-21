@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using JetBrains.Annotations;
 using osu.Framework;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
@@ -16,12 +15,11 @@ using osuTK;
 using osuTK.Graphics;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Allocation;
-using osu.Framework.Layout;
 using osu.Framework.Threading;
 
 namespace osu.Game.Screens.Play
 {
-    public partial class SquareGraph : Container
+    public class SquareGraph : Container
     {
         private BufferedContainer<Column> columns;
 
@@ -53,7 +51,7 @@ namespace osu.Game.Screens.Play
                 if (value == values) return;
 
                 values = value;
-                layout.Invalidate();
+                graphNeedsUpdate = true;
             }
         }
 
@@ -73,25 +71,23 @@ namespace osu.Game.Screens.Play
 
         private ScheduledDelegate scheduledCreate;
 
-        private readonly LayoutValue layout = new LayoutValue(Invalidation.DrawSize | Invalidation.DrawInfo);
+        private bool graphNeedsUpdate;
 
-        public SquareGraph()
-        {
-            AddLayout(layout);
-        }
+        private Vector2 previousDrawSize;
 
         protected override void Update()
         {
             base.Update();
 
-            if (!layout.IsValid)
+            if (graphNeedsUpdate || (values != null && DrawSize != previousDrawSize))
             {
                 columns?.FadeOut(500, Easing.OutQuint).Expire();
 
                 scheduledCreate?.Cancel();
                 scheduledCreate = Scheduler.AddDelayed(RecreateGraph, 500);
 
-                layout.Validate();
+                previousDrawSize = DrawSize;
+                graphNeedsUpdate = false;
             }
         }
 
@@ -180,7 +176,7 @@ namespace osu.Game.Screens.Play
             calculatedValues = newValues.ToArray();
         }
 
-        public partial class Column : Container, IStateful<ColumnState>
+        public class Column : Container, IStateful<ColumnState>
         {
             protected readonly Color4 EmptyColour = Color4.White.Opacity(20);
             public Color4 LitColour = Color4.LightBlue;
@@ -191,7 +187,6 @@ namespace osu.Game.Screens.Play
             private const float padding = 2;
             public const float WIDTH = cube_size + padding;
 
-            [CanBeNull]
             public event Action<ColumnState> StateChanged;
 
             private readonly List<Box> drawableRows = new List<Box>();

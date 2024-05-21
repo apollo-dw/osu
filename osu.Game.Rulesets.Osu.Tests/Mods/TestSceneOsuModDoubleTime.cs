@@ -7,7 +7,7 @@ using osu.Game.Rulesets.Osu.Mods;
 
 namespace osu.Game.Rulesets.Osu.Tests.Mods
 {
-    public partial class TestSceneOsuModDoubleTime : OsuModTestScene
+    public class TestSceneOsuModDoubleTime : OsuModTestScene
     {
         [TestCase(0.5)]
         [TestCase(1.01)]

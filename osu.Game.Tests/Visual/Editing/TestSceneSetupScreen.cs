@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -18,7 +20,7 @@ using osu.Game.Screens.Edit.Setup;
 namespace osu.Game.Tests.Visual.Editing
 {
     [TestFixture]
-    public partial class TestSceneSetupScreen : EditorClockTestScene
+    public class TestSceneSetupScreen : EditorClockTestScene
     {
         [Cached(typeof(EditorBeatmap))]
         [Cached(typeof(IBeatSnapProvider))]

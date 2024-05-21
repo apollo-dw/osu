@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Allocation;
@@ -12,7 +14,7 @@ using osu.Framework.Utils;
 
 namespace osu.Game.Tournament.Screens.Drawings.Components
 {
-    public partial class VisualiserContainer : Container
+    public class VisualiserContainer : Container
     {
         /// <summary>
         /// Number of lines in the visualiser.
@@ -59,7 +61,7 @@ namespace osu.Game.Tournament.Screens.Drawings.Components
             allLines.Remove(allLines.First());
         }
 
-        private partial class VisualiserLine : Container
+        private class VisualiserLine : Container
         {
             /// <summary>
             /// Time offset.
@@ -70,7 +72,7 @@ namespace osu.Game.Tournament.Screens.Drawings.Components
 
             private float leftPos => -(float)((Time.Current + Offset) / CycleTime) + expiredCount;
 
-            private Texture texture = null!;
+            private Texture texture;
 
             private int expiredCount;
 

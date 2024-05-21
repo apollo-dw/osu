@@ -19,16 +19,16 @@ using osuTK.Input;
 
 namespace osu.Game.Overlays.Toolbar
 {
-    public partial class ToolbarMusicButton : ToolbarOverlayToggleButton
+    public class ToolbarMusicButton : ToolbarOverlayToggleButton
     {
-        private Box volumeBar;
+        private Circle volumeBar;
 
         protected override Anchor TooltipAnchor => Anchor.TopRight;
 
         public ToolbarMusicButton()
         {
             Hotkey = GlobalAction.ToggleNowPlaying;
-            ButtonContent.AutoSizeAxes = Axes.X;
+            AutoSizeAxes = Axes.X;
         }
 
         [BackgroundDependencyLoader(true)]
@@ -37,7 +37,7 @@ namespace osu.Game.Overlays.Toolbar
             StateContainer = music;
 
             Flow.Padding = new MarginPadding { Horizontal = Toolbar.HEIGHT / 4 };
-            Flow.Add(volumeDisplay = new CircularContainer
+            Flow.Add(volumeDisplay = new Container
             {
                 Anchor = Anchor.CentreLeft,
                 Origin = Anchor.CentreLeft,
@@ -47,12 +47,12 @@ namespace osu.Game.Overlays.Toolbar
                 Masking = true,
                 Children = new[]
                 {
-                    new Box
+                    new Circle
                     {
                         RelativeSizeAxes = Axes.Both,
                         Colour = Color4.White.Opacity(0.25f),
                     },
-                    volumeBar = new Box
+                    volumeBar = new Circle
                     {
                         RelativeSizeAxes = Axes.Both,
                         Height = 0f,

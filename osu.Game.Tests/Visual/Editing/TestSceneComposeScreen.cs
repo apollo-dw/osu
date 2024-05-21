@@ -21,7 +21,7 @@ using osu.Game.Skinning;
 namespace osu.Game.Tests.Visual.Editing
 {
     [TestFixture]
-    public partial class TestSceneComposeScreen : EditorClockTestScene
+    public class TestSceneComposeScreen : EditorClockTestScene
     {
         private EditorBeatmap editorBeatmap = null!;
 

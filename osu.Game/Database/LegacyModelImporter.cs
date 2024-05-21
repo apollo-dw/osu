@@ -57,12 +57,7 @@ namespace osu.Game.Database
                 return Task.CompletedTask;
             }
 
-            return Task.Run(async () =>
-            {
-                var tasks = GetStableImportPaths(storage).Select(p => new ImportTask(p)).ToArray();
-
-                await Importer.Import(tasks, new ImportParameters { Batch = true, PreferHardLinks = true }).ConfigureAwait(false);
-            });
+            return Task.Run(async () => await Importer.Import(GetStableImportPaths(storage).ToArray()).ConfigureAwait(false));
         }
 
         /// <summary>

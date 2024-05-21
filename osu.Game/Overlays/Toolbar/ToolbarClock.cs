@@ -13,13 +13,12 @@ using osu.Framework.Input.Events;
 using osu.Game.Configuration;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
-using osu.Game.Graphics.UserInterface;
 using osuTK;
 using osuTK.Graphics;
 
 namespace osu.Game.Overlays.Toolbar
 {
-    public partial class ToolbarClock : OsuClickableContainer
+    public class ToolbarClock : OsuClickableContainer
     {
         private Bindable<ToolbarClockDisplayMode> clockDisplayMode;
         private Bindable<bool> prefer24HourTime;
@@ -44,57 +43,38 @@ namespace osu.Game.Overlays.Toolbar
 
             Children = new Drawable[]
             {
-                new Container
+                hoverBackground = new Box
+                {
+                    RelativeSizeAxes = Axes.Both,
+                    Colour = OsuColour.Gray(80).Opacity(180),
+                    Blending = BlendingParameters.Additive,
+                    Alpha = 0,
+                },
+                flashBackground = new Box
+                {
+                    RelativeSizeAxes = Axes.Both,
+                    Alpha = 0,
+                    Colour = Color4.White.Opacity(100),
+                    Blending = BlendingParameters.Additive,
+                },
+                new FillFlowContainer
                 {
                     RelativeSizeAxes = Axes.Y,
                     AutoSizeAxes = Axes.X,
-                    Padding = new MarginPadding(ToolbarButton.PADDING),
+                    Direction = FillDirection.Horizontal,
+                    Spacing = new Vector2(5),
+                    Padding = new MarginPadding(10),
                     Children = new Drawable[]
                     {
-                        new Container
+                        analog = new AnalogClockDisplay
                         {
-                            RelativeSizeAxes = Axes.Both,
-                            Masking = true,
-                            CornerRadius = 6,
-                            CornerExponent = 3f,
-                            Children = new Drawable[]
-                            {
-                                hoverBackground = new Box
-                                {
-                                    RelativeSizeAxes = Axes.Both,
-                                    Colour = OsuColour.Gray(80).Opacity(180),
-                                    Blending = BlendingParameters.Additive,
-                                    Alpha = 0,
-                                },
-                                flashBackground = new Box
-                                {
-                                    RelativeSizeAxes = Axes.Both,
-                                    Alpha = 0,
-                                    Colour = Color4.White.Opacity(100),
-                                    Blending = BlendingParameters.Additive,
-                                },
-                            }
+                            Anchor = Anchor.CentreLeft,
+                            Origin = Anchor.CentreLeft,
                         },
-                        new FillFlowContainer
+                        digital = new DigitalClockDisplay
                         {
-                            RelativeSizeAxes = Axes.Y,
-                            AutoSizeAxes = Axes.X,
-                            Direction = FillDirection.Horizontal,
-                            Spacing = new Vector2(5),
-                            Padding = new MarginPadding(10),
-                            Children = new Drawable[]
-                            {
-                                analog = new AnalogClockDisplay
-                                {
-                                    Anchor = Anchor.CentreLeft,
-                                    Origin = Anchor.CentreLeft,
-                                },
-                                digital = new DigitalClockDisplay
-                                {
-                                    Anchor = Anchor.CentreLeft,
-                                    Origin = Anchor.CentreLeft,
-                                }
-                            }
+                            Anchor = Anchor.CentreLeft,
+                            Origin = Anchor.CentreLeft,
                         }
                     }
                 }
@@ -142,8 +122,6 @@ namespace osu.Game.Overlays.Toolbar
 
             base.OnHoverLost(e);
         }
-
-        protected override HoverSounds CreateHoverSounds(HoverSampleSet sampleSet) => new HoverClickSounds(sampleSet);
 
         private void cycleDisplayMode()
         {

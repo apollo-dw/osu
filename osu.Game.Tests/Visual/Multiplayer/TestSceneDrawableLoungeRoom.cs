@@ -21,7 +21,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public partial class TestSceneDrawableLoungeRoom : OsuManualInputManagerTestScene
+    public class TestSceneDrawableLoungeRoom : OsuManualInputManagerTestScene
     {
         private readonly Room room = new Room
         {

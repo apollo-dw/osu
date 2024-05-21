@@ -11,7 +11,6 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Platform;
 using osu.Game.Beatmaps;
-using osu.Game.Configuration;
 using osu.Game.Extensions;
 using osu.Game.IO.Serialization;
 using osu.Game.Rulesets;
@@ -20,16 +19,13 @@ using osu.Game.Screens.Edit.Compose.Components.Timeline;
 
 namespace osu.Game.Screens.Edit.Compose
 {
-    public partial class ComposeScreen : EditorScreenWithTimeline, IGameplaySettings
+    public class ComposeScreen : EditorScreenWithTimeline
     {
         [Resolved]
-        private Clipboard hostClipboard { get; set; } = null!;
+        private GameHost host { get; set; }
 
         [Resolved]
         private EditorClock clock { get; set; }
-
-        [Resolved]
-        private IGameplaySettings globalGameplaySettings { get; set; }
 
         private Bindable<string> clipboard { get; set; }
 
@@ -101,31 +97,26 @@ namespace osu.Game.Screens.Edit.Compose
 
         #region Clipboard operations
 
-        public override void Cut()
+        protected override void PerformCut()
         {
-            if (!CanCut.Value)
-                return;
+            base.PerformCut();
 
             Copy();
             EditorBeatmap.RemoveRange(EditorBeatmap.SelectedHitObjects.ToArray());
         }
 
-        public override void Copy()
+        protected override void PerformCopy()
         {
-            // on stable, pressing Ctrl-C would copy the current timestamp to system clipboard
-            // regardless of whether anything was even selected at all.
-            // UX-wise this is generally strange and unexpected, but make it work anyways to preserve muscle memory.
-            // note that this means that `getTimestamp()` must handle no-selection case, too.
-            hostClipboard.SetText(getTimestamp());
+            base.PerformCopy();
 
-            if (CanCopy.Value)
-                clipboard.Value = new ClipboardContent(EditorBeatmap).Serialize();
+            clipboard.Value = new ClipboardContent(EditorBeatmap).Serialize();
+
+            host.GetClipboard()?.SetText(formatSelectionAsString());
         }
 
-        public override void Paste()
+        protected override void PerformPaste()
         {
-            if (!CanPaste.Value)
-                return;
+            base.PerformPaste();
 
             var objects = clipboard.Value.Deserialize<ClipboardContent>().HitObjects;
 
@@ -152,12 +143,12 @@ namespace osu.Game.Screens.Edit.Compose
             CanPaste.Value = composer.IsLoaded && !string.IsNullOrEmpty(clipboard.Value);
         }
 
-        private string getTimestamp()
+        private string formatSelectionAsString()
         {
             if (composer == null)
                 return string.Empty;
 
-            double displayTime = EditorBeatmap.SelectedHitObjects.MinBy(h => h.StartTime)?.StartTime ?? clock.CurrentTime;
+            double displayTime = EditorBeatmap.SelectedHitObjects.OrderBy(h => h.StartTime).FirstOrDefault()?.StartTime ?? clock.CurrentTime;
             string selectionAsString = composer.ConvertSelectionToString();
 
             return !string.IsNullOrEmpty(selectionAsString)
@@ -166,12 +157,5 @@ namespace osu.Game.Screens.Edit.Compose
         }
 
         #endregion
-
-        // Combo colour normalisation should not be applied in the editor.
-        // Note this doesn't affect editor test mode.
-        IBindable<float> IGameplaySettings.ComboColourNormalisationAmount => new Bindable<float>();
-
-        // Arguable.
-        IBindable<float> IGameplaySettings.PositionalHitsoundsLevel => globalGameplaySettings.PositionalHitsoundsLevel;
     }
 }

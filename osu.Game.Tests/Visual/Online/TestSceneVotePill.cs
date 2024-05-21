@@ -11,12 +11,11 @@ using osu.Framework.Allocation;
 using osu.Game.Overlays;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Containers;
-using osu.Game.Online.API;
 
 namespace osu.Game.Tests.Visual.Online
 {
     [TestFixture]
-    public partial class TestSceneVotePill : OsuTestScene
+    public class TestSceneVotePill : OsuTestScene
     {
         [Cached]
         private readonly OverlayColourProvider colourProvider = new OverlayColourProvider(OverlayColourScheme.Blue);
@@ -73,11 +72,7 @@ namespace osu.Game.Tests.Visual.Online
             AddAssert("Login overlay is visible", () => login.State.Value == Visibility.Visible);
         }
 
-        private void logIn()
-        {
-            API.Login("localUser", "password");
-            ((DummyAPIAccess)API).AuthenticateSecondFactor("abcdefgh");
-        }
+        private void logIn() => API.Login("localUser", "password");
 
         private Comment getUserComment() => new Comment
         {
@@ -103,7 +98,7 @@ namespace osu.Game.Tests.Visual.Online
             };
         }
 
-        private partial class TestPill : VotePill
+        private class TestPill : VotePill
         {
             public new Box Background => base.Background;
 

@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Collections.Specialized;
 using System.Linq;
@@ -9,7 +11,6 @@ using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Localisation;
 using osu.Game.Beatmaps;
 using osu.Game.Beatmaps.Drawables;
 using osu.Game.Graphics;
@@ -18,20 +19,21 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tournament.Components
 {
-    public partial class TournamentBeatmapPanel : CompositeDrawable
+    public class TournamentBeatmapPanel : CompositeDrawable
     {
-        public readonly IBeatmapInfo? Beatmap;
+        public readonly TournamentBeatmap Beatmap;
 
         private readonly string mod;
 
         public const float HEIGHT = 50;
 
-        private readonly Bindable<TournamentMatch?> currentMatch = new Bindable<TournamentMatch?>();
+        private readonly Bindable<TournamentMatch> currentMatch = new Bindable<TournamentMatch>();
+        private Box flash;
 
-        private Box flash = null!;
-
-        public TournamentBeatmapPanel(IBeatmapInfo? beatmap, string mod = "")
+        public TournamentBeatmapPanel(TournamentBeatmap beatmap, string mod = null)
         {
+            if (beatmap == null) throw new ArgumentNullException(nameof(beatmap));
+
             Beatmap = beatmap;
             this.mod = mod;
 
@@ -54,11 +56,11 @@ namespace osu.Game.Tournament.Components
                     RelativeSizeAxes = Axes.Both,
                     Colour = Color4.Black,
                 },
-                new NoUnloadBeatmapSetCover
+                new UpdateableOnlineBeatmapSetCover
                 {
                     RelativeSizeAxes = Axes.Both,
                     Colour = OsuColour.Gray(0.5f),
-                    OnlineInfo = (Beatmap as IBeatmapSetOnlineInfo),
+                    OnlineInfo = Beatmap,
                 },
                 new FillFlowContainer
                 {
@@ -71,7 +73,7 @@ namespace osu.Game.Tournament.Components
                     {
                         new TournamentSpriteText
                         {
-                            Text = Beatmap?.GetDisplayTitleRomanisable(false, false) ?? (LocalisableString)@"unknown",
+                            Text = Beatmap.GetDisplayTitleRomanisable(false, false),
                             Font = OsuFont.Torus.With(weight: FontWeight.Bold),
                         },
                         new FillFlowContainer
@@ -88,7 +90,7 @@ namespace osu.Game.Tournament.Components
                                 },
                                 new TournamentSpriteText
                                 {
-                                    Text = Beatmap?.Metadata.Author.Username ?? "unknown",
+                                    Text = Beatmap.Metadata.Author.Username,
                                     Padding = new MarginPadding { Right = 20 },
                                     Font = OsuFont.Torus.With(weight: FontWeight.Bold, size: 14)
                                 },
@@ -100,7 +102,7 @@ namespace osu.Game.Tournament.Components
                                 },
                                 new TournamentSpriteText
                                 {
-                                    Text = Beatmap?.DifficultyName ?? "unknown",
+                                    Text = Beatmap.DifficultyName,
                                     Font = OsuFont.Torus.With(weight: FontWeight.Bold, size: 14)
                                 },
                             }
@@ -129,42 +131,36 @@ namespace osu.Game.Tournament.Components
             }
         }
 
-        private void matchChanged(ValueChangedEvent<TournamentMatch?> match)
+        private void matchChanged(ValueChangedEvent<TournamentMatch> match)
         {
             if (match.OldValue != null)
                 match.OldValue.PicksBans.CollectionChanged -= picksBansOnCollectionChanged;
-            if (match.NewValue != null)
-                match.NewValue.PicksBans.CollectionChanged += picksBansOnCollectionChanged;
-
-            Scheduler.AddOnce(updateState);
+            match.NewValue.PicksBans.CollectionChanged += picksBansOnCollectionChanged;
+            updateState();
         }
 
-        private void picksBansOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            => Scheduler.AddOnce(updateState);
+        private void picksBansOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            => updateState();
 
-        private BeatmapChoice? choice;
+        private BeatmapChoice choice;
 
         private void updateState()
         {
-            if (currentMatch.Value == null)
+            var found = currentMatch.Value.PicksBans.FirstOrDefault(p => p.BeatmapID == Beatmap.OnlineID);
+
+            bool doFlash = found != choice;
+            choice = found;
+
+            if (found != null)
             {
-                return;
-            }
-
-            var newChoice = currentMatch.Value.PicksBans.FirstOrDefault(p => p.BeatmapID == Beatmap?.OnlineID);
-
-            bool shouldFlash = newChoice != choice;
-
-            if (newChoice != null)
-            {
-                if (shouldFlash)
-                    flash.FadeOutFromOne(500).Loop(0, 10);
+                if (doFlash)
+                    flash?.FadeOutFromOne(500).Loop(0, 10);
 
                 BorderThickness = 6;
 
-                BorderColour = TournamentGame.GetTeamColour(newChoice.Team);
+                BorderColour = TournamentGame.GetTeamColour(found.Team);
 
-                switch (newChoice.Type)
+                switch (found.Type)
                 {
                     case ChoiceType.Pick:
                         Colour = Color4.White;
@@ -183,18 +179,6 @@ namespace osu.Game.Tournament.Components
                 BorderThickness = 0;
                 Alpha = 1;
             }
-
-            choice = newChoice;
-        }
-
-        private partial class NoUnloadBeatmapSetCover : UpdateableOnlineBeatmapSetCover
-        {
-            // As covers are displayed on stream, we want them to load as soon as possible.
-            protected override double LoadDelay => 0;
-
-            // Use DelayedLoadWrapper to avoid content unloading when switching away to another screen.
-            protected override DelayedLoadWrapper CreateDelayedLoadWrapper(Func<Drawable> createContentFunc, double timeBeforeLoad)
-                => new DelayedLoadWrapper(createContentFunc(), timeBeforeLoad);
         }
     }
 }

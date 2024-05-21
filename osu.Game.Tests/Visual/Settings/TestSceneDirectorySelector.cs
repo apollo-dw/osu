@@ -1,17 +1,20 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
+using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Game.Graphics.UserInterfaceV2;
-using osu.Game.Tests.Visual.UserInterface;
 
 namespace osu.Game.Tests.Visual.Settings
 {
-    public partial class TestSceneDirectorySelector : ThemeComparisonTestScene
+    public class TestSceneDirectorySelector : OsuTestScene
     {
-        protected override Drawable CreateContent() => new OsuDirectorySelector
+        [BackgroundDependencyLoader]
+        private void load()
         {
-            RelativeSizeAxes = Axes.Both
-        };
+            Add(new OsuDirectorySelector { RelativeSizeAxes = Axes.Both });
+        }
     }
 }

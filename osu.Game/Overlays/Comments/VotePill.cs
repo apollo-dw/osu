@@ -24,13 +24,13 @@ using System.Linq;
 
 namespace osu.Game.Overlays.Comments
 {
-    public partial class VotePill : LoadingButton, IHasAccentColour
+    public class VotePill : LoadingButton, IHasAccentColour
     {
         private const int duration = 200;
 
         public Color4 AccentColour { get; set; }
 
-        protected override IEnumerable<Drawable> EffectTargets => Enumerable.Empty<Drawable>();
+        protected override IEnumerable<Drawable> EffectTargets => null;
 
         [Resolved]
         private IAPIProvider api { get; set; }
@@ -132,10 +132,11 @@ namespace osu.Game.Overlays.Comments
                 },
                 sideNumber = new OsuSpriteText
                 {
-                    Anchor = Anchor.TopCentre,
-                    Origin = Anchor.BottomCentre,
+                    Anchor = Anchor.CentreLeft,
+                    Origin = Anchor.CentreRight,
                     Text = "+1",
                     Font = OsuFont.GetFont(size: 14),
+                    Margin = new MarginPadding { Right = 3 },
                     Alpha = 0,
                 },
                 votesCounter = new OsuSpriteText
@@ -188,7 +189,7 @@ namespace osu.Game.Overlays.Comments
             else
                 sideNumber.FadeTo(IsHovered ? 1 : 0);
 
-            borderContainer.BorderThickness = IsHovered ? 2 : 0;
+            borderContainer.BorderThickness = IsHovered ? 3 : 0;
         }
 
         private void onHoverAction()

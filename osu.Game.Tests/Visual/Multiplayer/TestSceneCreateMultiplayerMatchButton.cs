@@ -10,7 +10,7 @@ using osu.Game.Screens.OnlinePlay.Multiplayer;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public partial class TestSceneCreateMultiplayerMatchButton : MultiplayerTestScene
+    public class TestSceneCreateMultiplayerMatchButton : MultiplayerTestScene
     {
         private CreateMultiplayerMatchButton button;
 

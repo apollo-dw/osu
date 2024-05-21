@@ -17,7 +17,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tests.Beatmaps
 {
-    public abstract partial class LegacyBeatmapSkinColourTest : ScreenTestScene
+    public abstract class LegacyBeatmapSkinColourTest : ScreenTestScene
     {
         protected readonly Bindable<bool> BeatmapSkins = new Bindable<bool>();
         protected readonly Bindable<bool> BeatmapColours = new Bindable<bool>();
@@ -60,7 +60,7 @@ namespace osu.Game.Tests.Beatmaps
 
         protected virtual ExposedPlayer CreateTestPlayer(bool userHasCustomColours) => new ExposedPlayer(userHasCustomColours);
 
-        protected partial class ExposedPlayer : TestPlayer
+        protected class ExposedPlayer : TestPlayer
         {
             protected readonly bool UserHasCustomColours;
 

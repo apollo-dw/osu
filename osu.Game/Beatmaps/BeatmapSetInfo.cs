@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
+using osu.Framework.Testing;
 using osu.Game.Database;
 using osu.Game.Extensions;
 using osu.Game.Models;
@@ -16,6 +17,7 @@ namespace osu.Game.Beatmaps
     /// <summary>
     /// A realm model containing metadata for a beatmap set (containing multiple <see cref="BeatmapInfo"/>s).
     /// </summary>
+    [ExcludeFromDynamicCompile]
     [MapTo("BeatmapSet")]
     public class BeatmapSetInfo : RealmObject, IHasGuidPrimaryKey, IHasRealmFiles, ISoftDelete, IEquatable<BeatmapSetInfo>, IBeatmapSetInfo
     {

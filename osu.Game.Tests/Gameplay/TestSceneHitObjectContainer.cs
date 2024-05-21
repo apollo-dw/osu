@@ -14,7 +14,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Gameplay
 {
     [HeadlessTest]
-    public partial class TestSceneHitObjectContainer : OsuTestScene
+    public class TestSceneHitObjectContainer : OsuTestScene
     {
         private HitObjectContainer container;
 
@@ -66,7 +66,7 @@ namespace osu.Game.Tests.Gameplay
             AddAssert("second object index is 0", () => container.IndexOf(secondObject) == 1);
         }
 
-        private partial class TestDrawableHitObject : DrawableHitObject
+        private class TestDrawableHitObject : DrawableHitObject
         {
             public TestDrawableHitObject([NotNull] HitObject hitObject)
                 : base(hitObject)

@@ -12,7 +12,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Navigation
 {
-    public partial class TestSceneMouseWheelVolumeAdjust : OsuGameTestScene
+    public class TestSceneMouseWheelVolumeAdjust : OsuGameTestScene
     {
         public override void SetUpSteps()
         {

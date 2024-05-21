@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using Moq;
 using NUnit.Framework;
@@ -17,8 +19,8 @@ namespace osu.Game.Tests.Editing.Checks
     [TestFixture]
     public class CheckAudioQualityTest
     {
-        private CheckAudioQuality check = null!;
-        private IBeatmap beatmap = null!;
+        private CheckAudioQuality check;
+        private IBeatmap beatmap;
 
         [SetUp]
         public void Setup()
@@ -41,7 +43,7 @@ namespace osu.Game.Tests.Editing.Checks
 
             var mock = new Mock<IWorkingBeatmap>();
             mock.SetupGet(w => w.Beatmap).Returns(beatmap);
-            mock.SetupGet(w => w.Track).Returns((Track)null!);
+            mock.SetupGet(w => w.Track).Returns((Track)null);
 
             Assert.That(check.Run(new BeatmapVerifierContext(beatmap, mock.Object)), Is.Empty);
         }

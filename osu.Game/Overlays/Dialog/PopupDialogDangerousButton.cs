@@ -16,7 +16,7 @@ using osu.Game.Graphics.Containers;
 
 namespace osu.Game.Overlays.Dialog
 {
-    public partial class PopupDialogDangerousButton : PopupDialogButton
+    public class PopupDialogDangerousButton : PopupDialogButton
     {
         private Box progressBox;
         private DangerousConfirmContainer confirmContainer;
@@ -46,7 +46,7 @@ namespace osu.Game.Overlays.Dialog
             confirmContainer.Progress.BindValueChanged(progress => progressBox.Width = (float)progress.NewValue, true);
         }
 
-        private partial class DangerousConfirmContainer : HoldToConfirmContainer
+        private class DangerousConfirmContainer : HoldToConfirmContainer
         {
             public DangerousConfirmContainer()
                 : base(isDangerousAction: true)
@@ -57,7 +57,6 @@ namespace osu.Game.Overlays.Dialog
             private Sample confirmSample;
             private double lastTickPlaybackTime;
             private AudioFilter lowPassFilter = null!;
-            private bool mouseDown;
 
             [BackgroundDependencyLoader]
             private void load(AudioManager audio)
@@ -74,12 +73,6 @@ namespace osu.Game.Overlays.Dialog
                 Progress.BindValueChanged(progressChanged);
             }
 
-            protected override void AbortConfirm()
-            {
-                lowPassFilter.CutoffTo(AudioFilter.MAX_LOWPASS_CUTOFF);
-                base.AbortConfirm();
-            }
-
             protected override void Confirm()
             {
                 lowPassFilter.CutoffTo(AudioFilter.MAX_LOWPASS_CUTOFF);
@@ -90,7 +83,6 @@ namespace osu.Game.Overlays.Dialog
             protected override bool OnMouseDown(MouseDownEvent e)
             {
                 BeginConfirm();
-                mouseDown = true;
                 return true;
             }
 
@@ -98,26 +90,9 @@ namespace osu.Game.Overlays.Dialog
             {
                 if (!e.HasAnyButtonPressed)
                 {
+                    lowPassFilter.CutoffTo(AudioFilter.MAX_LOWPASS_CUTOFF);
                     AbortConfirm();
-                    mouseDown = false;
                 }
-            }
-
-            protected override bool OnHover(HoverEvent e)
-            {
-                if (mouseDown)
-                    BeginConfirm();
-
-                return base.OnHover(e);
-            }
-
-            protected override void OnHoverLost(HoverLostEvent e)
-            {
-                base.OnHoverLost(e);
-
-                if (!mouseDown) return;
-
-                AbortConfirm();
             }
 
             private void progressChanged(ValueChangedEvent<double> progress)

@@ -25,7 +25,7 @@ namespace osu.Game.Screens.Edit
     /// Transition screen for the editor.
     /// Used to avoid backing out to main menu/song select when switching difficulties from within the editor.
     /// </summary>
-    public partial class EditorLoader : ScreenWithBeatmapBackground
+    public class EditorLoader : ScreenWithBeatmapBackground
     {
         /// <summary>
         /// The stored state from the last editor opened.
@@ -41,8 +41,6 @@ namespace osu.Game.Screens.Edit
         public override bool HideOverlaysOnEnter => true;
 
         public override bool DisallowExternalBeatmapRulesetChanges => true;
-
-        public override bool? AllowGlobalTrackControl => false;
 
         [Resolved]
         private BeatmapManager beatmapManager { get; set; }

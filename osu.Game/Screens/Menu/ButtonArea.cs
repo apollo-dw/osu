@@ -4,7 +4,6 @@
 #nullable disable
 
 using System;
-using JetBrains.Annotations;
 using osu.Framework;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -14,7 +13,7 @@ using osuTK;
 
 namespace osu.Game.Screens.Menu
 {
-    public partial class ButtonArea : Container, IStateful<Visibility>
+    public class ButtonArea : Container, IStateful<Visibility>
     {
         public FlowContainerWithOrigin Flow;
 
@@ -89,10 +88,9 @@ namespace osu.Game.Screens.Menu
 
         public override void Show() => State = Visibility.Visible;
 
-        [CanBeNull]
         public event Action<Visibility> StateChanged;
 
-        private partial class ButtonAreaBackground : Box, IStateful<ButtonAreaBackgroundState>
+        private class ButtonAreaBackground : Box, IStateful<ButtonAreaBackgroundState>
         {
             private ButtonAreaBackgroundState state;
 
@@ -148,7 +146,6 @@ namespace osu.Game.Screens.Menu
                 }
             }
 
-            [CanBeNull]
             public event Action<ButtonAreaBackgroundState> StateChanged;
         }
 

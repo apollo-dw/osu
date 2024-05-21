@@ -1,74 +1,102 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Colour;
+using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Localisation;
 using osuTK;
 
 namespace osu.Game.Graphics.Sprites
 {
-    public partial class GlowingSpriteText : GlowingDrawable, IHasText
+    public class GlowingSpriteText : Container, IHasText
     {
-        private const float blur_sigma = 3f;
-
-        private OsuSpriteText text = null!;
+        private readonly OsuSpriteText spriteText, blurredText;
 
         public LocalisableString Text
         {
-            get => text.Text;
-            set => text.Text = value;
+            get => spriteText.Text;
+            set => blurredText.Text = spriteText.Text = value;
         }
 
         public FontUsage Font
         {
-            get => text.Font;
-            set => text.Font = value.With(fixedWidth: true);
+            get => spriteText.Font;
+            set => blurredText.Font = spriteText.Font = value.With(fixedWidth: true);
         }
 
         public Vector2 TextSize
         {
-            get => text.Size;
-            set => text.Size = value;
+            get => spriteText.Size;
+            set => blurredText.Size = spriteText.Size = value;
         }
 
         public ColourInfo TextColour
         {
-            get => text.Colour;
-            set => text.Colour = value;
+            get => spriteText.Colour;
+            set => spriteText.Colour = value;
+        }
+
+        public ColourInfo GlowColour
+        {
+            get => blurredText.Colour;
+            set => blurredText.Colour = value;
         }
 
         public Vector2 Spacing
         {
-            get => text.Spacing;
-            set => text.Spacing = value;
+            get => spriteText.Spacing;
+            set => spriteText.Spacing = blurredText.Spacing = value;
         }
 
         public bool UseFullGlyphHeight
         {
-            get => text.UseFullGlyphHeight;
-            set => text.UseFullGlyphHeight = value;
+            get => spriteText.UseFullGlyphHeight;
+            set => spriteText.UseFullGlyphHeight = blurredText.UseFullGlyphHeight = value;
         }
 
         public Bindable<string> Current
         {
-            get => text.Current;
-            set => text.Current = value;
+            get => spriteText.Current;
+            set => spriteText.Current = value;
         }
 
         public GlowingSpriteText()
         {
-            BlurSigma = new Vector2(blur_sigma);
-            EffectBlending = BlendingParameters.Additive;
-        }
+            AutoSizeAxes = Axes.Both;
 
-        protected override Drawable CreateDrawable() => text = new OsuSpriteText
-        {
-            Anchor = Anchor.Centre,
-            Origin = Anchor.Centre,
-            Shadow = false,
-        };
+            Children = new Drawable[]
+            {
+                new BufferedContainer(cachedFrameBuffer: true)
+                {
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    BlurSigma = new Vector2(4),
+                    RedrawOnScale = false,
+                    RelativeSizeAxes = Axes.Both,
+                    Blending = BlendingParameters.Additive,
+                    Size = new Vector2(3f),
+                    Children = new[]
+                    {
+                        blurredText = new OsuSpriteText
+                        {
+                            Anchor = Anchor.Centre,
+                            Origin = Anchor.Centre,
+                            Shadow = false,
+                        },
+                    },
+                },
+                spriteText = new OsuSpriteText
+                {
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    Shadow = false,
+                },
+            };
+        }
     }
 }

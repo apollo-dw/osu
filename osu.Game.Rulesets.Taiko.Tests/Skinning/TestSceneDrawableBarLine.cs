@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -16,7 +18,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Rulesets.Taiko.Tests.Skinning
 {
     [TestFixture]
-    public partial class TestSceneDrawableBarLine : TaikoSkinnableTestScene
+    public class TestSceneDrawableBarLine : TaikoSkinnableTestScene
     {
         [Cached(typeof(IScrollingInfo))]
         private ScrollingTestContainer.TestScrollingInfo info = new ScrollingTestContainer.TestScrollingInfo
@@ -35,7 +37,7 @@ namespace osu.Game.Rulesets.Taiko.Tests.Skinning
                 var cont = new Container
                 {
                     RelativeSizeAxes = Axes.Both,
-                    Height = 0.2f,
+                    Height = 0.8f,
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
                     Children = new Drawable[]
@@ -61,7 +63,7 @@ namespace osu.Game.Rulesets.Taiko.Tests.Skinning
                 var cont = new Container
                 {
                     RelativeSizeAxes = Axes.Both,
-                    Height = 0.2f,
+                    Height = 0.8f,
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
                     Children = new Drawable[]
@@ -86,7 +88,7 @@ namespace osu.Game.Rulesets.Taiko.Tests.Skinning
             var barLine = new BarLine
             {
                 Major = major,
-                StartTime = Time.Current + 5000,
+                StartTime = Time.Current + 2000,
             };
 
             var cpi = new ControlPointInfo();

@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -14,7 +16,7 @@ using osuTK;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public partial class MatchScoreDisplay : CompositeDrawable
+    public class MatchScoreDisplay : CompositeDrawable
     {
         private const float bar_height = 18;
         private const float font_size = 50;
@@ -22,13 +24,11 @@ namespace osu.Game.Screens.Play.HUD
         public BindableLong Team1Score = new BindableLong();
         public BindableLong Team2Score = new BindableLong();
 
-        protected MatchScoreCounter Score1Text = null!;
-        protected MatchScoreCounter Score2Text = null!;
+        protected MatchScoreCounter Score1Text;
+        protected MatchScoreCounter Score2Text;
 
-        private Drawable score1Bar = null!;
-        private Drawable score2Bar = null!;
-
-        private MatchScoreDiffCounter scoreDiffText = null!;
+        private Drawable score1Bar;
+        private Drawable score2Bar;
 
         [BackgroundDependencyLoader]
         private void load(OsuColour colours)
@@ -98,16 +98,6 @@ namespace osu.Game.Screens.Play.HUD
                         },
                     }
                 },
-                scoreDiffText = new MatchScoreDiffCounter
-                {
-                    Anchor = Anchor.TopCentre,
-                    Margin = new MarginPadding
-                    {
-                        Top = bar_height / 4,
-                        Horizontal = 8
-                    },
-                    Alpha = 0
-                }
             };
         }
 
@@ -149,10 +139,6 @@ namespace osu.Game.Screens.Play.HUD
 
             losingBar.ResizeWidthTo(0, 400, Easing.OutQuint);
             winningBar.ResizeWidthTo(Math.Min(0.4f, MathF.Pow(diff / 1500000f, 0.5f) / 2), 400, Easing.OutQuint);
-
-            scoreDiffText.Alpha = diff != 0 ? 1 : 0;
-            scoreDiffText.Current.Value = -diff;
-            scoreDiffText.Origin = Team1Score.Value > Team2Score.Value ? Anchor.TopLeft : Anchor.TopRight;
         }
 
         protected override void UpdateAfterChildren()
@@ -162,9 +148,9 @@ namespace osu.Game.Screens.Play.HUD
             Score2Text.X = Math.Max(5 + Score2Text.DrawWidth / 2, score2Bar.DrawWidth);
         }
 
-        protected partial class MatchScoreCounter : CommaSeparatedScoreCounter
+        protected class MatchScoreCounter : CommaSeparatedScoreCounter
         {
-            private OsuSpriteText displayedSpriteText = null!;
+            private OsuSpriteText displayedSpriteText;
 
             public MatchScoreCounter()
             {
@@ -187,15 +173,6 @@ namespace osu.Game.Screens.Play.HUD
                 => displayedSpriteText.Font = winning
                     ? OsuFont.Torus.With(weight: FontWeight.Bold, size: font_size, fixedWidth: true)
                     : OsuFont.Torus.With(weight: FontWeight.Regular, size: font_size * 0.8f, fixedWidth: true);
-        }
-
-        private partial class MatchScoreDiffCounter : CommaSeparatedScoreCounter
-        {
-            protected override OsuSpriteText CreateSpriteText() => base.CreateSpriteText().With(s =>
-            {
-                s.Spacing = new Vector2(-2);
-                s.Font = OsuFont.Torus.With(weight: FontWeight.Regular, size: bar_height, fixedWidth: true);
-            });
         }
     }
 }

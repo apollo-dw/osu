@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Graphics;
@@ -19,7 +21,7 @@ namespace osu.Game.Screens.Select.Carousel
     /// <remarks>
     /// Used in cases when there are too many difficulty icons to show.
     /// </remarks>
-    public partial class GroupedDifficultyIcon : DifficultyIcon
+    public class GroupedDifficultyIcon : DifficultyIcon
     {
         public readonly List<CarouselBeatmap> Items;
 

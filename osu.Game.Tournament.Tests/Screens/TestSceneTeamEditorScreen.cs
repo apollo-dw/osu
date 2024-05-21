@@ -1,15 +1,15 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using osu.Framework.Allocation;
+#nullable disable
+
 using osu.Game.Tournament.Screens.Editors;
 
 namespace osu.Game.Tournament.Tests.Screens
 {
-    public partial class TestSceneTeamEditorScreen : TournamentScreenTestScene
+    public class TestSceneTeamEditorScreen : TournamentTestScene
     {
-        [BackgroundDependencyLoader]
-        private void load()
+        public TestSceneTeamEditorScreen()
         {
             Add(new TeamEditorScreen
             {

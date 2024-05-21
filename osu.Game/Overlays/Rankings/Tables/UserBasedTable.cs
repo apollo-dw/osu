@@ -17,7 +17,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Rankings.Tables
 {
-    public abstract partial class UserBasedTable : RankingsTable<UserStatistics>
+    public abstract class UserBasedTable : RankingsTable<UserStatistics>
     {
         protected UserBasedTable(int page, IReadOnlyList<UserStatistics> rankings)
             : base(page, rankings)
@@ -98,7 +98,7 @@ namespace osu.Game.Overlays.Rankings.Tables
             public override HeaderText CreateHeaderText() => new GradeHeaderText(Header, Highlighted);
         }
 
-        private partial class GradeHeaderText : HeaderText
+        private class GradeHeaderText : HeaderText
         {
             public GradeHeaderText(LocalisableString text, bool isHighlighted)
                 : base(text, isHighlighted)

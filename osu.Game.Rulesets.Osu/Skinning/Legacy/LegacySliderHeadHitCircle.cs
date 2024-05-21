@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Diagnostics;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -9,12 +11,12 @@ using osu.Game.Rulesets.Osu.Objects.Drawables;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Legacy
 {
-    public partial class LegacySliderHeadHitCircle : LegacyMainCirclePiece
+    public class LegacySliderHeadHitCircle : LegacyMainCirclePiece
     {
         [Resolved(canBeNull: true)]
-        private DrawableHitObject? drawableHitObject { get; set; }
+        private DrawableHitObject drawableHitObject { get; set; }
 
-        private Drawable proxiedOverlayLayer = null!;
+        private Drawable proxiedOverlayLayer;
 
         public LegacySliderHeadHitCircle()
             : base("sliderstartcircle")

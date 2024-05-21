@@ -16,7 +16,7 @@ using osu.Game.Tests.Resources;
 
 namespace osu.Game.Tests.Visual.Menus
 {
-    public partial class TestSceneMusicActionHandling : OsuGameTestScene
+    public class TestSceneMusicActionHandling : OsuGameTestScene
     {
         private GlobalActionContainer globalActionContainer => Game.ChildrenOfType<GlobalActionContainer>().First();
 

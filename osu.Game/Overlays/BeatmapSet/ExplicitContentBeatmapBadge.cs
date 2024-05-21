@@ -7,7 +7,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.BeatmapSet
 {
-    public partial class ExplicitContentBeatmapBadge : BeatmapBadge
+    public class ExplicitContentBeatmapBadge : BeatmapBadge
     {
         [BackgroundDependencyLoader]
         private void load(OsuColour colours)

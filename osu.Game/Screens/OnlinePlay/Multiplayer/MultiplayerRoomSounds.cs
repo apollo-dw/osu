@@ -12,7 +12,7 @@ using osu.Game.Online.Multiplayer;
 
 namespace osu.Game.Screens.OnlinePlay.Multiplayer
 {
-    public partial class MultiplayerRoomSounds : MultiplayerRoomComposite
+    public class MultiplayerRoomSounds : MultiplayerRoomComposite
     {
         private Sample hostChangedSample;
         private Sample userJoinedSample;

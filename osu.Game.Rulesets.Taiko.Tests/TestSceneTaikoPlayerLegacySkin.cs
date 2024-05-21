@@ -6,7 +6,7 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Taiko.Tests
 {
-    public partial class TestSceneTaikoPlayerLegacySkin : LegacySkinPlayerTestScene
+    public class TestSceneTaikoPlayerLegacySkin : LegacySkinPlayerTestScene
     {
         protected override Ruleset CreatePlayerRuleset() => new TaikoRuleset();
 

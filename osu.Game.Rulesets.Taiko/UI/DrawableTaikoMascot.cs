@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using osu.Framework.Allocation;
 using osu.Framework.Audio.Track;
@@ -16,14 +18,13 @@ using osu.Game.Screens.Play;
 
 namespace osu.Game.Rulesets.Taiko.UI
 {
-    public partial class DrawableTaikoMascot : BeatSyncedContainer
+    public class DrawableTaikoMascot : BeatSyncedContainer
     {
         public readonly Bindable<TaikoMascotAnimationState> State;
-        public readonly Bindable<JudgementResult?> LastResult;
+        public readonly Bindable<JudgementResult> LastResult;
 
         private readonly Dictionary<TaikoMascotAnimationState, TaikoMascotAnimation> animations;
-
-        private TaikoMascotAnimation? currentAnimation;
+        private TaikoMascotAnimation currentAnimation;
 
         private bool lastObjectHit = true;
         private bool kiaiMode;
@@ -33,13 +34,13 @@ namespace osu.Game.Rulesets.Taiko.UI
             Origin = Anchor = Anchor.BottomLeft;
 
             State = new Bindable<TaikoMascotAnimationState>(startingState);
-            LastResult = new Bindable<JudgementResult?>();
+            LastResult = new Bindable<JudgementResult>();
 
             animations = new Dictionary<TaikoMascotAnimationState, TaikoMascotAnimation>();
         }
 
         [BackgroundDependencyLoader(true)]
-        private void load(GameplayState? gameplayState)
+        private void load(GameplayState gameplayState)
         {
             InternalChildren = new[]
             {
@@ -63,7 +64,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             LastResult.BindValueChanged(onNewResult);
         }
 
-        private void onNewResult(ValueChangedEvent<JudgementResult?> resultChangedEvent)
+        private void onNewResult(ValueChangedEvent<JudgementResult> resultChangedEvent)
         {
             var result = resultChangedEvent.NewValue;
             if (result == null)

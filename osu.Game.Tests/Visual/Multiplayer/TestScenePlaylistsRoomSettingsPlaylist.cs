@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -26,7 +25,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public partial class TestScenePlaylistsRoomSettingsPlaylist : OnlinePlayTestScene
+    public class TestScenePlaylistsRoomSettingsPlaylist : OnlinePlayTestScene
     {
         private TestPlaylist playlist;
 
@@ -47,14 +46,10 @@ namespace osu.Game.Tests.Visual.Multiplayer
             AddAssert("item removed", () => !playlist.Items.Contains(selectedItem));
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void TestNextItemSelectedAfterDeletion(bool allowSelection)
+        [Test]
+        public void TestNextItemSelectedAfterDeletion()
         {
-            createPlaylist(p =>
-            {
-                p.AllowSelection = allowSelection;
-            });
+            createPlaylist();
 
             moveToItem(0);
             AddStep("click", () => InputManager.Click(MouseButton.Left));
@@ -62,7 +57,7 @@ namespace osu.Game.Tests.Visual.Multiplayer
             moveToDeleteButton(0);
             AddStep("click delete button", () => InputManager.Click(MouseButton.Left));
 
-            AddAssert("item 0 is " + (allowSelection ? "selected" : "not selected"), () => playlist.SelectedItem.Value == (allowSelection ? playlist.Items[0] : null));
+            AddAssert("item 0 is selected", () => playlist.SelectedItem.Value == playlist.Items[0]);
         }
 
         [Test]
@@ -122,7 +117,7 @@ namespace osu.Game.Tests.Visual.Multiplayer
             InputManager.MoveMouseTo(item.ChildrenOfType<DrawableRoomPlaylistItem.PlaylistRemoveButton>().ElementAt(0), offset);
         });
 
-        private void createPlaylist(Action<TestPlaylist> setupPlaylist = null)
+        private void createPlaylist()
         {
             AddStep("create playlist", () =>
             {
@@ -159,14 +154,12 @@ namespace osu.Game.Tests.Visual.Multiplayer
                         }
                     });
                 }
-
-                setupPlaylist?.Invoke(playlist);
             });
 
             AddUntilStep("wait for items to load", () => playlist.ItemMap.Values.All(i => i.IsLoaded));
         }
 
-        private partial class TestPlaylist : PlaylistsRoomSettingsPlaylist
+        private class TestPlaylist : PlaylistsRoomSettingsPlaylist
         {
             public new IReadOnlyDictionary<PlaylistItem, RearrangeableListItem<PlaylistItem>> ItemMap => base.ItemMap;
 

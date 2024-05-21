@@ -27,7 +27,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public partial class TestSceneDrawableRoom : OsuTestScene
+    public class TestSceneDrawableRoom : OsuTestScene
     {
         [Cached]
         protected readonly OverlayColourProvider ColourProvider = new OverlayColourProvider(OverlayColourScheme.Plum);
@@ -69,9 +69,8 @@ namespace osu.Game.Tests.Visual.Multiplayer
                         }),
                         createLoungeRoom(new Room
                         {
-                            Name = { Value = "Private room" },
-                            Status = { Value = new RoomStatusOpenPrivate() },
-                            HasPassword = { Value = true },
+                            Name = { Value = "Multiplayer room" },
+                            Status = { Value = new RoomStatusOpen() },
                             EndDate = { Value = DateTimeOffset.Now.AddDays(1) },
                             Type = { Value = MatchType.HeadToHead },
                             Playlist =

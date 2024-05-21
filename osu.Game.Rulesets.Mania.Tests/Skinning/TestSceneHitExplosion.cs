@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +20,7 @@ using osuTK;
 namespace osu.Game.Rulesets.Mania.Tests.Skinning
 {
     [TestFixture]
-    public partial class TestSceneHitExplosion : ManiaSkinnableTestScene
+    public class TestSceneHitExplosion : ManiaSkinnableTestScene
     {
         private readonly List<DrawablePool<PoolableHitExplosion>> hitExplosionPools = new List<DrawablePool<PoolableHitExplosion>>();
 
@@ -39,7 +41,7 @@ namespace osu.Game.Rulesets.Mania.Tests.Skinning
                 {
                     c.Add(hitExplosionPools[poolIndex].Get(e =>
                     {
-                        e.Apply(new JudgementResult(new HitObject(), new ManiaJudgement()));
+                        e.Apply(new JudgementResult(new HitObject(), runCount % 6 == 0 ? new HoldNoteTickJudgement() : new ManiaJudgement()));
 
                         e.Anchor = Anchor.Centre;
                         e.Origin = Anchor.Centre;

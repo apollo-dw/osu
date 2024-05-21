@@ -22,7 +22,8 @@ namespace osu.Game.Rulesets.Mania.MathUtils
 
         public static void Sort(T[] keys, IComparer<T> comparer)
         {
-            ArgumentNullException.ThrowIfNull(keys);
+            if (keys == null)
+                throw new ArgumentNullException(nameof(keys));
 
             if (keys.Length == 0)
                 return;

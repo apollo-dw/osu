@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Graphics;
@@ -14,7 +16,7 @@ using osuTK.Graphics;
 namespace osu.Game.Tests.Visual.UserInterface
 {
     [TestFixture]
-    public partial class TestSceneIconButton : OsuTestScene
+    public class TestSceneIconButton : OsuTestScene
     {
         public TestSceneIconButton()
         {
@@ -36,7 +38,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             };
         }
 
-        private partial class ColouredIconButton : IconButton
+        private class ColouredIconButton : IconButton
         {
             public ColouredIconButton()
             {
@@ -45,7 +47,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             }
         }
 
-        private partial class NamedIconButton : Container
+        private class NamedIconButton : Container
         {
             public NamedIconButton(string name, IconButton button)
             {

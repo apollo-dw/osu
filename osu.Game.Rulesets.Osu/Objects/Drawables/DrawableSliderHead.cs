@@ -3,29 +3,32 @@
 
 #nullable disable
 
+using System;
 using System.Diagnostics;
+using JetBrains.Annotations;
+using osu.Framework.Allocation;
 using osu.Framework.Bindables;
-using osu.Game.Rulesets.Osu.UI;
+using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.Scoring;
 
 namespace osu.Game.Rulesets.Osu.Objects.Drawables
 {
-    public partial class DrawableSliderHead : DrawableHitCircle
+    public class DrawableSliderHead : DrawableHitCircle
     {
         public new SliderHeadCircle HitObject => (SliderHeadCircle)base.HitObject;
 
+        [CanBeNull]
+        public Slider Slider => DrawableSlider?.HitObject;
+
         public DrawableSlider DrawableSlider => (DrawableSlider)ParentHitObject;
 
-        public override bool DisplayResult
-        {
-            get
-            {
-                if (HitObject?.ClassicSliderBehaviour == true)
-                    return false;
+        public override bool DisplayResult => HitObject?.JudgeAsNormalHitCircle ?? base.DisplayResult;
 
-                return base.DisplayResult;
-            }
-        }
+        /// <summary>
+        /// Makes this <see cref="DrawableSliderHead"/> track the follow circle when the start time is reached.
+        /// If <c>false</c>, this <see cref="DrawableSliderHead"/> will be pinned to its initial position in the slider.
+        /// </summary>
+        public bool TrackFollowCircle = true;
 
         private readonly IBindable<int> pathVersion = new Bindable<int>();
 
@@ -40,16 +43,18 @@ namespace osu.Game.Rulesets.Osu.Objects.Drawables
         {
         }
 
+        [BackgroundDependencyLoader]
+        private void load()
+        {
+            PositionBindable.BindValueChanged(_ => updatePosition());
+            pathVersion.BindValueChanged(_ => updatePosition());
+        }
+
         protected override void OnFree()
         {
             base.OnFree();
 
             pathVersion.UnbindFrom(DrawableSlider.PathVersion);
-        }
-
-        protected override void UpdatePosition()
-        {
-            // Slider head is always drawn at (0,0).
         }
 
         protected override void OnApply()
@@ -58,35 +63,48 @@ namespace osu.Game.Rulesets.Osu.Objects.Drawables
 
             pathVersion.BindTo(DrawableSlider.PathVersion);
 
-            CheckHittable = (d, t, r) => DrawableSlider.CheckHittable?.Invoke(d, t, r) ?? ClickAction.Hit;
+            CheckHittable = (d, t) => DrawableSlider.CheckHittable?.Invoke(d, t) ?? true;
         }
 
-        protected override void CheckForResult(bool userTriggered, double timeOffset)
+        protected override void Update()
         {
-            base.CheckForResult(userTriggered, timeOffset);
-            DrawableSlider.SliderInputManager.PostProcessHeadJudgement(this);
+            base.Update();
+
+            Debug.Assert(Slider != null);
+            Debug.Assert(HitObject != null);
+
+            if (TrackFollowCircle)
+            {
+                double completionProgress = Math.Clamp((Time.Current - Slider.StartTime) / Slider.Duration, 0, 1);
+
+                //todo: we probably want to reconsider this before adding scoring, but it looks and feels nice.
+                if (!IsHit)
+                    Position = Slider.CurvePositionAt(completionProgress);
+            }
         }
 
         protected override HitResult ResultFor(double timeOffset)
         {
             Debug.Assert(HitObject != null);
 
-            if (HitObject.ClassicSliderBehaviour)
-            {
-                // With classic slider behaviour, heads are considered fully hit if in the largest hit window.
-                // We can't award a full Great because the true Great judgement is awarded on the Slider itself,
-                // reduced based on number of ticks hit,
-                // so we use the most suitable LargeTick judgement here instead.
-                return base.ResultFor(timeOffset).IsHit() ? HitResult.LargeTickHit : HitResult.LargeTickMiss;
-            }
+            if (HitObject.JudgeAsNormalHitCircle)
+                return base.ResultFor(timeOffset);
 
-            return base.ResultFor(timeOffset);
+            // If not judged as a normal hitcircle, judge as a slider tick instead. This is the classic osu!stable scoring.
+            var result = base.ResultFor(timeOffset);
+            return result.IsHit() ? HitResult.LargeTickHit : HitResult.LargeTickMiss;
         }
 
         public override void Shake()
         {
             base.Shake();
             DrawableSlider.Shake();
+        }
+
+        private void updatePosition()
+        {
+            if (Slider != null)
+                Position = HitObject.Position - Slider.Position;
         }
     }
 }

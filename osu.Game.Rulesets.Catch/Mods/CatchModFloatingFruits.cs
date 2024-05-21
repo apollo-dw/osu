@@ -1,6 +1,7 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using osu.Framework.Graphics;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Localisation;
 using osu.Game.Rulesets.Catch.Objects;
@@ -20,7 +21,10 @@ namespace osu.Game.Rulesets.Catch.Mods
 
         public void ApplyToDrawableRuleset(DrawableRuleset<CatchHitObject> drawableRuleset)
         {
-            drawableRuleset.PlayfieldAdjustmentContainer.Scale = new Vector2(1, -1);
+            drawableRuleset.Anchor = Anchor.Centre;
+            drawableRuleset.Origin = Anchor.Centre;
+
+            drawableRuleset.Scale = new Vector2(1, -1);
         }
     }
 }

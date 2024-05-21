@@ -3,27 +3,23 @@
 
 #nullable disable
 
-using System.Collections.Generic;
-using System.Linq;
 using osu.Framework.Allocation;
-using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Sprites;
-using osu.Framework.Localisation;
-using osu.Framework.Testing;
-using osu.Game.Graphics;
-using osu.Game.Localisation;
 using osu.Game.Overlays.Settings;
 using osu.Game.Overlays.Settings.Sections;
 using osu.Game.Overlays.Settings.Sections.Input;
 using osuTK.Graphics;
+using System.Collections.Generic;
+using osu.Framework.Bindables;
+using osu.Framework.Localisation;
+using osu.Game.Localisation;
 
 namespace osu.Game.Overlays
 {
-    public partial class SettingsOverlay : SettingsPanel, INamedOverlayComponent
+    public class SettingsOverlay : SettingsPanel, INamedOverlayComponent
     {
-        public IconUsage Icon => OsuIcon.Settings;
+        public string IconTexture => "Icons/Hexacons/settings";
         public LocalisableString Title => SettingsStrings.HeaderTitle;
         public LocalisableString Description => SettingsStrings.HeaderDescription;
 
@@ -51,26 +47,11 @@ namespace osu.Game.Overlays
         protected override Drawable CreateFooter() => new SettingsFooter();
 
         public SettingsOverlay()
-            : base(false)
+            : base(true)
         {
         }
 
         public override bool AcceptsFocus => lastOpenedSubPanel == null || lastOpenedSubPanel.State.Value == Visibility.Hidden;
-
-        public void ShowAtControl<T>()
-            where T : Drawable
-        {
-            Show();
-
-            // wait for load of sections
-            if (!SectionsContainer.Any())
-            {
-                Scheduler.Add(ShowAtControl<T>);
-                return;
-            }
-
-            SectionsContainer.ScrollTo(SectionsContainer.ChildrenOfType<T>().Single());
-        }
 
         private T createSubPanel<T>(T subPanel)
             where T : SettingsSubPanel
@@ -89,19 +70,16 @@ namespace osu.Game.Overlays
             switch (state.NewValue)
             {
                 case Visibility.Visible:
-                    Sidebar.Expanded.Value = false;
-                    Sidebar.FadeColour(Color4.DarkGray, 300, Easing.OutQuint);
+                    Sidebar?.FadeColour(Color4.DarkGray, 300, Easing.OutQuint);
 
                     SectionsContainer.FadeOut(300, Easing.OutQuint);
                     ContentContainer.MoveToX(-PANEL_WIDTH, 500, Easing.OutQuint);
 
                     lastOpenedSubPanel = panel;
-
                     break;
 
                 case Visibility.Hidden:
-                    Sidebar.Expanded.Value = true;
-                    Sidebar.FadeColour(Color4.White, 300, Easing.OutQuint);
+                    Sidebar?.FadeColour(Color4.White, 300, Easing.OutQuint);
 
                     SectionsContainer.FadeIn(500, Easing.OutQuint);
                     ContentContainer.MoveToX(0, 500, Easing.OutQuint);

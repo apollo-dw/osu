@@ -15,7 +15,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.BeatmapSet
 {
-    public partial class BeatmapAvailability : Container
+    public class BeatmapAvailability : Container
     {
         private APIBeatmapSet beatmapSet;
 

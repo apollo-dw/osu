@@ -7,13 +7,14 @@ using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Game.Graphics;
-using osu.Game.Graphics.UserInterfaceV2;
+using osu.Game.Graphics.Backgrounds;
+using osu.Game.Graphics.UserInterface;
 using osu.Game.Online.Multiplayer;
 using osuTK;
 
 namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
 {
-    public partial class MultiplayerSpectateButton : MultiplayerRoomComposite
+    public class MultiplayerSpectateButton : MultiplayerRoomComposite
     {
         [Resolved]
         private OngoingOperationTracker ongoingOperationTracker { get; set; }
@@ -23,11 +24,11 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
 
         private IBindable<bool> operationInProgress;
 
-        private readonly RoundedButton button;
+        private readonly ButtonWithTrianglesExposed button;
 
         public MultiplayerSpectateButton()
         {
-            InternalChild = button = new RoundedButton
+            InternalChild = button = new ButtonWithTrianglesExposed
             {
                 RelativeSizeAxes = Axes.Both,
                 Size = Vector2.One,
@@ -66,17 +67,26 @@ namespace osu.Game.Screens.OnlinePlay.Multiplayer.Match
                 default:
                     button.Text = "Spectate";
                     button.BackgroundColour = colours.BlueDark;
+                    button.Triangles.ColourDark = colours.BlueDarker;
+                    button.Triangles.ColourLight = colours.Blue;
                     break;
 
                 case MultiplayerUserState.Spectating:
                     button.Text = "Stop spectating";
                     button.BackgroundColour = colours.Gray4;
+                    button.Triangles.ColourDark = colours.Gray5;
+                    button.Triangles.ColourLight = colours.Gray6;
                     break;
             }
 
             button.Enabled.Value = Client.Room != null
                                    && Client.Room.State != MultiplayerRoomState.Closed
                                    && !operationInProgress.Value;
+        }
+
+        private class ButtonWithTrianglesExposed : TriangleButton
+        {
+            public new Triangles Triangles => base.Triangles;
         }
     }
 }

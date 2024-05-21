@@ -7,8 +7,8 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using osu.Framework.Allocation;
-using osu.Framework.Graphics.Primitives;
 using osu.Game.Rulesets.Mania.Beatmaps;
 using osu.Game.Rulesets.Mania.Objects;
 using osu.Game.Rulesets.Objects;
@@ -19,42 +19,18 @@ using osuTK;
 namespace osu.Game.Rulesets.Mania.UI
 {
     [Cached]
-    public partial class ManiaPlayfield : ScrollingPlayfield
+    public class ManiaPlayfield : ScrollingPlayfield
     {
         public IReadOnlyList<Stage> Stages => stages;
 
         private readonly List<Stage> stages = new List<Stage>();
 
-        public override Quad SkinnableComponentScreenSpaceDrawQuad
-        {
-            get
-            {
-                RectangleF totalArea = RectangleF.Empty;
-
-                for (int i = 0; i < Stages.Count; ++i)
-                {
-                    var stageArea = Stages[i].ScreenSpaceDrawQuad.AABBFloat;
-                    totalArea = i == 0 ? stageArea : RectangleF.Union(totalArea, stageArea);
-                }
-
-                return totalArea;
-            }
-        }
-
-        public override bool ReceivePositionalInputAt(Vector2 screenSpacePos)
-        {
-            foreach (var s in stages)
-            {
-                if (s.ReceivePositionalInputAt(screenSpacePos))
-                    return true;
-            }
-
-            return false;
-        }
+        public override bool ReceivePositionalInputAt(Vector2 screenSpacePos) => stages.Any(s => s.ReceivePositionalInputAt(screenSpacePos));
 
         public ManiaPlayfield(List<StageDefinition> stageDefinitions)
         {
-            ArgumentNullException.ThrowIfNull(stageDefinitions);
+            if (stageDefinitions == null)
+                throw new ArgumentNullException(nameof(stageDefinitions));
 
             if (stageDefinitions.Count <= 0)
                 throw new ArgumentException("Can't have zero or fewer stages.");
@@ -79,7 +55,7 @@ namespace osu.Game.Rulesets.Mania.UI
                 stages.Add(newStage);
                 AddNested(newStage);
 
-                firstColumnIndex += newStage.Columns.Length;
+                firstColumnIndex += newStage.Columns.Count;
             }
         }
 
@@ -133,9 +109,9 @@ namespace osu.Game.Rulesets.Mania.UI
 
             foreach (var stage in stages)
             {
-                if (index >= stage.Columns.Length)
+                if (index >= stage.Columns.Count)
                 {
-                    index -= stage.Columns.Length;
+                    index -= stage.Columns.Count;
                     continue;
                 }
 
@@ -148,18 +124,7 @@ namespace osu.Game.Rulesets.Mania.UI
         /// <summary>
         /// Retrieves the total amount of columns across all stages in this playfield.
         /// </summary>
-        public int TotalColumns
-        {
-            get
-            {
-                int sum = 0;
-
-                foreach (var stage in stages)
-                    sum += stage.Columns.Length;
-
-                return sum;
-            }
-        }
+        public int TotalColumns => stages.Sum(s => s.Columns.Count);
 
         private Stage getStageByColumn(int column)
         {
@@ -167,7 +132,7 @@ namespace osu.Game.Rulesets.Mania.UI
 
             foreach (var stage in stages)
             {
-                sum += stage.Columns.Length;
+                sum += stage.Columns.Count;
                 if (sum > column)
                     return stage;
             }

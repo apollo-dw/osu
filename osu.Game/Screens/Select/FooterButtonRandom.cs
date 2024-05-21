@@ -17,7 +17,7 @@ using osuTK.Input;
 
 namespace osu.Game.Screens.Select
 {
-    public partial class FooterButtonRandom : FooterButton
+    public class FooterButtonRandom : FooterButton
     {
         public Action NextRandom { get; set; }
         public Action PreviousRandom { get; set; }
@@ -93,20 +93,14 @@ namespace osu.Game.Screens.Select
 
         protected override bool OnKeyDown(KeyDownEvent e)
         {
-            updateText(e);
+            updateText(e.ShiftPressed);
             return base.OnKeyDown(e);
         }
 
         protected override void OnKeyUp(KeyUpEvent e)
         {
-            updateText(e);
+            updateText(e.ShiftPressed);
             base.OnKeyUp(e);
-        }
-
-        protected override bool OnMouseDown(MouseDownEvent e)
-        {
-            updateText(e);
-            return base.OnMouseDown(e);
         }
 
         protected override bool OnClick(ClickEvent e)
@@ -125,15 +119,14 @@ namespace osu.Game.Screens.Select
 
         protected override void OnMouseUp(MouseUpEvent e)
         {
-            base.OnMouseUp(e);
-
-            if (e.Button == MouseButton.Right && IsHovered)
+            if (e.Button == MouseButton.Right)
             {
                 rewindSearch = true;
                 TriggerClick();
+                return;
             }
 
-            updateText(e);
+            base.OnMouseUp(e);
         }
 
         public override bool OnPressed(KeyBindingPressEvent<GlobalAction> e)
@@ -158,12 +151,10 @@ namespace osu.Game.Screens.Select
             }
         }
 
-        private void updateText(UIEvent e)
+        private void updateText(bool rewind = false)
         {
-            bool aboutToRewind = e.ShiftPressed || e.CurrentState.Mouse.IsPressed(MouseButton.Right);
-
-            randomSpriteText.Alpha = aboutToRewind ? 0 : 1;
-            rewindSpriteText.Alpha = aboutToRewind ? 1 : 0;
+            randomSpriteText.Alpha = rewind ? 0 : 1;
+            rewindSpriteText.Alpha = rewind ? 1 : 0;
         }
     }
 }

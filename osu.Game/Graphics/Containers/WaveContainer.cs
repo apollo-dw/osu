@@ -1,10 +1,9 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
-using osu.Framework.Allocation;
-using osu.Framework.Audio;
-using osu.Framework.Audio.Sample;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -14,11 +13,10 @@ using osuTK.Graphics;
 
 namespace osu.Game.Graphics.Containers
 {
-    public partial class WaveContainer : VisibilityContainer
+    public class WaveContainer : VisibilityContainer
     {
         public const float APPEAR_DURATION = 800;
         public const float DISAPPEAR_DURATION = 500;
-        public const float SHADOW_OPACITY = 0.2f;
 
         private const Easing easing_show = Easing.OutSine;
         private const Easing easing_hide = Easing.InSine;
@@ -34,12 +32,6 @@ namespace osu.Game.Graphics.Containers
         protected override Container<Drawable> Content => contentContainer;
 
         protected override bool StartHidden => true;
-
-        private Sample? samplePopIn;
-        private Sample? samplePopOut;
-
-        // required due to LoadAsyncComplete() in `VisibilityContainer` calling PopOut() during load - similar workaround to `OsuDropdownMenu`
-        private bool wasShown;
 
         public Color4 FirstWaveColour
         {
@@ -63,13 +55,6 @@ namespace osu.Game.Graphics.Containers
         {
             get => fourthWave.Colour;
             set => fourthWave.Colour = value;
-        }
-
-        [BackgroundDependencyLoader(true)]
-        private void load(AudioManager audio)
-        {
-            samplePopIn = audio.Samples.Get("UI/wave-pop-in");
-            samplePopOut = audio.Samples.Get("UI/overlay-big-pop-out");
         }
 
         public WaveContainer()
@@ -122,23 +107,18 @@ namespace osu.Game.Graphics.Containers
 
         protected override void PopIn()
         {
-            foreach (var w in wavesContainer)
+            foreach (var w in wavesContainer.Children)
                 w.Show();
 
             contentContainer.MoveToY(0, APPEAR_DURATION, Easing.OutQuint);
-            samplePopIn?.Play();
-            wasShown = true;
         }
 
         protected override void PopOut()
         {
-            foreach (var w in wavesContainer)
+            foreach (var w in wavesContainer.Children)
                 w.Hide();
 
             contentContainer.MoveToY(2, DISAPPEAR_DURATION, Easing.In);
-
-            if (wasShown)
-                samplePopOut?.Play();
         }
 
         protected override void UpdateAfterChildren()
@@ -151,7 +131,7 @@ namespace osu.Game.Graphics.Containers
             wavesContainer.Height = Math.Max(0, DrawHeight - (contentContainer.DrawHeight - contentContainer.Y * DrawHeight));
         }
 
-        private partial class Wave : VisibilityContainer
+        private class Wave : VisibilityContainer
         {
             public float FinalPosition;
 
@@ -178,7 +158,7 @@ namespace osu.Game.Graphics.Containers
 
                 // We can not use RelativeSizeAxes for Height, because the height
                 // of our parent diminishes as the content moves up.
-                Height = Parent!.Parent!.DrawSize.Y * 1.5f;
+                Height = Parent.Parent.DrawSize.Y * 1.5f;
             }
 
             protected override void PopIn() => Schedule(() => this.MoveToY(FinalPosition, APPEAR_DURATION, easing_show));
@@ -188,7 +168,7 @@ namespace osu.Game.Graphics.Containers
                 double duration = IsLoaded ? DISAPPEAR_DURATION : 0;
 
                 // scheduling is required as parent may not be present at the time this is called.
-                Schedule(() => this.MoveToY(Parent!.Parent!.DrawSize.Y, duration, easing_hide));
+                Schedule(() => this.MoveToY(Parent.Parent.DrawSize.Y, duration, easing_hide));
             }
         }
     }

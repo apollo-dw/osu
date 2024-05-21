@@ -16,7 +16,7 @@ using osuTK.Graphics;
 namespace osu.Game.Tests.Visual
 {
     [TestFixture]
-    public partial class TestSceneOsuScreenStack : OsuTestScene
+    public class TestSceneOsuScreenStack : OsuTestScene
     {
         private TestOsuScreenStack stack;
 
@@ -56,41 +56,41 @@ namespace osu.Game.Tests.Visual
         public void AllowTrackAdjustmentsTest()
         {
             AddStep("push allowing screen", () => stack.Push(loadNewScreen<AllowScreen>()));
-            AddAssert("allows adjustments 1", () => musicController.ApplyModTrackAdjustments);
+            AddAssert("allows adjustments 1", () => musicController.AllowTrackAdjustments);
 
             AddStep("push inheriting screen", () => stack.Push(loadNewScreen<InheritScreen>()));
-            AddAssert("allows adjustments 2", () => musicController.ApplyModTrackAdjustments);
+            AddAssert("allows adjustments 2", () => musicController.AllowTrackAdjustments);
 
             AddStep("push disallowing screen", () => stack.Push(loadNewScreen<DisallowScreen>()));
-            AddAssert("disallows adjustments 3", () => !musicController.ApplyModTrackAdjustments);
+            AddAssert("disallows adjustments 3", () => !musicController.AllowTrackAdjustments);
 
             AddStep("push inheriting screen", () => stack.Push(loadNewScreen<InheritScreen>()));
-            AddAssert("disallows adjustments 4", () => !musicController.ApplyModTrackAdjustments);
+            AddAssert("disallows adjustments 4", () => !musicController.AllowTrackAdjustments);
 
             AddStep("push inheriting screen", () => stack.Push(loadNewScreen<InheritScreen>()));
-            AddAssert("disallows adjustments 5", () => !musicController.ApplyModTrackAdjustments);
+            AddAssert("disallows adjustments 5", () => !musicController.AllowTrackAdjustments);
 
             AddStep("push allowing screen", () => stack.Push(loadNewScreen<AllowScreen>()));
-            AddAssert("allows adjustments 6", () => musicController.ApplyModTrackAdjustments);
+            AddAssert("allows adjustments 6", () => musicController.AllowTrackAdjustments);
 
             // Now start exiting from screens
             AddStep("exit screen", () => stack.Exit());
-            AddAssert("disallows adjustments 7", () => !musicController.ApplyModTrackAdjustments);
+            AddAssert("disallows adjustments 7", () => !musicController.AllowTrackAdjustments);
 
             AddStep("exit screen", () => stack.Exit());
-            AddAssert("disallows adjustments 8", () => !musicController.ApplyModTrackAdjustments);
+            AddAssert("disallows adjustments 8", () => !musicController.AllowTrackAdjustments);
 
             AddStep("exit screen", () => stack.Exit());
-            AddAssert("disallows adjustments 9", () => !musicController.ApplyModTrackAdjustments);
+            AddAssert("disallows adjustments 9", () => !musicController.AllowTrackAdjustments);
 
             AddStep("exit screen", () => stack.Exit());
-            AddAssert("allows adjustments 10", () => musicController.ApplyModTrackAdjustments);
+            AddAssert("allows adjustments 10", () => musicController.AllowTrackAdjustments);
 
             AddStep("exit screen", () => stack.Exit());
-            AddAssert("allows adjustments 11", () => musicController.ApplyModTrackAdjustments);
+            AddAssert("allows adjustments 11", () => musicController.AllowTrackAdjustments);
         }
 
-        public partial class TestScreen : ScreenWithBeatmapBackground
+        public class TestScreen : ScreenWithBeatmapBackground
         {
             private readonly string screenText;
 
@@ -112,7 +112,7 @@ namespace osu.Game.Tests.Visual
             }
         }
 
-        private partial class NoParallaxTestScreen : TestScreen
+        private class NoParallaxTestScreen : TestScreen
         {
             public NoParallaxTestScreen(string screenText)
                 : base(screenText)
@@ -122,22 +122,22 @@ namespace osu.Game.Tests.Visual
             public override float BackgroundParallaxAmount => 0.0f;
         }
 
-        private partial class TestOsuScreenStack : OsuScreenStack
+        private class TestOsuScreenStack : OsuScreenStack
         {
             public new float ParallaxAmount => base.ParallaxAmount;
         }
 
-        private partial class AllowScreen : OsuScreen
+        private class AllowScreen : OsuScreen
         {
-            public override bool? ApplyModTrackAdjustments => true;
+            public override bool? AllowTrackAdjustments => true;
         }
 
-        public partial class DisallowScreen : OsuScreen
+        public class DisallowScreen : OsuScreen
         {
-            public override bool? ApplyModTrackAdjustments => false;
+            public override bool? AllowTrackAdjustments => false;
         }
 
-        private partial class InheritScreen : OsuScreen
+        private class InheritScreen : OsuScreen
         {
         }
 

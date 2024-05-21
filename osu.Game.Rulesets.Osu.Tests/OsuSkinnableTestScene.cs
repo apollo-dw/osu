@@ -9,7 +9,7 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Osu.Tests
 {
-    public abstract partial class OsuSkinnableTestScene : SkinnableTestScene
+    public abstract class OsuSkinnableTestScene : SkinnableTestScene
     {
         private Container content;
 

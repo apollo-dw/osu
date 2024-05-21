@@ -11,7 +11,7 @@ using osu.Game.Scoring;
 
 namespace osu.Game.Online
 {
-    public partial class ScoreDownloadTracker : DownloadTracker<ScoreInfo>
+    public class ScoreDownloadTracker : DownloadTracker<ScoreInfo>
     {
         [Resolved(CanBeNull = true)]
         protected ScoreModelDownloader? Downloader { get; private set; }
@@ -39,8 +39,7 @@ namespace osu.Game.Online
             var scoreInfo = new ScoreInfo
             {
                 ID = TrackedItem.ID,
-                OnlineID = TrackedItem.OnlineID,
-                LegacyOnlineID = TrackedItem.LegacyOnlineID
+                OnlineID = TrackedItem.OnlineID
             };
 
             Downloader.DownloadBegan += downloadBegan;
@@ -48,9 +47,8 @@ namespace osu.Game.Online
 
             realmSubscription = realm.RegisterForNotifications(r => r.All<ScoreInfo>().Where(s =>
                 ((s.OnlineID > 0 && s.OnlineID == TrackedItem.OnlineID)
-                 || (s.LegacyOnlineID > 0 && s.LegacyOnlineID == TrackedItem.LegacyOnlineID)
                  || (!string.IsNullOrEmpty(s.Hash) && s.Hash == TrackedItem.Hash))
-                && !s.DeletePending), (items, _) =>
+                && !s.DeletePending), (items, _, _) =>
             {
                 if (items.Any())
                     Schedule(() => UpdateState(DownloadState.LocallyAvailable));

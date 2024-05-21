@@ -8,12 +8,12 @@ using osu.Game.Overlays.Dialog;
 
 namespace osu.Game.Collections
 {
-    public partial class DeleteCollectionDialog : DangerousActionDialog
+    public class DeleteCollectionDialog : DeleteConfirmationDialog
     {
         public DeleteCollectionDialog(Live<BeatmapCollection> collection, Action deleteAction)
         {
             BodyText = collection.PerformRead(c => $"{c.Name} ({"beatmap".ToQuantity(c.BeatmapMD5Hashes.Count)})");
-            DangerousAction = deleteAction;
+            DeleteAction = deleteAction;
         }
     }
 }

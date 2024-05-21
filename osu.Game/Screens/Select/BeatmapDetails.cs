@@ -3,6 +3,7 @@
 
 using System.Linq;
 using osu.Framework.Allocation;
+using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
@@ -18,14 +19,16 @@ using osu.Game.Overlays.BeatmapSet;
 using osu.Game.Resources.Localisation.Web;
 using osu.Game.Screens.Select.Details;
 using osuTK;
+using osuTK.Graphics;
 
 namespace osu.Game.Screens.Select
 {
-    public partial class BeatmapDetails : Container
+    public class BeatmapDetails : Container
     {
         private const float spacing = 10;
         private const float transition_duration = 250;
 
+        private readonly AdvancedStats advanced;
         private readonly UserRatings ratingsDisplay;
         private readonly MetadataSection description, source, tags;
         private readonly Container failRetryContainer;
@@ -65,112 +68,128 @@ namespace osu.Game.Screens.Select
 
         public BeatmapDetails()
         {
-            CornerRadius = 10;
-            Masking = true;
-
             Children = new Drawable[]
             {
                 new Box
                 {
                     RelativeSizeAxes = Axes.Both,
-                    Colour = Colour4.Black.Opacity(0.3f),
+                    Colour = Color4.Black.Opacity(0.5f),
                 },
-                new GridContainer
+                new Container
                 {
                     RelativeSizeAxes = Axes.Both,
                     Padding = new MarginPadding { Horizontal = spacing },
-                    RowDimensions = new[]
+                    Children = new Drawable[]
                     {
-                        new Dimension(GridSizeMode.AutoSize),
-                        new Dimension()
-                    },
-                    Content = new[]
-                    {
-                        new Drawable[]
+                        new GridContainer
                         {
-                            new FillFlowContainer
+                            RelativeSizeAxes = Axes.Both,
+                            RowDimensions = new[]
                             {
-                                RelativeSizeAxes = Axes.X,
-                                AutoSizeAxes = Axes.Y,
-                                Direction = FillDirection.Horizontal,
-                                Children = new Drawable[]
+                                new Dimension(GridSizeMode.AutoSize),
+                                new Dimension()
+                            },
+                            Content = new[]
+                            {
+                                new Drawable[]
                                 {
                                     new FillFlowContainer
                                     {
                                         RelativeSizeAxes = Axes.X,
                                         AutoSizeAxes = Axes.Y,
-                                        Width = 0.5f,
-                                        Spacing = new Vector2(spacing),
-                                        Padding = new MarginPadding { Right = spacing / 2 },
-                                        Children = new[]
+                                        Direction = FillDirection.Horizontal,
+                                        Children = new Drawable[]
                                         {
-                                            new DetailBox().WithChild(new OnlineViewContainer(string.Empty)
+                                            new FillFlowContainer
                                             {
                                                 RelativeSizeAxes = Axes.X,
-                                                Height = 134,
-                                                Padding = new MarginPadding { Horizontal = spacing, Top = spacing },
-                                                Child = ratingsDisplay = new UserRatings
+                                                AutoSizeAxes = Axes.Y,
+                                                Width = 0.5f,
+                                                Spacing = new Vector2(spacing),
+                                                Padding = new MarginPadding { Right = spacing / 2 },
+                                                Children = new[]
                                                 {
-                                                    RelativeSizeAxes = Axes.Both,
+                                                    new DetailBox().WithChild(advanced = new AdvancedStats
+                                                    {
+                                                        RelativeSizeAxes = Axes.X,
+                                                        AutoSizeAxes = Axes.Y,
+                                                        Padding = new MarginPadding { Horizontal = spacing, Top = spacing * 2, Bottom = spacing },
+                                                    }),
+                                                    new DetailBox().WithChild(new OnlineViewContainer(string.Empty)
+                                                    {
+                                                        RelativeSizeAxes = Axes.X,
+                                                        Height = 134,
+                                                        Padding = new MarginPadding { Horizontal = spacing, Top = spacing },
+                                                        Child = ratingsDisplay = new UserRatings
+                                                        {
+                                                            RelativeSizeAxes = Axes.Both,
+                                                        },
+                                                    }),
                                                 },
-                                            }),
-                                        },
-                                    },
-                                    new OsuScrollContainer
-                                    {
-                                        RelativeSizeAxes = Axes.X,
-                                        Height = 250,
-                                        Width = 0.5f,
-                                        ScrollbarVisible = false,
-                                        Padding = new MarginPadding { Left = spacing / 2 },
-                                        Child = new FillFlowContainer
-                                        {
-                                            RelativeSizeAxes = Axes.X,
-                                            AutoSizeAxes = Axes.Y,
-                                            LayoutDuration = transition_duration,
-                                            LayoutEasing = Easing.OutQuad,
-                                            Children = new[]
+                                            },
+                                            new OsuScrollContainer
                                             {
-                                                description = new MetadataSectionDescription(query => songSelect?.Search(query)),
-                                                source = new MetadataSectionSource(query => songSelect?.Search(query)),
-                                                tags = new MetadataSectionTags(query => songSelect?.Search(query)),
+                                                RelativeSizeAxes = Axes.Both,
+                                                Width = 0.5f,
+                                                ScrollbarVisible = false,
+                                                Padding = new MarginPadding { Left = spacing / 2 },
+                                                Child = new FillFlowContainer
+                                                {
+                                                    RelativeSizeAxes = Axes.X,
+                                                    AutoSizeAxes = Axes.Y,
+                                                    LayoutDuration = transition_duration,
+                                                    LayoutEasing = Easing.OutQuad,
+                                                    Children = new[]
+                                                    {
+                                                        description = new MetadataSection(MetadataType.Description, searchOnSongSelect),
+                                                        source = new MetadataSection(MetadataType.Source, searchOnSongSelect),
+                                                        tags = new MetadataSection(MetadataType.Tags, searchOnSongSelect),
+                                                    },
+                                                },
                                             },
                                         },
                                     },
                                 },
-                            },
-                        },
-                        new Drawable[]
-                        {
-                            failRetryContainer = new OnlineViewContainer("Sign in to view more details")
-                            {
-                                RelativeSizeAxes = Axes.Both,
-                                Children = new Drawable[]
+                                new Drawable[]
                                 {
-                                    new OsuSpriteText
-                                    {
-                                        Text = BeatmapsetsStrings.ShowInfoPointsOfFailure,
-                                        Font = OsuFont.GetFont(weight: FontWeight.Bold, size: 14),
-                                    },
-                                    failRetryGraph = new FailRetryGraph
+                                    failRetryContainer = new OnlineViewContainer("Sign in to view more details")
                                     {
                                         RelativeSizeAxes = Axes.Both,
-                                        Padding = new MarginPadding { Top = 14 + spacing / 2 },
+                                        Children = new Drawable[]
+                                        {
+                                            new OsuSpriteText
+                                            {
+                                                Text = BeatmapsetsStrings.ShowInfoPointsOfFailure,
+                                                Font = OsuFont.GetFont(weight: FontWeight.Bold, size: 14),
+                                            },
+                                            failRetryGraph = new FailRetryGraph
+                                            {
+                                                RelativeSizeAxes = Axes.Both,
+                                                Padding = new MarginPadding { Top = 14 + spacing / 2 },
+                                            },
+                                        },
                                     },
-                                },
-                            },
-                        }
-                    }
+                                }
+                            }
+                        },
+                    },
                 },
                 loading = new LoadingLayer(true)
             };
+
+            void searchOnSongSelect(string text)
+            {
+                if (songSelect != null)
+                    songSelect.FilterControl.CurrentTextSearch.Value = text;
+            }
         }
 
         private void updateStatistics()
         {
-            description.Metadata = BeatmapInfo?.DifficultyName ?? string.Empty;
-            source.Metadata = BeatmapInfo?.Metadata.Source ?? string.Empty;
-            tags.Metadata = BeatmapInfo?.Metadata.Tags ?? string.Empty;
+            advanced.BeatmapInfo = BeatmapInfo;
+            description.Text = BeatmapInfo?.DifficultyName;
+            source.Text = BeatmapInfo?.Metadata.Source;
+            tags.Text = BeatmapInfo?.Metadata.Tags;
 
             // failTimes may have been previously fetched
             if (ratings != null && failTimes != null)
@@ -254,7 +273,7 @@ namespace osu.Game.Screens.Select
             loading.Hide();
         }
 
-        private partial class DetailBox : Container
+        private class DetailBox : Container
         {
             private readonly Container content;
             protected override Container<Drawable> Content => content;
@@ -266,6 +285,11 @@ namespace osu.Game.Screens.Select
 
                 InternalChildren = new Drawable[]
                 {
+                    new Box
+                    {
+                        RelativeSizeAxes = Axes.Both,
+                        Colour = Color4.Black.Opacity(0.5f),
+                    },
                     content = new Container
                     {
                         RelativeSizeAxes = Axes.X,

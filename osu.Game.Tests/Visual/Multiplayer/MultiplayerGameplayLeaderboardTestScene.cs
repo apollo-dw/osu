@@ -21,11 +21,12 @@ using osu.Game.Online.Multiplayer;
 using osu.Game.Online.Spectator;
 using osu.Game.Replays.Legacy;
 using osu.Game.Rulesets.Scoring;
+using osu.Game.Scoring;
 using osu.Game.Screens.Play.HUD;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public abstract partial class MultiplayerGameplayLeaderboardTestScene : OsuTestScene
+    public abstract class MultiplayerGameplayLeaderboardTestScene : OsuTestScene
     {
         protected const int TOTAL_USERS = 16;
 
@@ -116,9 +117,11 @@ namespace osu.Game.Tests.Visual.Multiplayer
                         BeatmapID = 0,
                         RulesetID = 0,
                         Mods = user.Mods,
-                        MaximumStatistics = new Dictionary<HitResult, int>
+                        MaximumScoringValues = new ScoringValues
                         {
-                            { HitResult.Perfect, 100 }
+                            BaseScore = 10000,
+                            MaxCombo = 1000,
+                            CountBasicHitObjects = 1000
                         }
                     };
                 }
@@ -187,12 +190,15 @@ namespace osu.Game.Tests.Visual.Multiplayer
 
                 if (!lastHeaders.TryGetValue(userId, out var header))
                 {
-                    lastHeaders[userId] = header = new FrameHeader(0, 0, 0, 0, new Dictionary<HitResult, int>
+                    lastHeaders[userId] = header = new FrameHeader(new ScoreInfo
                     {
-                        [HitResult.Miss] = 0,
-                        [HitResult.Meh] = 0,
-                        [HitResult.Great] = 0
-                    }, new ScoreProcessorStatistics(), DateTimeOffset.Now);
+                        Statistics = new Dictionary<HitResult, int>
+                        {
+                            [HitResult.Miss] = 0,
+                            [HitResult.Meh] = 0,
+                            [HitResult.Great] = 0
+                        }
+                    });
                 }
 
                 switch (RNG.Next(0, 3))

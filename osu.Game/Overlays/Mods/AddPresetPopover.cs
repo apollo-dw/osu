@@ -8,12 +8,11 @@ using osu.Framework.Bindables;
 using osu.Framework.Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Input.Events;
 using osu.Game.Database;
+using osu.Game.Extensions;
 using osu.Game.Graphics;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Graphics.UserInterfaceV2;
-using osu.Game.Input.Bindings;
 using osu.Game.Localisation;
 using osu.Game.Rulesets;
 using osu.Game.Rulesets.Mods;
@@ -21,7 +20,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.Mods
 {
-    internal partial class AddPresetPopover : OsuPopover
+    internal class AddPresetPopover : OsuPopover
     {
         private readonly AddPresetButton button;
 
@@ -68,7 +67,7 @@ namespace osu.Game.Overlays.Mods
                         Anchor = Anchor.TopCentre,
                         Origin = Anchor.TopCentre,
                         Text = ModSelectOverlayStrings.AddPreset,
-                        Action = createPreset
+                        Action = tryCreatePreset
                     }
                 }
             };
@@ -90,33 +89,22 @@ namespace osu.Game.Overlays.Mods
             base.LoadComplete();
 
             ScheduleAfterChildren(() => GetContainingInputManager().ChangeFocus(nameTextBox));
-
-            nameTextBox.Current.BindValueChanged(s =>
-            {
-                createButton.Enabled.Value = !string.IsNullOrWhiteSpace(s.NewValue);
-            }, true);
         }
 
-        public override bool OnPressed(KeyBindingPressEvent<GlobalAction> e)
+        private void tryCreatePreset()
         {
-            switch (e.Action)
+            if (string.IsNullOrWhiteSpace(nameTextBox.Current.Value))
             {
-                case GlobalAction.Select:
-                    createButton.TriggerClick();
-                    return true;
+                Body.Shake();
+                return;
             }
 
-            return base.OnPressed(e);
-        }
-
-        private void createPreset()
-        {
             realm.Write(r => r.Add(new ModPreset
             {
                 Name = nameTextBox.Current.Value,
                 Description = descriptionTextBox.Current.Value,
-                Mods = selectedMods.Value.Where(mod => mod.Type != ModType.System).ToArray(),
-                Ruleset = r.Find<RulesetInfo>(ruleset.Value.ShortName)!
+                Mods = selectedMods.Value.ToArray(),
+                Ruleset = r.Find<RulesetInfo>(ruleset.Value.ShortName)
             }));
 
             this.HidePopover();

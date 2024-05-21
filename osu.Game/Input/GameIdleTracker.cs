@@ -7,7 +7,7 @@ using osu.Framework.Input;
 
 namespace osu.Game.Input
 {
-    public partial class GameIdleTracker : IdleTracker
+    public class GameIdleTracker : IdleTracker
     {
         private InputManager inputManager;
 

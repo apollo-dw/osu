@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -13,15 +15,14 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Legacy
 {
-    public partial class LegacyCursorTrail : CursorTrail
+    public class LegacyCursorTrail : CursorTrail
     {
         private readonly ISkin skin;
         private const double disjoint_trail_time_separation = 1000 / 60.0;
 
-        public bool DisjointTrail { get; private set; }
+        private bool disjointTrail;
         private double lastTrailTime;
-
-        private IBindable<float> cursorSize = null!;
+        private IBindable<float> cursorSize;
 
         private Vector2? currentPosition;
 
@@ -31,19 +32,12 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
         }
 
         [BackgroundDependencyLoader]
-        private void load(OsuConfigManager config, ISkinSource skinSource)
+        private void load(OsuConfigManager config)
         {
-            cursorSize = config.GetBindable<float>(OsuSetting.GameplayCursorSize).GetBoundCopy();
-
             Texture = skin.GetTexture("cursortrail");
+            disjointTrail = skin.GetTexture("cursormiddle") == null;
 
-            // Cursor and cursor trail components are sourced from potentially different skin sources.
-            // Stable always chooses cursor trail disjoint behaviour based on the cursor texture lookup source, so we need to fetch where that occurred.
-            // See https://github.com/peppy/osu-stable-reference/blob/3ea48705eb67172c430371dcfc8a16a002ed0d3d/osu!/Graphics/Skinning/SkinManager.cs#L269
-            var cursorProvider = skinSource.FindProvider(s => s.GetTexture("cursor") != null);
-            DisjointTrail = cursorProvider?.GetTexture("cursormiddle") == null;
-
-            if (DisjointTrail)
+            if (disjointTrail)
             {
                 bool centre = skin.GetConfig<OsuSkinConfiguration, bool>(OsuSkinConfiguration.CursorCentre)?.Value ?? true;
 
@@ -60,21 +54,23 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
                 // stable "magic ratio". see OsuPlayfieldAdjustmentContainer for full explanation.
                 Texture.ScaleAdjust *= 1.6f;
             }
+
+            cursorSize = config.GetBindable<float>(OsuSetting.GameplayCursorSize).GetBoundCopy();
         }
 
-        protected override double FadeDuration => DisjointTrail ? 150 : 500;
+        protected override double FadeDuration => disjointTrail ? 150 : 500;
         protected override float FadeExponent => 1;
 
-        protected override bool InterpolateMovements => !DisjointTrail;
+        protected override bool InterpolateMovements => !disjointTrail;
 
         protected override float IntervalMultiplier => 1 / Math.Max(cursorSize.Value, 1);
-        protected override bool AvoidDrawingNearCursor => !DisjointTrail;
+        protected override bool AvoidDrawingNearCursor => !disjointTrail;
 
         protected override void Update()
         {
             base.Update();
 
-            if (!DisjointTrail || !currentPosition.HasValue)
+            if (!disjointTrail || !currentPosition.HasValue)
                 return;
 
             if (Time.Current - lastTrailTime >= disjoint_trail_time_separation)
@@ -86,7 +82,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
 
         protected override bool OnMouseMove(MouseMoveEvent e)
         {
-            if (!DisjointTrail)
+            if (!disjointTrail)
                 return base.OnMouseMove(e);
 
             currentPosition = e.ScreenSpaceMousePosition;

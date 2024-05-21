@@ -59,8 +59,7 @@ namespace osu.Game.Extensions
         /// <returns>A short relative string representing the input time.</returns>
         public static string ToShortRelativeTime(this DateTimeOffset time, TimeSpan lowerCutoff)
         {
-            // covers all `DateTimeOffset` instances with the date portion of 0001-01-01.
-            if (time.Date == default)
+            if (time == default)
                 return "-";
 
             var now = DateTime.Now;

@@ -15,7 +15,7 @@ using osuTK;
 
 namespace osu.Game.Screens.OnlinePlay.Lounge.Components
 {
-    public partial class RankRangePill : MultiplayerRoomComposite
+    public class RankRangePill : MultiplayerRoomComposite
     {
         private OsuTextFlowContainer rankFlow;
 

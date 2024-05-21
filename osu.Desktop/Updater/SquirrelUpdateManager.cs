@@ -9,16 +9,15 @@ using osu.Framework.Logging;
 using osu.Game;
 using osu.Game.Overlays;
 using osu.Game.Overlays.Notifications;
-using osu.Game.Screens.Play;
+using Squirrel;
 using Squirrel.SimpleSplat;
-using Squirrel.Sources;
 using LogLevel = Squirrel.SimpleSplat.LogLevel;
 using UpdateManager = osu.Game.Updater.UpdateManager;
 
 namespace osu.Desktop.Updater
 {
     [SupportedOSPlatform("windows")]
-    public partial class SquirrelUpdateManager : UpdateManager
+    public class SquirrelUpdateManager : UpdateManager
     {
         private Squirrel.UpdateManager? updateManager;
         private INotificationOverlay notificationOverlay = null!;
@@ -36,9 +35,6 @@ namespace osu.Desktop.Updater
 
         [Resolved]
         private OsuGameBase game { get; set; } = null!;
-
-        [Resolved]
-        private ILocalUserPlayInfo? localUserInfo { get; set; }
 
         [BackgroundDependencyLoader]
         private void load(INotificationOverlay notifications)
@@ -59,11 +55,7 @@ namespace osu.Desktop.Updater
 
             try
             {
-                // Avoid any kind of update checking while gameplay is running.
-                if (localUserInfo?.IsPlaying.Value == true)
-                    return false;
-
-                updateManager ??= new Squirrel.UpdateManager(new GithubSource(@"https://github.com/ppy/osu", github_token, false), @"osulazer");
+                updateManager ??= new GithubUpdateManager(@"https://github.com/ppy/osu", false, github_token, @"osulazer");
 
                 var info = await updateManager.CheckForUpdate(!useDeltaPatching).ConfigureAwait(false);
 

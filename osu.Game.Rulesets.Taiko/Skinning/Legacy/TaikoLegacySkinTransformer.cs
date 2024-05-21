@@ -27,16 +27,16 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Legacy
             hasExplosion = new Lazy<bool>(() => GetTexture(getHitName(TaikoSkinComponents.TaikoExplosionGreat)) != null);
         }
 
-        public override Drawable? GetDrawableComponent(ISkinComponentLookup lookup)
+        public override Drawable? GetDrawableComponent(ISkinComponent component)
         {
-            if (lookup is GameplaySkinComponentLookup<HitResult>)
+            if (component is GameplaySkinComponent<HitResult>)
             {
                 // if a taiko skin is providing explosion sprites, hide the judgements completely
                 if (hasExplosion.Value)
                     return Drawable.Empty().With(d => d.Expire());
             }
 
-            if (lookup is TaikoSkinComponentLookup taikoComponent)
+            if (component is TaikoSkinComponent taikoComponent)
             {
                 switch (taikoComponent.Component)
                 {
@@ -50,9 +50,6 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Legacy
                         if (hasBarLeft)
                             return new LegacyInputDrum();
 
-                        return null;
-
-                    case TaikoSkinComponents.DrumSamplePlayer:
                         return null;
 
                     case TaikoSkinComponents.CentreHit:
@@ -132,18 +129,12 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Legacy
                     case TaikoSkinComponents.Mascot:
                         return new DrawableTaikoMascot();
 
-                    case TaikoSkinComponents.KiaiGlow:
-                        if (GetTexture("taiko-glow") != null)
-                            return new LegacyKiaiGlow();
-
-                        return null;
-
                     default:
-                        throw new UnsupportedSkinComponentException(lookup);
+                        throw new UnsupportedSkinComponentException(component);
                 }
             }
 
-            return base.GetDrawableComponent(lookup);
+            return base.GetDrawableComponent(component);
         }
 
         private string getHitName(TaikoSkinComponents component)

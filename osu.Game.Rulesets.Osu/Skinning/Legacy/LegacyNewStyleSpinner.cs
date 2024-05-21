@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -19,17 +21,17 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
     /// Legacy skinned spinner with two main spinning layers, one fixed overlay and one final spinning overlay.
     /// No background layer.
     /// </summary>
-    public partial class LegacyNewStyleSpinner : LegacySpinner
+    public class LegacyNewStyleSpinner : LegacySpinner
     {
-        private Sprite glow = null!;
-        private Sprite discBottom = null!;
-        private Sprite discTop = null!;
-        private Sprite spinningMiddle = null!;
-        private Sprite fixedMiddle = null!;
+        private Sprite glow;
+        private Sprite discBottom;
+        private Sprite discTop;
+        private Sprite spinningMiddle;
+        private Sprite fixedMiddle;
 
         private readonly Color4 glowColour = new Color4(3, 151, 255, 255);
 
-        private Container scaleContainer = null!;
+        private Container scaleContainer;
 
         [BackgroundDependencyLoader]
         private void load(ISkinSource source)
@@ -135,11 +137,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
         protected override void Update()
         {
             base.Update();
-
-            float turnRatio = spinningMiddle.Texture != null ? 0.5f : 1;
-            discTop.Rotation = DrawableSpinner.RotationTracker.Rotation * turnRatio;
-            spinningMiddle.Rotation = DrawableSpinner.RotationTracker.Rotation;
-
+            spinningMiddle.Rotation = discTop.Rotation = DrawableSpinner.RotationTracker.Rotation;
             discBottom.Rotation = discTop.Rotation / 3;
 
             glow.Alpha = DrawableSpinner.Progress;

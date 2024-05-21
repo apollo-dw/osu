@@ -1,8 +1,9 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Caching;
@@ -18,15 +19,15 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tournament.Screens.Ladder
 {
-    public partial class LadderScreen : TournamentScreen
+    public class LadderScreen : TournamentScreen
     {
-        protected Container<DrawableTournamentMatch> MatchesContainer = null!;
-        private Container<Path> paths = null!;
-        private Container headings = null!;
+        protected Container<DrawableTournamentMatch> MatchesContainer;
+        private Container<Path> paths;
+        private Container headings;
 
-        protected LadderDragContainer ScrollContent = null!;
+        protected LadderDragContainer ScrollContent;
 
-        protected Container Content = null!;
+        protected Container Content;
 
         [BackgroundDependencyLoader]
         private void load()
@@ -39,7 +40,6 @@ namespace osu.Game.Tournament.Screens.Ladder
             InternalChild = Content = new Container
             {
                 RelativeSizeAxes = Axes.Both,
-                Masking = true,
                 Children = new Drawable[]
                 {
                     new TourneyVideo("ladder")
@@ -55,15 +55,12 @@ namespace osu.Game.Tournament.Screens.Ladder
                     },
                     ScrollContent = new LadderDragContainer
                     {
-                        AutoSizeAxes = Axes.Both,
+                        RelativeSizeAxes = Axes.Both,
                         Children = new Drawable[]
                         {
                             paths = new Container<Path> { RelativeSizeAxes = Axes.Both },
                             headings = new Container { RelativeSizeAxes = Axes.Both },
-                            MatchesContainer = new Container<DrawableTournamentMatch>
-                            {
-                                AutoSizeAxes = Axes.Both
-                            },
+                            MatchesContainer = new Container<DrawableTournamentMatch> { RelativeSizeAxes = Axes.Both },
                         }
                     },
                 }
@@ -84,15 +81,11 @@ namespace osu.Game.Tournament.Screens.Ladder
                 switch (args.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        Debug.Assert(args.NewItems != null);
-
                         foreach (var p in args.NewItems.Cast<TournamentMatch>())
                             addMatch(p);
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        Debug.Assert(args.OldItems != null);
-
                         foreach (var p in args.OldItems.Cast<TournamentMatch>())
                         {
                             foreach (var d in MatchesContainer.Where(d => d.Match == p))
@@ -160,7 +153,7 @@ namespace osu.Game.Tournament.Screens.Ladder
 
             foreach (var round in LadderInfo.Rounds)
             {
-                var topMatch = MatchesContainer.Where(p => !p.Match.Losers.Value && p.Match.Round.Value == round).MinBy(p => p.Y);
+                var topMatch = MatchesContainer.Where(p => !p.Match.Losers.Value && p.Match.Round.Value == round).OrderBy(p => p.Y).FirstOrDefault();
 
                 if (topMatch == null) continue;
 
@@ -174,7 +167,7 @@ namespace osu.Game.Tournament.Screens.Ladder
 
             foreach (var round in LadderInfo.Rounds)
             {
-                var topMatch = MatchesContainer.Where(p => p.Match.Losers.Value && p.Match.Round.Value == round).MinBy(p => p.Y);
+                var topMatch = MatchesContainer.Where(p => p.Match.Losers.Value && p.Match.Round.Value == round).OrderBy(p => p.Y).FirstOrDefault();
 
                 if (topMatch == null) continue;
 

@@ -27,7 +27,7 @@ using osuTK;
 namespace osu.Game.Rulesets.Catch.Tests
 {
     [TestFixture]
-    public partial class TestSceneCatcher : OsuTestScene
+    public class TestSceneCatcher : OsuTestScene
     {
         [Resolved]
         private OsuConfigManager config { get; set; }
@@ -60,24 +60,26 @@ namespace osu.Game.Rulesets.Catch.Tests
         [Test]
         public void TestCatcherHyperStateReverted()
         {
+            DrawableCatchHitObject drawableObject1 = null;
+            DrawableCatchHitObject drawableObject2 = null;
             JudgementResult result1 = null;
             JudgementResult result2 = null;
             AddStep("catch hyper fruit", () =>
             {
-                result1 = attemptCatch(new Fruit { HyperDashTarget = new Fruit { X = 100 } });
+                attemptCatch(new Fruit { HyperDashTarget = new Fruit { X = 100 } }, out drawableObject1, out result1);
             });
             AddStep("catch normal fruit", () =>
             {
-                result2 = attemptCatch(new Fruit());
+                attemptCatch(new Fruit(), out drawableObject2, out result2);
             });
             AddStep("revert second result", () =>
             {
-                catcher.OnRevertResult(result2);
+                catcher.OnRevertResult(drawableObject2, result2);
             });
             checkHyperDash(true);
             AddStep("revert first result", () =>
             {
-                catcher.OnRevertResult(result1);
+                catcher.OnRevertResult(drawableObject1, result1);
             });
             checkHyperDash(false);
         }
@@ -85,15 +87,16 @@ namespace osu.Game.Rulesets.Catch.Tests
         [Test]
         public void TestCatcherAnimationStateReverted()
         {
+            DrawableCatchHitObject drawableObject = null;
             JudgementResult result = null;
             AddStep("catch kiai fruit", () =>
             {
-                result = attemptCatch(new TestKiaiFruit());
+                attemptCatch(new TestKiaiFruit(), out drawableObject, out result);
             });
             checkState(CatcherAnimationState.Kiai);
             AddStep("revert result", () =>
             {
-                catcher.OnRevertResult(result);
+                catcher.OnRevertResult(drawableObject, result);
             });
             checkState(CatcherAnimationState.Idle);
         }
@@ -265,19 +268,23 @@ namespace osu.Game.Rulesets.Catch.Tests
 
         private void checkHyperDash(bool state) => AddAssert($"catcher is {(state ? "" : "not ")}hyper dashing", () => catcher.HyperDashing == state);
 
+        private void attemptCatch(CatchHitObject hitObject)
+        {
+            attemptCatch(() => hitObject, 1);
+        }
+
         private void attemptCatch(Func<CatchHitObject> hitObject, int count)
         {
             for (int i = 0; i < count; i++)
-                attemptCatch(hitObject());
+                attemptCatch(hitObject(), out _, out _);
         }
 
-        private JudgementResult attemptCatch(CatchHitObject hitObject)
+        private void attemptCatch(CatchHitObject hitObject, out DrawableCatchHitObject drawableObject, out JudgementResult result)
         {
             hitObject.ApplyDefaults(new ControlPointInfo(), new BeatmapDifficulty());
-            var drawableObject = createDrawableObject(hitObject);
-            var result = createResult(hitObject);
+            drawableObject = createDrawableObject(hitObject);
+            result = createResult(hitObject);
             applyResult(drawableObject, result);
-            return result;
         }
 
         private void applyResult(DrawableCatchHitObject drawableObject, JudgementResult result)
@@ -293,7 +300,7 @@ namespace osu.Game.Rulesets.Catch.Tests
 
         private JudgementResult createResult(CatchHitObject hitObject)
         {
-            return new CatchJudgementResult(hitObject, hitObject.Judgement)
+            return new CatchJudgementResult(hitObject, hitObject.CreateJudgement())
             {
                 Type = catcher.CanCatch(hitObject) ? HitResult.Great : HitResult.Miss
             };
@@ -317,7 +324,7 @@ namespace osu.Game.Rulesets.Catch.Tests
             }
         }
 
-        public partial class TestCatcher : Catcher
+        public class TestCatcher : Catcher
         {
             public IEnumerable<CaughtObject> CaughtObjects => this.ChildrenOfType<CaughtObject>();
 

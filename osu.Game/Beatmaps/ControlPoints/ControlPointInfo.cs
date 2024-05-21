@@ -70,14 +70,14 @@ namespace osu.Game.Beatmaps.ControlPoints
         /// </summary>
         [JsonIgnore]
         public double BPMMaximum =>
-            60000 / (TimingPoints.MinBy(c => c.BeatLength) ?? TimingControlPoint.DEFAULT).BeatLength;
+            60000 / (TimingPoints.OrderBy(c => c.BeatLength).FirstOrDefault() ?? TimingControlPoint.DEFAULT).BeatLength;
 
         /// <summary>
         /// Finds the minimum BPM represented by any timing control point.
         /// </summary>
         [JsonIgnore]
         public double BPMMinimum =>
-            60000 / (TimingPoints.MaxBy(c => c.BeatLength) ?? TimingControlPoint.DEFAULT).BeatLength;
+            60000 / (TimingPoints.OrderByDescending(c => c.BeatLength).FirstOrDefault() ?? TimingControlPoint.DEFAULT).BeatLength;
 
         /// <summary>
         /// Remove all <see cref="ControlPointGroup"/>s and return to a pristine state.
@@ -183,15 +183,9 @@ namespace osu.Game.Beatmaps.ControlPoints
         private static double getClosestSnappedTime(TimingControlPoint timingPoint, double time, int beatDivisor)
         {
             double beatLength = timingPoint.BeatLength / beatDivisor;
-            double beats = (Math.Max(time, 0) - timingPoint.Time) / beatLength;
+            int beatLengths = (int)Math.Round((time - timingPoint.Time) / beatLength, MidpointRounding.AwayFromZero);
 
-            int roundedBeats = (int)Math.Round(beats, MidpointRounding.AwayFromZero);
-            double snappedTime = timingPoint.Time + roundedBeats * beatLength;
-
-            if (snappedTime >= 0)
-                return snappedTime;
-
-            return snappedTime + beatLength;
+            return timingPoint.Time + beatLengths * beatLength;
         }
 
         /// <summary>
@@ -217,7 +211,8 @@ namespace osu.Game.Beatmaps.ControlPoints
         public static T BinarySearch<T>(IReadOnlyList<T> list, double time)
             where T : class, IControlPoint
         {
-            ArgumentNullException.ThrowIfNull(list);
+            if (list == null)
+                throw new ArgumentNullException(nameof(list));
 
             if (list.Count == 0)
                 return null;
@@ -305,7 +300,7 @@ namespace osu.Game.Beatmaps.ControlPoints
 
         public ControlPointInfo DeepClone()
         {
-            var controlPointInfo = (ControlPointInfo)Activator.CreateInstance(GetType())!;
+            var controlPointInfo = (ControlPointInfo)Activator.CreateInstance(GetType());
 
             foreach (var point in AllControlPoints)
                 controlPointInfo.Add(point.Time, point.DeepClone());

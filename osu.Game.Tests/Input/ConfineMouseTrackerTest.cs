@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -13,10 +15,10 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Input
 {
     [HeadlessTest]
-    public partial class ConfineMouseTrackerTest : OsuGameTestScene
+    public class ConfineMouseTrackerTest : OsuGameTestScene
     {
         [Resolved]
-        private FrameworkConfigManager frameworkConfigManager { get; set; } = null!;
+        private FrameworkConfigManager frameworkConfigManager { get; set; }
 
         [TestCase(WindowMode.Windowed)]
         [TestCase(WindowMode.Borderless)]

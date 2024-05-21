@@ -11,28 +11,18 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Colour
     public class TaikoDifficultyHitObjectColour
     {
         /// <summary>
-        /// The <see cref="MonoStreak"/> that encodes this note.
+        /// The <see cref="MonoStreak"/> that encodes this note, only present if this is the first note within a <see cref="MonoStreak"/>
         /// </summary>
         public MonoStreak? MonoStreak;
 
         /// <summary>
-        /// The <see cref="AlternatingMonoPattern"/> that encodes this note.
+        /// The <see cref="AlternatingMonoPattern"/> that encodes this note, only present if this is the first note within a <see cref="AlternatingMonoPattern"/>
         /// </summary>
         public AlternatingMonoPattern? AlternatingMonoPattern;
 
         /// <summary>
-        /// The <see cref="RepeatingHitPattern"/> that encodes this note.
+        /// The <see cref="RepeatingHitPattern"/> that encodes this note, only present if this is the first note within a <see cref="RepeatingHitPattern"/>
         /// </summary>
         public RepeatingHitPatterns? RepeatingHitPattern;
-
-        /// <summary>
-        /// The closest past <see cref="TaikoDifficultyHitObject"/> that's not the same colour.
-        /// </summary>
-        public TaikoDifficultyHitObject? PreviousColourChange => MonoStreak?.FirstHitObject.PreviousNote(0);
-
-        /// <summary>
-        /// The closest future <see cref="TaikoDifficultyHitObject"/> that's not the same colour.
-        /// </summary>
-        public TaikoDifficultyHitObject? NextColourChange => MonoStreak?.LastHitObject.NextNote(0);
     }
 }

@@ -14,7 +14,7 @@ using osu.Game.Rulesets.Mania.UI;
 
 namespace osu.Game.Rulesets.Mania.Objects.Drawables
 {
-    public abstract partial class DrawableManiaHitObject : DrawableHitObject<ManiaHitObject>
+    public abstract class DrawableManiaHitObject : DrawableHitObject<ManiaHitObject>
     {
         /// <summary>
         /// The <see cref="ManiaAction"/> which causes this <see cref="DrawableManiaHitObject{TObject}"/> to be hit.
@@ -87,10 +87,10 @@ namespace osu.Game.Rulesets.Mania.Objects.Drawables
         /// <summary>
         /// Causes this <see cref="DrawableManiaHitObject"/> to get missed, disregarding all conditions in implementations of <see cref="DrawableHitObject.CheckForResult"/>.
         /// </summary>
-        public virtual void MissForcefully() => ApplyMinResult();
+        public void MissForcefully() => ApplyResult(r => r.Type = r.Judgement.MinResult);
     }
 
-    public abstract partial class DrawableManiaHitObject<TObject> : DrawableManiaHitObject
+    public abstract class DrawableManiaHitObject<TObject> : DrawableManiaHitObject
         where TObject : ManiaHitObject
     {
         public new TObject HitObject => (TObject)base.HitObject;

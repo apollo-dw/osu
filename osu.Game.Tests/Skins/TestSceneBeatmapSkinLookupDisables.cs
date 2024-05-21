@@ -23,7 +23,7 @@ namespace osu.Game.Tests.Skins
 {
     [TestFixture]
     [HeadlessTest]
-    public partial class TestSceneBeatmapSkinLookupDisables : OsuTestScene
+    public class TestSceneBeatmapSkinLookupDisables : OsuTestScene
     {
         private UserSkinSource userSource;
         private BeatmapSkinSource beatmapSource;
@@ -48,7 +48,7 @@ namespace osu.Game.Tests.Skins
 
             string expected = allowBeatmapLookups ? "beatmap" : "user";
 
-            AddAssert($"Check lookup is from {expected}", () => requester.GetDrawableComponent(new TestSkinComponentLookup())?.Name == expected);
+            AddAssert($"Check lookup is from {expected}", () => requester.GetDrawableComponent(new TestSkinComponent())?.Name == expected);
         }
 
         [TestCase(false)]
@@ -59,7 +59,7 @@ namespace osu.Game.Tests.Skins
 
             ISkin expected() => allowBeatmapLookups ? beatmapSource : userSource;
 
-            AddAssert("Check lookup is from correct source", () => requester.FindProvider(s => s.GetDrawableComponent(new TestSkinComponentLookup()) != null) == expected());
+            AddAssert("Check lookup is from correct source", () => requester.FindProvider(s => s.GetDrawableComponent(new TestSkinComponent()) != null) == expected());
         }
 
         public class UserSkinSource : LegacySkin
@@ -69,7 +69,7 @@ namespace osu.Game.Tests.Skins
             {
             }
 
-            public override Drawable GetDrawableComponent(ISkinComponentLookup lookup)
+            public override Drawable GetDrawableComponent(ISkinComponent component)
             {
                 return new Container { Name = "user" };
             }
@@ -82,13 +82,13 @@ namespace osu.Game.Tests.Skins
             {
             }
 
-            public override Drawable GetDrawableComponent(ISkinComponentLookup lookup)
+            public override Drawable GetDrawableComponent(ISkinComponent component)
             {
                 return new Container { Name = "beatmap" };
             }
         }
 
-        public partial class SkinRequester : Drawable, ISkin
+        public class SkinRequester : Drawable, ISkin
         {
             private ISkinSource skin;
 
@@ -98,7 +98,7 @@ namespace osu.Game.Tests.Skins
                 this.skin = skin;
             }
 
-            public Drawable GetDrawableComponent(ISkinComponentLookup lookup) => skin.GetDrawableComponent(lookup);
+            public Drawable GetDrawableComponent(ISkinComponent component) => skin.GetDrawableComponent(component);
 
             public Texture GetTexture(string componentName, WrapMode wrapModeS, WrapMode wrapModeT) => skin.GetTexture(componentName, wrapModeS, wrapModeT);
 
@@ -109,7 +109,7 @@ namespace osu.Game.Tests.Skins
             public ISkin FindProvider(Func<ISkin, bool> lookupFunction) => skin.FindProvider(lookupFunction);
         }
 
-        private class TestSkinComponentLookup : ISkinComponentLookup
+        private class TestSkinComponent : ISkinComponent
         {
             public string LookupName => string.Empty;
         }

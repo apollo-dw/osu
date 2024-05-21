@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System;
 using System.Linq;
@@ -20,10 +22,10 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Mania.Tests.Editor
 {
-    public partial class TestSceneManiaComposeScreen : EditorClockTestScene
+    public class TestSceneManiaComposeScreen : EditorClockTestScene
     {
         [Resolved]
-        private SkinManager skins { get; set; } = null!;
+        private SkinManager skins { get; set; }
 
         [Cached]
         private EditorClipboard clipboard = new EditorClipboard();

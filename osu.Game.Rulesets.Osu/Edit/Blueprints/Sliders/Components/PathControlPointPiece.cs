@@ -4,15 +4,20 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
+using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
+using osu.Framework.Graphics.Primitives;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input.Events;
 using osu.Framework.Localisation;
+using osu.Framework.Utils;
 using osu.Game.Graphics;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Types;
@@ -24,58 +29,89 @@ using osuTK.Input;
 namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
 {
     /// <summary>
-    /// A visualisation of a single <see cref="PathControlPoint"/> in an osu hit object with a path.
+    /// A visualisation of a single <see cref="PathControlPoint"/> in a <see cref="Slider"/>.
     /// </summary>
-    /// <typeparam name="T">The type of <see cref="OsuHitObject"/> which this <see cref="PathControlPointPiece{T}"/> visualises.</typeparam>
-    public partial class PathControlPointPiece<T> : BlueprintPiece<T>, IHasTooltip
-        where T : OsuHitObject, IHasPath
+    public class PathControlPointPiece : BlueprintPiece<Slider>, IHasTooltip
     {
-        public Action<PathControlPointPiece<T>, MouseButtonEvent> RequestSelection;
+        public Action<PathControlPointPiece, MouseButtonEvent> RequestSelection;
 
         public Action<PathControlPoint> DragStarted;
         public Action<DragEvent> DragInProgress;
         public Action DragEnded;
 
+        public List<PathControlPoint> PointsInSegment;
+
         public readonly BindableBool IsSelected = new BindableBool();
         public readonly PathControlPoint ControlPoint;
 
-        private readonly T hitObject;
-        private readonly Circle circle;
+        private readonly Slider slider;
+        private readonly Container marker;
         private readonly Drawable markerRing;
 
         [Resolved]
         private OsuColour colours { get; set; }
 
-        private IBindable<Vector2> hitObjectPosition;
-        private IBindable<float> hitObjectScale;
-        private IBindable<int> stackHeight;
+        private IBindable<Vector2> sliderPosition;
+        private IBindable<float> sliderScale;
 
-        public PathControlPointPiece(T hitObject, PathControlPoint controlPoint)
+        [UsedImplicitly]
+        private readonly IBindable<int> sliderVersion;
+
+        public PathControlPointPiece(Slider slider, PathControlPoint controlPoint)
         {
-            this.hitObject = hitObject;
+            this.slider = slider;
             ControlPoint = controlPoint;
+
+            // we don't want to run the path type update on construction as it may inadvertently change the slider.
+            cachePoints(slider);
+
+            sliderVersion = slider.Path.Version.GetBoundCopy();
+
+            // schedule ensure that updates are only applied after all operations from a single frame are applied.
+            // this avoids inadvertently changing the slider path type for batch operations.
+            sliderVersion.BindValueChanged(_ => Scheduler.AddOnce(() =>
+            {
+                cachePoints(slider);
+                updatePathType();
+            }));
 
             controlPoint.Changed += updateMarkerDisplay;
 
             Origin = Anchor.Centre;
             AutoSizeAxes = Axes.Both;
 
-            InternalChildren = new[]
+            InternalChildren = new Drawable[]
             {
-                circle = new Circle
+                marker = new Container
                 {
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
-                    Size = new Vector2(20),
-                },
-                markerRing = new CircularProgress
-                {
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.Centre,
-                    Size = new Vector2(28),
-                    Alpha = 0,
-                    InnerRadius = 0.1f,
-                    Progress = 1
+                    AutoSizeAxes = Axes.Both,
+                    Children = new[]
+                    {
+                        new Circle
+                        {
+                            Anchor = Anchor.Centre,
+                            Origin = Anchor.Centre,
+                            Size = new Vector2(20),
+                        },
+                        markerRing = new CircularContainer
+                        {
+                            Anchor = Anchor.Centre,
+                            Origin = Anchor.Centre,
+                            Size = new Vector2(28),
+                            Masking = true,
+                            BorderThickness = 2,
+                            BorderColour = Color4.White,
+                            Alpha = 0,
+                            Child = new Box
+                            {
+                                RelativeSizeAxes = Axes.Both,
+                                Alpha = 0,
+                                AlwaysPresent = true
+                            }
+                        }
+                    }
                 }
             };
         }
@@ -84,14 +120,11 @@ namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
         {
             base.LoadComplete();
 
-            hitObjectPosition = hitObject.PositionBindable.GetBoundCopy();
-            hitObjectPosition.BindValueChanged(_ => updateMarkerDisplay());
+            sliderPosition = slider.PositionBindable.GetBoundCopy();
+            sliderPosition.BindValueChanged(_ => updateMarkerDisplay());
 
-            hitObjectScale = hitObject.ScaleBindable.GetBoundCopy();
-            hitObjectScale.BindValueChanged(_ => updateMarkerDisplay());
-
-            stackHeight = hitObject.StackHeightBindable.GetBoundCopy();
-            stackHeight.BindValueChanged(_ => updateMarkerDisplay());
+            sliderScale = slider.ScaleBindable.GetBoundCopy();
+            sliderScale.BindValueChanged(_ => updateMarkerDisplay());
 
             IsSelected.BindValueChanged(_ => updateMarkerDisplay());
 
@@ -99,7 +132,7 @@ namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
         }
 
         // The connecting path is excluded from positional input
-        public override bool ReceivePositionalInputAt(Vector2 screenSpacePos) => circle.ReceivePositionalInputAt(screenSpacePos);
+        public override bool ReceivePositionalInputAt(Vector2 screenSpacePos) => marker.ReceivePositionalInputAt(screenSpacePos);
 
         protected override bool OnHover(HoverEvent e)
         {
@@ -179,12 +212,34 @@ namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
 
         protected override void OnDragEnd(DragEndEvent e) => DragEnded?.Invoke();
 
+        private void cachePoints(Slider slider) => PointsInSegment = slider.Path.PointsInSegment(ControlPoint);
+
+        /// <summary>
+        /// Handles correction of invalid path types.
+        /// </summary>
+        private void updatePathType()
+        {
+            if (ControlPoint.Type != PathType.PerfectCurve)
+                return;
+
+            if (PointsInSegment.Count > 3)
+                ControlPoint.Type = PathType.Bezier;
+
+            if (PointsInSegment.Count != 3)
+                return;
+
+            ReadOnlySpan<Vector2> points = PointsInSegment.Select(p => p.Position).ToArray();
+            RectangleF boundingBox = PathApproximator.CircularArcBoundingBox(points);
+            if (boundingBox.Width >= 640 || boundingBox.Height >= 480)
+                ControlPoint.Type = PathType.Bezier;
+        }
+
         /// <summary>
         /// Updates the state of the circular control point marker.
         /// </summary>
         private void updateMarkerDisplay()
         {
-            Position = hitObject.StackedPosition + ControlPoint.Position;
+            Position = slider.StackedPosition + ControlPoint.Position;
 
             markerRing.Alpha = IsSelected.Value ? 1 : 0;
 
@@ -193,28 +248,24 @@ namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
             if (IsHovered || IsSelected.Value)
                 colour = colour.Lighten(1);
 
-            Colour = colour;
-            Scale = new Vector2(hitObject.Scale);
+            marker.Colour = colour;
+            marker.Scale = new Vector2(slider.Scale);
         }
 
         private Color4 getColourFromNodeType()
         {
-            if (ControlPoint.Type is not PathType pathType)
+            if (!(ControlPoint.Type is PathType pathType))
                 return colours.Yellow;
 
-            switch (pathType.Type)
+            switch (pathType)
             {
-                case SplineType.Catmull:
+                case PathType.Catmull:
                     return colours.SeaFoam;
 
-                case SplineType.BSpline:
-                    if (!pathType.Degree.HasValue)
-                        return colours.PinkLighter;
+                case PathType.Bezier:
+                    return colours.Pink;
 
-                    int idx = Math.Clamp(pathType.Degree.Value, 0, 3);
-                    return new[] { colours.PinkDarker, colours.PinkDark, colours.Pink, colours.PinkLight }[idx];
-
-                case SplineType.PerfectCurve:
+                case PathType.PerfectCurve:
                     return colours.PurpleDark;
 
                 default:
@@ -222,6 +273,6 @@ namespace osu.Game.Rulesets.Osu.Edit.Blueprints.Sliders.Components
             }
         }
 
-        public LocalisableString TooltipText => ControlPoint.Type?.Description ?? string.Empty;
+        public LocalisableString TooltipText => ControlPoint.Type.ToString() ?? string.Empty;
     }
 }

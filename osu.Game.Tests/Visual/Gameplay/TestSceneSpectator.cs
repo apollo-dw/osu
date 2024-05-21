@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -10,7 +12,6 @@ using osu.Framework.Screens;
 using osu.Framework.Testing;
 using osu.Game.Beatmaps;
 using osu.Game.Database;
-using osu.Game.Localisation;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Online.Spectator;
 using osu.Game.Rulesets.Osu;
@@ -27,7 +28,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {
-    public partial class TestSceneSpectator : ScreenTestScene
+    public class TestSceneSpectator : ScreenTestScene
     {
         private readonly APIUser streamingUser = new APIUser { Id = MultiplayerTestScene.PLAYER_1_ID, Username = "Test user" };
 
@@ -38,13 +39,13 @@ namespace osu.Game.Tests.Visual.Gameplay
         protected override bool UseOnlineAPI => true;
 
         [Resolved]
-        private OsuGameBase game { get; set; } = null!;
+        private OsuGameBase game { get; set; }
 
         private TestSpectatorClient spectatorClient => dependenciesScreen.SpectatorClient;
-        private DependenciesScreen dependenciesScreen = null!;
-        private SoloSpectatorScreen spectatorScreen = null!;
+        private DependenciesScreen dependenciesScreen;
+        private SoloSpectator spectatorScreen;
 
-        private BeatmapSetInfo importedBeatmap = null!;
+        private BeatmapSetInfo importedBeatmap;
         private int importedBeatmapId;
 
         [SetUpSteps]
@@ -80,7 +81,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             start();
 
-            waitForPlayerCurrent();
+            waitForPlayer();
 
             sendFrames(startTime: gameplay_start);
 
@@ -99,22 +100,23 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             start();
 
-            AddUntilStep("wait for player loader", () => this.ChildrenOfType<PlayerLoader>().SingleOrDefault()?.IsLoaded == true);
+            AddUntilStep("wait for player loader", () => (Stack.CurrentScreen as PlayerLoader)?.IsLoaded == true);
 
             AddUntilStep("queue send frames on player load", () =>
             {
-                var loadingPlayer = this.ChildrenOfType<PlayerLoader>().SingleOrDefault()?.CurrentPlayer;
+                var loadingPlayer = (Stack.CurrentScreen as PlayerLoader)?.CurrentPlayer;
 
                 if (loadingPlayer == null)
                     return false;
 
                 loadingPlayer.OnLoadComplete += _ =>
+                {
                     spectatorClient.SendFramesFromUser(streamingUser.Id, 10, gameplay_start);
-
+                };
                 return true;
             });
 
-            waitForPlayerCurrent();
+            waitForPlayer();
 
             AddUntilStep("state is playing", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Playing);
             AddAssert("time is greater than seek target", () => currentFrameStableTime, () => Is.GreaterThan(gameplay_start));
@@ -125,10 +127,10 @@ namespace osu.Game.Tests.Visual.Gameplay
         {
             loadSpectatingScreen();
 
-            AddAssert("screen hasn't changed", () => Stack.CurrentScreen is SoloSpectatorScreen);
+            AddAssert("screen hasn't changed", () => Stack.CurrentScreen is SoloSpectator);
 
             start();
-            waitForPlayerCurrent();
+            waitForPlayer();
 
             sendFrames();
             AddAssert("ensure frames arrived", () => replayHandler.HasFrames);
@@ -154,7 +156,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             loadSpectatingScreen();
 
             start();
-            waitForPlayerCurrent();
+            waitForPlayer();
             checkPaused(true);
 
             // send enough frames to ensure play won't be paused
@@ -170,7 +172,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             sendFrames(300);
 
             loadSpectatingScreen();
-            waitForPlayerCurrent();
+            waitForPlayer();
 
             sendFrames(300);
 
@@ -185,15 +187,15 @@ namespace osu.Game.Tests.Visual.Gameplay
             start();
             sendFrames();
 
-            waitForPlayerCurrent();
+            waitForPlayer();
 
-            Player lastPlayer = null!;
+            Player lastPlayer = null;
             AddStep("store first player", () => lastPlayer = player);
 
             start();
             sendFrames();
 
-            waitForPlayerCurrent();
+            waitForPlayer();
             AddAssert("player is different", () => lastPlayer != player);
         }
 
@@ -204,7 +206,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             start();
 
-            waitForPlayerCurrent();
+            waitForPlayer();
             checkPaused(true);
             sendFrames();
 
@@ -213,11 +215,6 @@ namespace osu.Game.Tests.Visual.Gameplay
             checkPaused(false); // Should continue playing until out of frames
             checkPaused(true); // And eventually stop after running out of frames and fail.
             // Todo: Should check for + display a failed message.
-
-            AddAssert("fail overlay present", () => player.ChildrenOfType<FailOverlay>().Single().IsPresent);
-            AddAssert("overlay can only quit", () => player.ChildrenOfType<FailOverlay>().Single().Buttons.Single().Text == GameplayMenuOverlayStrings.Quit);
-            AddStep("press quit button", () => player.ChildrenOfType<FailOverlay>().Single().Buttons.Single().TriggerClick());
-            AddAssert("player exited", () => Stack.CurrentScreen is SoloSpectatorScreen);
         }
 
         [Test]
@@ -227,7 +224,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             start();
             sendFrames();
-            waitForPlayerCurrent();
+            waitForPlayer();
 
             AddStep("stop spectating", () => (Stack.CurrentScreen as Player)?.Exit());
             AddUntilStep("spectating stopped", () => spectatorScreen.GetChildScreen() == null);
@@ -240,14 +237,14 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             start();
             sendFrames();
-            waitForPlayerCurrent();
+            waitForPlayer();
 
             AddStep("stop spectating", () => (Stack.CurrentScreen as Player)?.Exit());
             AddUntilStep("spectating stopped", () => spectatorScreen.GetChildScreen() == null);
 
             // host starts playing a new session
             start();
-            waitForPlayerCurrent();
+            waitForPlayer();
         }
 
         [Test]
@@ -258,13 +255,13 @@ namespace osu.Game.Tests.Visual.Gameplay
             start(-1234);
             sendFrames();
 
-            AddAssert("screen didn't change", () => Stack.CurrentScreen is SoloSpectatorScreen);
+            AddAssert("screen didn't change", () => Stack.CurrentScreen is SoloSpectator);
         }
 
         [Test]
         public void TestFinalFramesPurgedBeforeEndingPlay()
         {
-            AddStep("begin playing", () => spectatorClient.BeginPlaying(0, TestGameplayState.Create(new OsuRuleset()), new Score()));
+            AddStep("begin playing", () => spectatorClient.BeginPlaying(TestGameplayState.Create(new OsuRuleset()), new Score()));
 
             AddStep("send frames and finish play", () =>
             {
@@ -282,7 +279,7 @@ namespace osu.Game.Tests.Visual.Gameplay
         [Test]
         public void TestFinalFrameInBundleHasHeader()
         {
-            FrameDataBundle? lastBundle = null;
+            FrameDataBundle lastBundle = null;
 
             AddStep("bind to client", () => spectatorClient.OnNewFrames += (_, bundle) => lastBundle = bundle);
 
@@ -291,8 +288,8 @@ namespace osu.Game.Tests.Visual.Gameplay
             finish();
 
             AddUntilStep("bundle received", () => lastBundle != null);
-            AddAssert("first frame does not have header", () => lastBundle?.Frames[0].Header == null);
-            AddAssert("last frame has header", () => lastBundle?.Frames[^1].Header != null);
+            AddAssert("first frame does not have header", () => lastBundle.Frames[0].Header == null);
+            AddAssert("last frame has header", () => lastBundle.Frames[^1].Header != null);
         }
 
         [Test]
@@ -302,7 +299,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             start();
             sendFrames();
-            waitForPlayerCurrent();
+            waitForPlayer();
             AddUntilStep("state is playing", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Playing);
         }
 
@@ -313,14 +310,14 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             start();
             sendFrames();
-            waitForPlayerCurrent();
+            waitForPlayer();
 
             AddStep("send passed", () => spectatorClient.SendEndPlay(streamingUser.Id, SpectatedUserState.Passed));
             AddUntilStep("state is passed", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Passed);
 
             start();
             sendFrames();
-            waitForPlayerCurrent();
+            waitForPlayer();
             AddUntilStep("state is playing", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Playing);
         }
 
@@ -331,72 +328,44 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             start();
             sendFrames();
-            waitForPlayerCurrent();
+            waitForPlayer();
 
             AddStep("send quit", () => spectatorClient.SendEndPlay(streamingUser.Id));
             AddUntilStep("state is quit", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Quit);
 
-            AddAssert("wait for player exit", () => Stack.CurrentScreen is SoloSpectatorScreen);
-
             start();
             sendFrames();
-            waitForPlayerCurrent();
+            waitForPlayer();
             AddUntilStep("state is playing", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Playing);
         }
 
         [Test]
-        public void TestFailedStateDuringPlay()
+        public void TestFailedState()
         {
             loadSpectatingScreen();
 
             start();
             sendFrames();
-
-            waitForPlayerCurrent();
-
-            AddStep("send failed", () => spectatorClient.SendEndPlay(streamingUser.Id, SpectatedUserState.Failed));
-            AddUntilStep("state is failed", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Failed);
-
-            AddUntilStep("wait for player to fail", () => player.GameplayState.HasFailed);
-
-            start();
-            sendFrames();
-            waitForPlayerCurrent();
-            AddUntilStep("state is playing", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Playing);
-        }
-
-        [Test]
-        public void TestFailedStateDuringLoading()
-        {
-            loadSpectatingScreen();
-
-            start();
-            sendFrames();
-
-            waitForPlayerLoader();
+            waitForPlayer();
 
             AddStep("send failed", () => spectatorClient.SendEndPlay(streamingUser.Id, SpectatedUserState.Failed));
             AddUntilStep("state is failed", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Failed);
 
-            AddAssert("wait for player exit", () => Stack.CurrentScreen is SoloSpectatorScreen);
-
             start();
             sendFrames();
-            waitForPlayerCurrent();
+            waitForPlayer();
             AddUntilStep("state is playing", () => spectatorClient.WatchedUserStates[streamingUser.Id].State == SpectatedUserState.Playing);
         }
 
         private OsuFramedReplayInputHandler replayHandler =>
-            (OsuFramedReplayInputHandler)Stack.ChildrenOfType<OsuInputManager>().First().ReplayInputHandler!;
+            (OsuFramedReplayInputHandler)Stack.ChildrenOfType<OsuInputManager>().First().ReplayInputHandler;
 
-        private Player player => this.ChildrenOfType<Player>().Single();
+        private Player player => Stack.CurrentScreen as Player;
 
         private double currentFrameStableTime
             => player.ChildrenOfType<FrameStabilityContainer>().First().CurrentTime;
 
-        private void waitForPlayerLoader() => AddUntilStep("wait for loading", () => this.ChildrenOfType<SpectatorPlayerLoader>().SingleOrDefault()?.IsLoaded == true);
-
-        private void waitForPlayerCurrent() => AddUntilStep("wait for player current", () => this.ChildrenOfType<Player>().SingleOrDefault()?.IsCurrentScreen() == true);
+        private void waitForPlayer() => AddUntilStep("wait for player", () => (Stack.CurrentScreen as Player)?.IsLoaded == true);
 
         private void start(int? beatmapId = null) => AddStep("start play", () => spectatorClient.SendStartPlay(streamingUser.Id, beatmapId ?? importedBeatmapId));
 
@@ -412,14 +381,14 @@ namespace osu.Game.Tests.Visual.Gameplay
 
         private void loadSpectatingScreen()
         {
-            AddStep("load spectator", () => LoadScreen(spectatorScreen = new SoloSpectatorScreen(streamingUser)));
+            AddStep("load spectator", () => LoadScreen(spectatorScreen = new SoloSpectator(streamingUser)));
             AddUntilStep("wait for screen load", () => spectatorScreen.LoadState == LoadState.Loaded);
         }
 
         /// <summary>
         /// Used for the sole purpose of adding <see cref="TestSpectatorClient"/> as a resolvable dependency.
         /// </summary>
-        private partial class DependenciesScreen : OsuScreen
+        private class DependenciesScreen : OsuScreen
         {
             [Cached(typeof(SpectatorClient))]
             public readonly TestSpectatorClient SpectatorClient = new TestSpectatorClient();

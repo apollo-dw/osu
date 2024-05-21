@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Linq;
 using osu.Framework.Allocation;
@@ -31,25 +33,22 @@ using osuTK.Input;
 namespace osu.Game.Tournament
 {
     [Cached]
-    public partial class TournamentSceneManager : CompositeDrawable
+    public class TournamentSceneManager : CompositeDrawable
     {
-        private Container screens = null!;
-        private TourneyVideo video = null!;
+        private Container screens;
+        private TourneyVideo video;
 
-        public const int CONTROL_AREA_WIDTH = 200;
+        public const float CONTROL_AREA_WIDTH = 160;
 
-        public const int STREAM_AREA_WIDTH = 1366;
-        public const int STREAM_AREA_HEIGHT = (int)(STREAM_AREA_WIDTH / ASPECT_RATIO);
+        public const float STREAM_AREA_WIDTH = 1366;
 
-        public const float ASPECT_RATIO = 16 / 9f;
-
-        public const int REQUIRED_WIDTH = CONTROL_AREA_WIDTH * 2 + STREAM_AREA_WIDTH;
+        public const double REQUIRED_WIDTH = CONTROL_AREA_WIDTH * 2 + STREAM_AREA_WIDTH;
 
         [Cached]
         private TournamentMatchChatDisplay chat = new TournamentMatchChatDisplay();
 
-        private Container chatContainer = null!;
-        private FillFlowContainer buttons = null!;
+        private Container chatContainer;
+        private FillFlowContainer buttons;
 
         public TournamentSceneManager()
         {
@@ -66,20 +65,13 @@ namespace osu.Game.Tournament
                     RelativeSizeAxes = Axes.Y,
                     X = CONTROL_AREA_WIDTH,
                     FillMode = FillMode.Fit,
-                    FillAspectRatio = ASPECT_RATIO,
+                    FillAspectRatio = 16 / 9f,
                     Anchor = Anchor.TopLeft,
                     Origin = Anchor.TopLeft,
                     Width = STREAM_AREA_WIDTH,
                     //Masking = true,
                     Children = new Drawable[]
                     {
-                        new Box
-                        {
-                            Colour = new Color4(20, 20, 20, 255),
-                            Anchor = Anchor.TopRight,
-                            RelativeSizeAxes = Axes.Both,
-                            Width = 10,
-                        },
                         video = new TourneyVideo("main", true)
                         {
                             Loop = true,
@@ -164,10 +156,10 @@ namespace osu.Game.Tournament
 
         private float depth;
 
-        private Drawable? currentScreen;
-        private ScheduledDelegate? scheduledHide;
+        private Drawable currentScreen;
+        private ScheduledDelegate scheduledHide;
 
-        private Drawable? temporaryScreen;
+        private Drawable temporaryScreen;
 
         public void SetScreen(Drawable screen)
         {
@@ -232,7 +224,7 @@ namespace osu.Game.Tournament
                 s.IsSelected = screenType == s.Type;
         }
 
-        private partial class Separator : CompositeDrawable
+        private class Separator : CompositeDrawable
         {
             public Separator()
             {
@@ -241,7 +233,7 @@ namespace osu.Game.Tournament
             }
         }
 
-        private partial class ScreenButton : TourneyButton
+        private class ScreenButton : TourneyButton
         {
             public readonly Type Type;
 
@@ -260,13 +252,14 @@ namespace osu.Game.Tournament
 
                 if (shortcutKey != null)
                 {
-                    Add(new CircularContainer
+                    Add(new Container
                     {
                         Anchor = Anchor.CentreLeft,
                         Origin = Anchor.CentreLeft,
                         Size = new Vector2(24),
                         Margin = new MarginPadding(5),
                         Masking = true,
+                        CornerRadius = 4,
                         Alpha = 0.5f,
                         Blending = BlendingParameters.Additive,
                         Children = new Drawable[]
@@ -282,7 +275,7 @@ namespace osu.Game.Tournament
                                 Y = -2,
                                 Anchor = Anchor.Centre,
                                 Origin = Anchor.Centre,
-                                Text = shortcutKey.Value.ToString(),
+                                Text = shortcutKey.ToString(),
                             }
                         }
                     });
@@ -302,7 +295,7 @@ namespace osu.Game.Tournament
 
             private bool isSelected;
 
-            public Action<Type>? RequestSelection;
+            public Action<Type> RequestSelection;
 
             public bool IsSelected
             {

@@ -19,7 +19,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.Dashboard.Friends
 {
-    public partial class FriendDisplay : CompositeDrawable
+    public class FriendDisplay : CompositeDrawable
     {
         private List<APIUser> users = new List<APIUser>();
 
@@ -79,7 +79,7 @@ namespace osu.Game.Overlays.Dashboard.Friends
                                 Padding = new MarginPadding
                                 {
                                     Top = 20,
-                                    Horizontal = WaveOverlayContainer.HORIZONTAL_PADDING - FriendsOnlineStatusItem.PADDING
+                                    Horizontal = 45
                                 },
                                 Child = onlineStreamControl = new FriendOnlineStreamControl(),
                             }
@@ -129,7 +129,7 @@ namespace osu.Game.Overlays.Dashboard.Friends
                                             {
                                                 RelativeSizeAxes = Axes.X,
                                                 AutoSizeAxes = Axes.Y,
-                                                Padding = new MarginPadding { Horizontal = WaveOverlayContainer.HORIZONTAL_PADDING }
+                                                Padding = new MarginPadding { Horizontal = 50 }
                                             },
                                             loading = new LoadingLayer(true)
                                         }

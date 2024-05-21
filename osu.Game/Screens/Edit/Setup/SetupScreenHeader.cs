@@ -1,13 +1,14 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Extensions.LocalisationExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.UserInterface;
-using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Overlays;
 using osuTK.Graphics;
@@ -15,14 +16,14 @@ using osu.Game.Localisation;
 
 namespace osu.Game.Screens.Edit.Setup
 {
-    internal partial class SetupScreenHeader : OverlayHeader
+    internal class SetupScreenHeader : OverlayHeader
     {
-        public SetupScreenHeaderBackground Background { get; private set; } = null!;
+        public SetupScreenHeaderBackground Background { get; private set; }
 
         [Resolved]
-        private SectionsContainer<SetupSection> sections { get; set; } = null!;
+        private SectionsContainer<SetupSection> sections { get; set; }
 
-        private SetupScreenTabControl tabControl = null!;
+        private SetupScreenTabControl tabControl;
 
         protected override OverlayTitle CreateTitle() => new SetupScreenTitle();
 
@@ -66,7 +67,7 @@ namespace osu.Game.Screens.Edit.Setup
         {
             base.LoadComplete();
 
-            sections.SelectedSection.BindValueChanged(section => tabControl.Current.Value = section.NewValue!);
+            sections.SelectedSection.BindValueChanged(section => tabControl.Current.Value = section.NewValue);
             tabControl.Current.BindValueChanged(section =>
             {
                 if (section.NewValue != sections.SelectedSection.Value)
@@ -74,17 +75,17 @@ namespace osu.Game.Screens.Edit.Setup
             });
         }
 
-        private partial class SetupScreenTitle : OverlayTitle
+        private class SetupScreenTitle : OverlayTitle
         {
             public SetupScreenTitle()
             {
                 Title = EditorSetupStrings.BeatmapSetup.ToLower();
                 Description = EditorSetupStrings.BeatmapSetupDescription;
-                Icon = OsuIcon.Beatmap;
+                IconTexture = "Icons/Hexacons/social";
             }
         }
 
-        internal partial class SetupScreenTabControl : OverlayTabControl<SetupSection>
+        internal class SetupScreenTabControl : OverlayTabControl<SetupSection>
         {
             private readonly Box background;
 
@@ -110,7 +111,7 @@ namespace osu.Game.Screens.Edit.Setup
                 AccentColour = AccentColour
             };
 
-            private partial class SetupScreenTabItem : OverlayTabItem
+            private class SetupScreenTabItem : OverlayTabItem
             {
                 public SetupScreenTabItem(SetupSection value)
                     : base(value)

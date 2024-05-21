@@ -14,7 +14,7 @@ using osu.Game.Online.API.Requests.Responses;
 
 namespace osu.Game.Overlays.Settings.Sections.UserInterface
 {
-    public partial class MainMenuSettings : SettingsSubsection
+    public class MainMenuSettings : SettingsSubsection
     {
         protected override LocalisableString Header => UserInterfaceStrings.MainMenuHeader;
 
@@ -29,11 +29,6 @@ namespace osu.Game.Overlays.Settings.Sections.UserInterface
 
             Children = new Drawable[]
             {
-                new SettingsCheckbox
-                {
-                    LabelText = UserInterfaceStrings.ShowMenuTips,
-                    Current = config.GetBindable<bool>(OsuSetting.MenuTips)
-                },
                 new SettingsCheckbox
                 {
                     LabelText = UserInterfaceStrings.InterfaceVoices,

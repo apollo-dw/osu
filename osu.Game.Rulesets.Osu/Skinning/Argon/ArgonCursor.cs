@@ -13,7 +13,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Argon
 {
-    public partial class ArgonCursor : SkinnableCursor
+    public class ArgonCursor : OsuCursorSprite
     {
         public ArgonCursor()
         {

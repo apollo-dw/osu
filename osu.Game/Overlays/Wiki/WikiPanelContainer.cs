@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using Markdig.Syntax;
 using osu.Framework.Allocation;
 using osu.Framework.Extensions.Color4Extensions;
@@ -21,61 +22,29 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.Wiki
 {
-    public partial class WikiPanelContainer : CompositeDrawable
+    public class WikiPanelContainer : Container
     {
-        private const float padding = 3;
+        private WikiPanelMarkdownContainer panelContainer;
 
         private readonly string text;
+
         private readonly bool isFullWidth;
 
         public WikiPanelContainer(string text, bool isFullWidth = false)
         {
             this.text = text;
             this.isFullWidth = isFullWidth;
-        }
 
-        private PanelBackground background;
+            RelativeSizeAxes = Axes.X;
+            Padding = new MarginPadding(3);
+        }
 
         [BackgroundDependencyLoader]
-        private void load(IAPIProvider api)
+        private void load(OverlayColourProvider colourProvider, IAPIProvider api)
         {
-            RelativeSizeAxes = Axes.X;
-            AutoSizeAxes = Axes.Y;
-            InternalChildren = new Drawable[]
+            Children = new Drawable[]
             {
-                background = new PanelBackground
-                {
-                    BypassAutoSizeAxes = Axes.Both
-                },
                 new Container
-                {
-                    RelativeSizeAxes = Axes.X,
-                    AutoSizeAxes = Axes.Y,
-                    Padding = new MarginPadding(padding),
-                    Child = new WikiPanelMarkdownContainer(isFullWidth)
-                    {
-                        CurrentPath = $@"{api.WebsiteRootUrl}/wiki/",
-                        Text = text,
-                        RelativeSizeAxes = Axes.X,
-                        AutoSizeAxes = Axes.Y
-                    }
-                }
-            };
-        }
-
-        protected override void Update()
-        {
-            base.Update();
-            background.Size = Parent!.DrawSize * new Vector2(Size.X, 1);
-        }
-
-        private partial class PanelBackground : CompositeDrawable
-        {
-            [BackgroundDependencyLoader]
-            private void load(OverlayColourProvider colourProvider)
-            {
-                Padding = new MarginPadding(padding);
-                InternalChild = new Container
                 {
                     RelativeSizeAxes = Axes.Both,
                     Masking = true,
@@ -91,12 +60,25 @@ namespace osu.Game.Overlays.Wiki
                     {
                         Colour = colourProvider.Background4,
                         RelativeSizeAxes = Axes.Both,
-                    }
-                };
-            }
+                    },
+                },
+                panelContainer = new WikiPanelMarkdownContainer(isFullWidth)
+                {
+                    CurrentPath = $@"{api.WebsiteRootUrl}/wiki/",
+                    Text = text,
+                    RelativeSizeAxes = Axes.X,
+                    AutoSizeAxes = Axes.Y,
+                }
+            };
         }
 
-        private partial class WikiPanelMarkdownContainer : WikiMarkdownContainer
+        protected override void Update()
+        {
+            base.Update();
+            Height = Math.Max(panelContainer.Height, Parent.DrawHeight);
+        }
+
+        private class WikiPanelMarkdownContainer : WikiMarkdownContainer
         {
             private readonly bool isFullWidth;
 
@@ -111,7 +93,7 @@ namespace osu.Game.Overlays.Wiki
 
             public override SpriteText CreateSpriteText() => base.CreateSpriteText().With(t => t.Font = t.Font.With(Typeface.Torus, weight: FontWeight.Bold));
 
-            public override OsuMarkdownTextFlowContainer CreateTextFlow() => base.CreateTextFlow().With(f => f.TextAnchor = Anchor.TopCentre);
+            public override MarkdownTextFlowContainer CreateTextFlow() => base.CreateTextFlow().With(f => f.TextAnchor = Anchor.TopCentre);
 
             protected override MarkdownParagraph CreateParagraph(ParagraphBlock paragraphBlock, int level)
                 => base.CreateParagraph(paragraphBlock, level).With(p => p.Margin = new MarginPadding { Bottom = 10 });
@@ -122,7 +104,7 @@ namespace osu.Game.Overlays.Wiki
             };
         }
 
-        private partial class WikiPanelHeading : OsuMarkdownHeading
+        private class WikiPanelHeading : OsuMarkdownHeading
         {
             public bool IsFullWidth;
 

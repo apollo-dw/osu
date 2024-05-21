@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Game.Beatmaps;
@@ -12,7 +14,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Tests.Editor
 {
-    public partial class TestSceneOsuEditorSelectInvalidPath : EditorTestScene
+    public class TestSceneOsuEditorSelectInvalidPath : EditorTestScene
     {
         protected override Ruleset CreateEditorRuleset() => new OsuRuleset();
 
@@ -25,7 +27,7 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
 
             PathControlPoint[] points =
             {
-                new PathControlPoint(new Vector2(0), PathType.PERFECT_CURVE),
+                new PathControlPoint(new Vector2(0), PathType.PerfectCurve),
                 new PathControlPoint(new Vector2(-100, 0)),
                 new PathControlPoint(new Vector2(100, 20))
             };

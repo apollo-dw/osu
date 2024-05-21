@@ -47,7 +47,6 @@ namespace osu.Game.Beatmaps
             // Shallow clone isn't enough to ensure we don't mutate beatmap info unexpectedly.
             // Can potentially be removed after `Beatmap.Difficulty` doesn't save back to `Beatmap.BeatmapInfo`.
             original.BeatmapInfo = original.BeatmapInfo.Clone();
-            original.ControlPointInfo = original.ControlPointInfo.DeepClone();
 
             return ConvertBeatmap(original, cancellationToken);
         }
@@ -66,7 +65,6 @@ namespace osu.Game.Beatmaps
             beatmap.ControlPointInfo = original.ControlPointInfo;
             beatmap.HitObjects = convertHitObjects(original.HitObjects, original, cancellationToken).OrderBy(s => s.StartTime).ToList();
             beatmap.Breaks = original.Breaks;
-            beatmap.UnhandledEventLines = original.UnhandledEventLines;
 
             return beatmap;
         }

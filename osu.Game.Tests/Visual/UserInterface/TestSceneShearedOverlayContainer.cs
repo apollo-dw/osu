@@ -22,7 +22,7 @@ using osuTK.Input;
 namespace osu.Game.Tests.Visual.UserInterface
 {
     [TestFixture]
-    public partial class TestSceneShearedOverlayContainer : OsuManualInputManagerTestScene
+    public class TestSceneShearedOverlayContainer : OsuManualInputManagerTestScene
     {
         private TestShearedOverlayContainer overlay;
 
@@ -66,7 +66,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             AddAssert("overlay dismissed", () => overlay.State.Value == Visibility.Hidden);
         }
 
-        public partial class TestShearedOverlayContainer : ShearedOverlayContainer
+        public class TestShearedOverlayContainer : ShearedOverlayContainer
         {
             public TestShearedOverlayContainer()
                 : base(OverlayColourScheme.Green)

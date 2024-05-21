@@ -29,7 +29,7 @@ using osuTK.Graphics;
 namespace osu.Game.Rulesets.Mania.Tests
 {
     [TestFixture]
-    public partial class TestSceneNotes : OsuTestScene
+    public class TestSceneNotes : OsuTestScene
     {
         [Test]
         public void TestVariousNotes()
@@ -105,7 +105,7 @@ namespace osu.Game.Rulesets.Mania.Tests
         private bool verifyAnchors(DrawableHoldNote holdNote, Anchor expectedAnchor)
             => verifyAnchors((DrawableHitObject)holdNote, expectedAnchor) && holdNote.NestedHitObjects.All(n => verifyAnchors(n, expectedAnchor));
 
-        private partial class NoteContainer : Container
+        private class NoteContainer : Container
         {
             private readonly Container content;
             protected override Container<Drawable> Content => content;

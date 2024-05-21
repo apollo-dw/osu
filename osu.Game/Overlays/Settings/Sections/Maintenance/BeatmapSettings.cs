@@ -6,22 +6,37 @@ using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Localisation;
 using osu.Game.Beatmaps;
+using osu.Game.Database;
 using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.Settings.Sections.Maintenance
 {
-    public partial class BeatmapSettings : SettingsSubsection
+    public class BeatmapSettings : SettingsSubsection
     {
         protected override LocalisableString Header => CommonStrings.Beatmaps;
 
+        private SettingsButton importBeatmapsButton = null!;
         private SettingsButton deleteBeatmapsButton = null!;
         private SettingsButton deleteBeatmapVideosButton = null!;
         private SettingsButton restoreButton = null!;
         private SettingsButton undeleteButton = null!;
 
         [BackgroundDependencyLoader]
-        private void load(BeatmapManager beatmaps, IDialogOverlay? dialogOverlay)
+        private void load(BeatmapManager beatmaps, LegacyImportManager? legacyImportManager, IDialogOverlay? dialogOverlay)
         {
+            if (legacyImportManager?.SupportsImportFromStable == true)
+            {
+                Add(importBeatmapsButton = new SettingsButton
+                {
+                    Text = MaintenanceSettingsStrings.ImportBeatmapsFromStable,
+                    Action = () =>
+                    {
+                        importBeatmapsButton.Enabled.Value = false;
+                        legacyImportManager.ImportFromStableAsync(StableContent.Beatmaps).ContinueWith(_ => Schedule(() => importBeatmapsButton.Enabled.Value = true));
+                    }
+                });
+            }
+
             Add(deleteBeatmapsButton = new DangerousSettingsButton
             {
                 Text = MaintenanceSettingsStrings.DeleteAllBeatmaps,
@@ -31,7 +46,7 @@ namespace osu.Game.Overlays.Settings.Sections.Maintenance
                     {
                         deleteBeatmapsButton.Enabled.Value = false;
                         Task.Run(() => beatmaps.Delete()).ContinueWith(_ => Schedule(() => deleteBeatmapsButton.Enabled.Value = true));
-                    }, DeleteConfirmationContentStrings.Beatmaps));
+                    }));
                 }
             });
 
@@ -40,11 +55,11 @@ namespace osu.Game.Overlays.Settings.Sections.Maintenance
                 Text = MaintenanceSettingsStrings.DeleteAllBeatmapVideos,
                 Action = () =>
                 {
-                    dialogOverlay?.Push(new MassDeleteConfirmationDialog(() =>
+                    dialogOverlay?.Push(new MassVideoDeleteConfirmationDialog(() =>
                     {
                         deleteBeatmapVideosButton.Enabled.Value = false;
                         Task.Run(beatmaps.DeleteAllVideos).ContinueWith(_ => Schedule(() => deleteBeatmapVideosButton.Enabled.Value = true));
-                    }, DeleteConfirmationContentStrings.BeatmapVideos));
+                    }));
                 }
             });
             AddRange(new Drawable[]

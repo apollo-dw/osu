@@ -20,7 +20,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Mania.Tests
 {
-    public partial class TestSceneDrawableManiaHitObject : OsuTestScene
+    public class TestSceneDrawableManiaHitObject : OsuTestScene
     {
         private readonly ManualClock clock = new ManualClock();
 

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.Taiko.Judgements;
@@ -9,8 +11,6 @@ namespace osu.Game.Rulesets.Taiko.Objects
 {
     public class DrumRollTick : TaikoStrongableHitObject
     {
-        public readonly DrumRoll Parent;
-
         /// <summary>
         /// Whether this is the first (initial) tick of the slider.
         /// </summary>
@@ -27,29 +27,14 @@ namespace osu.Game.Rulesets.Taiko.Objects
         /// </summary>
         public double HitWindow => TickSpacing / 2;
 
-        public DrumRollTick(DrumRoll parent)
-        {
-            Parent = parent;
-        }
-
         public override Judgement CreateJudgement() => new TaikoDrumRollTickJudgement();
 
         protected override HitWindows CreateHitWindows() => HitWindows.Empty;
 
-        public override double MaximumJudgementOffset => HitWindow;
-
-        protected override StrongNestedHitObject CreateStrongNestedHit(double startTime) => new StrongNestedHit(this)
-        {
-            StartTime = startTime,
-            Samples = Samples
-        };
+        protected override StrongNestedHitObject CreateStrongNestedHit(double startTime) => new StrongNestedHit { StartTime = startTime };
 
         public class StrongNestedHit : StrongNestedHitObject
         {
-            public StrongNestedHit(TaikoHitObject parent)
-                : base(parent)
-            {
-            }
         }
     }
 }

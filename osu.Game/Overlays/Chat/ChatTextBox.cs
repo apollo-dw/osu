@@ -7,7 +7,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Chat
 {
-    public partial class ChatTextBox : HistoryTextBox
+    public class ChatTextBox : FocusedTextBox
     {
         public readonly BindableBool ShowSearch = new BindableBool();
 
@@ -24,6 +24,7 @@ namespace osu.Game.Overlays.Chat
                 bool showSearch = change.NewValue;
 
                 PlaceholderText = showSearch ? HomeStrings.SearchPlaceholder : ChatStrings.InputPlaceholder;
+                Text = string.Empty;
             }, true);
         }
 

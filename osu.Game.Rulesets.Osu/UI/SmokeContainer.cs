@@ -17,7 +17,7 @@ namespace osu.Game.Rulesets.Osu.UI
     /// <summary>
     /// Manages smoke trails generated from user input.
     /// </summary>
-    public partial class SmokeContainer : Container, IRequireHighFrequencyMousePosition, IKeyBindingHandler<OsuAction>
+    public class SmokeContainer : Container, IRequireHighFrequencyMousePosition, IKeyBindingHandler<OsuAction>
     {
         private SmokeSkinnableDrawable? currentSegmentSkinnable;
 
@@ -29,7 +29,7 @@ namespace osu.Game.Rulesets.Osu.UI
         {
             if (e.Action == OsuAction.Smoke)
             {
-                AddInternal(currentSegmentSkinnable = new SmokeSkinnableDrawable(new OsuSkinComponentLookup(OsuSkinComponents.CursorSmoke), _ => new DefaultSmokeSegment()));
+                AddInternal(currentSegmentSkinnable = new SmokeSkinnableDrawable(new OsuSkinComponent(OsuSkinComponents.CursorSmoke), _ => new DefaultSmokeSegment()));
 
                 // Add initial position immediately.
                 addPosition();
@@ -61,15 +61,15 @@ namespace osu.Game.Rulesets.Osu.UI
 
         private void addPosition() => (currentSegmentSkinnable?.Drawable as SmokeSegment)?.AddPosition(lastMousePosition, Time.Current);
 
-        private partial class SmokeSkinnableDrawable : SkinnableDrawable
+        private class SmokeSkinnableDrawable : SkinnableDrawable
         {
             public override bool RemoveWhenNotAlive => true;
 
             public override double LifetimeStart => Drawable.LifetimeStart;
             public override double LifetimeEnd => Drawable.LifetimeEnd;
 
-            public SmokeSkinnableDrawable(ISkinComponentLookup lookup, Func<ISkinComponentLookup, Drawable>? defaultImplementation = null, ConfineMode confineMode = ConfineMode.NoScaling)
-                : base(lookup, defaultImplementation, confineMode)
+            public SmokeSkinnableDrawable(ISkinComponent component, Func<ISkinComponent, Drawable>? defaultImplementation = null, ConfineMode confineMode = ConfineMode.NoScaling)
+                : base(component, defaultImplementation, confineMode)
             {
             }
         }

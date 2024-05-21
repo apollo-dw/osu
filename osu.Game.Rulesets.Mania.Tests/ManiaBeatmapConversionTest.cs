@@ -18,13 +18,10 @@ namespace osu.Game.Rulesets.Mania.Tests
     [TestFixture]
     public class ManiaBeatmapConversionTest : BeatmapConversionTest<ManiaConvertMapping, ConvertValue>
     {
-        protected override string ResourceAssembly => "osu.Game.Rulesets.Mania.Tests";
+        protected override string ResourceAssembly => "osu.Game.Rulesets.Mania";
 
         [TestCase("basic")]
         [TestCase("zero-length-slider")]
-        [TestCase("20544")]
-        [TestCase("100374")]
-        [TestCase("1450162")]
         public void Test(string name) => base.Test(name);
 
         protected override IEnumerable<ConvertValue> CreateConvertValue(HitObject hitObject)

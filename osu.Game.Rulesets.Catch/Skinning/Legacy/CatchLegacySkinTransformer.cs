@@ -1,10 +1,11 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
-using osu.Framework.Graphics.Containers;
 using osu.Game.Skinning;
 using osuTK.Graphics;
 
@@ -26,14 +27,14 @@ namespace osu.Game.Rulesets.Catch.Skinning.Legacy
         {
         }
 
-        public override Drawable? GetDrawableComponent(ISkinComponentLookup lookup)
+        public override Drawable GetDrawableComponent(ISkinComponent component)
         {
-            if (lookup is SkinComponentsContainerLookup containerLookup)
+            if (component is SkinnableTargetComponent targetComponent)
             {
-                switch (containerLookup.Target)
+                switch (targetComponent.Target)
                 {
-                    case SkinComponentsContainerLookup.TargetArea.MainHUDComponents:
-                        var components = base.GetDrawableComponent(lookup) as Container;
+                    case SkinnableTarget.MainHUDComponents:
+                        var components = base.GetDrawableComponent(component) as SkinnableTargetComponentsContainer;
 
                         if (providesComboCounter && components != null)
                         {
@@ -47,7 +48,7 @@ namespace osu.Game.Rulesets.Catch.Skinning.Legacy
                 }
             }
 
-            if (lookup is CatchSkinComponentLookup catchSkinComponent)
+            if (component is CatchSkinComponent catchSkinComponent)
             {
                 switch (catchSkinComponent.Component)
                 {
@@ -96,11 +97,11 @@ namespace osu.Game.Rulesets.Catch.Skinning.Legacy
                         return null;
 
                     default:
-                        throw new UnsupportedSkinComponentException(lookup);
+                        throw new UnsupportedSkinComponentException(component);
                 }
             }
 
-            return base.GetDrawableComponent(lookup);
+            return base.GetDrawableComponent(component);
         }
 
         private bool hasOldStyleCatcherSprite() =>
@@ -111,17 +112,30 @@ namespace osu.Game.Rulesets.Catch.Skinning.Legacy
             GetTexture(@"fruit-catcher-idle") != null
             || GetTexture(@"fruit-catcher-idle-0") != null;
 
-        public override IBindable<TValue>? GetConfig<TLookup, TValue>(TLookup lookup)
+        public override IBindable<TValue> GetConfig<TLookup, TValue>(TLookup lookup)
         {
             switch (lookup)
             {
                 case CatchSkinColour colour:
-                    var result = (Bindable<Color4>?)base.GetConfig<SkinCustomColourLookup, TValue>(new SkinCustomColourLookup(colour));
+                    var result = (Bindable<Color4>)base.GetConfig<SkinCustomColourLookup, TValue>(new SkinCustomColourLookup(colour));
                     if (result == null)
                         return null;
 
                     result.Value = LegacyColourCompatibility.DisallowZeroAlpha(result.Value);
                     return (IBindable<TValue>)result;
+
+                case CatchSkinConfiguration config:
+                    switch (config)
+                    {
+                        case CatchSkinConfiguration.FlipCatcherPlate:
+                            // Don't flip catcher plate contents if the catcher is provided by this legacy skin.
+                            if (GetDrawableComponent(new CatchSkinComponent(CatchSkinComponents.Catcher)) != null)
+                                return (IBindable<TValue>)new Bindable<bool>();
+
+                            break;
+                    }
+
+                    break;
             }
 
             return base.GetConfig<TLookup, TValue>(lookup);

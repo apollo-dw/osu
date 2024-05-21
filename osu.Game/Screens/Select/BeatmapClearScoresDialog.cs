@@ -10,7 +10,7 @@ using osu.Game.Scoring;
 
 namespace osu.Game.Screens.Select
 {
-    public partial class BeatmapClearScoresDialog : DangerousActionDialog
+    public class BeatmapClearScoresDialog : DeleteConfirmationDialog
     {
         [Resolved]
         private ScoreManager scoreManager { get; set; } = null!;
@@ -18,7 +18,7 @@ namespace osu.Game.Screens.Select
         public BeatmapClearScoresDialog(BeatmapInfo beatmapInfo, Action onCompletion)
         {
             BodyText = $"All local scores on {beatmapInfo.GetDisplayTitle()}";
-            DangerousAction = () =>
+            DeleteAction = () =>
             {
                 Task.Run(() => scoreManager.Delete(beatmapInfo))
                     .ContinueWith(_ => onCompletion);

@@ -10,7 +10,6 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
-using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Online.Rooms;
 using osu.Game.Screens.OnlinePlay;
 using osu.Game.Screens.OnlinePlay.Playlists;
@@ -18,7 +17,7 @@ using osu.Game.Tests.Visual.OnlinePlay;
 
 namespace osu.Game.Tests.Visual.Playlists
 {
-    public partial class TestScenePlaylistsMatchSettingsOverlay : OnlinePlayTestScene
+    public class TestScenePlaylistsMatchSettingsOverlay : OnlinePlayTestScene
     {
         protected new TestRoomManager RoomManager => (TestRoomManager)base.RoomManager;
 
@@ -147,9 +146,9 @@ namespace osu.Game.Tests.Visual.Playlists
             AddUntilStep("error not displayed", () => !settings.ErrorText.IsPresent);
         }
 
-        private partial class TestRoomSettings : PlaylistsRoomSettingsOverlay
+        private class TestRoomSettings : PlaylistsRoomSettingsOverlay
         {
-            public RoundedButton ApplyButton => ((MatchSettings)Settings).ApplyButton;
+            public TriangleButton ApplyButton => ((MatchSettings)Settings).ApplyButton;
 
             public OsuTextBox NameField => ((MatchSettings)Settings).NameField;
             public OsuDropdown<TimeSpan> DurationField => ((MatchSettings)Settings).DurationField;
@@ -179,7 +178,7 @@ namespace osu.Game.Tests.Visual.Playlists
 
             public IBindable<bool> InitialRoomsReceived { get; } = new Bindable<bool>(true);
 
-            public IBindableList<Room> Rooms => null!;
+            public IBindableList<Room> Rooms => null;
 
             public void AddOrUpdateRoom(Room room) => throw new NotImplementedException();
 

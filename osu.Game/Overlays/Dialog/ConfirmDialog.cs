@@ -13,7 +13,7 @@ namespace osu.Game.Overlays.Dialog
     /// <summary>
     /// A dialog which confirms a user action.
     /// </summary>
-    public partial class ConfirmDialog : PopupDialog
+    public class ConfirmDialog : PopupDialog
     {
         /// <summary>
         /// Construct a new confirmation dialog.

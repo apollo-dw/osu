@@ -5,7 +5,7 @@
 
 using System;
 using NUnit.Framework;
-using osu.Game.Utils;
+using osu.Game.Rulesets.Difficulty.Utils;
 
 namespace osu.Game.Tests.NonVisual
 {

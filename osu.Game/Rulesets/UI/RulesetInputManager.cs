@@ -19,17 +19,15 @@ using osu.Game.Input;
 using osu.Game.Input.Bindings;
 using osu.Game.Input.Handlers;
 using osu.Game.Rulesets.Scoring;
-using osu.Game.Screens.Play.HUD;
+using osu.Game.Screens.Play;
 using osu.Game.Screens.Play.HUD.ClicksPerSecond;
 using static osu.Game.Input.Handlers.ReplayInputHandler;
 
 namespace osu.Game.Rulesets.UI
 {
-    public abstract partial class RulesetInputManager<T> : PassThroughInputManager, ICanAttachHUDPieces, IHasReplayHandler, IHasRecordingHandler
+    public abstract class RulesetInputManager<T> : PassThroughInputManager, ICanAttachHUDPieces, IHasReplayHandler, IHasRecordingHandler
         where T : struct
     {
-        protected override bool AllowRightClickFromLongTouch => false;
-
         public readonly KeyBindingContainer<T> KeyBindingContainer;
 
         [Resolved(CanBeNull = true)]
@@ -41,9 +39,6 @@ namespace osu.Game.Rulesets.UI
         {
             set
             {
-                if (value == recorder)
-                    return;
-
                 if (value != null && recorder != null)
                     throw new InvalidOperationException("Cannot attach more than one recorder");
 
@@ -72,7 +67,6 @@ namespace osu.Game.Rulesets.UI
         private void load(OsuConfigManager config)
         {
             mouseDisabled = config.GetBindable<bool>(OsuSetting.MouseDisableButtons);
-            tapsDisabled = config.GetBindable<bool>(OsuSetting.TouchDisableGameplayTaps);
         }
 
         #region Action mapping (for replays)
@@ -125,7 +119,6 @@ namespace osu.Game.Rulesets.UI
         #region Setting application (disables etc.)
 
         private Bindable<bool> mouseDisabled;
-        private Bindable<bool> tapsDisabled;
 
         protected override bool Handle(UIEvent e)
         {
@@ -149,9 +142,9 @@ namespace osu.Game.Rulesets.UI
 
         protected override bool HandleMouseTouchStateChange(TouchStateChangeEvent e)
         {
-            if (tapsDisabled.Value)
+            if (mouseDisabled.Value)
             {
-                // Only propagate positional data when taps are disabled.
+                // Only propagate positional data when mouse buttons are disabled.
                 e = new TouchStateChangeEvent(e.State, e.Input, e.Touch, false, e.LastPosition);
             }
 
@@ -162,36 +155,59 @@ namespace osu.Game.Rulesets.UI
 
         #region Key Counter Attachment
 
-        public void Attach(InputCountController inputCountController)
+        public void Attach(KeyCounterDisplay keyCounter)
         {
-            var triggers = KeyBindingContainer.DefaultKeyBindings
-                                              .Select(b => b.GetAction<T>())
-                                              .Distinct()
-                                              .Select(action => new KeyCounterActionTrigger<T>(action))
-                                              .ToArray();
+            var receptor = new ActionReceptor(keyCounter);
 
-            KeyBindingContainer.AddRange(triggers);
-            inputCountController.AddRange(triggers);
+            KeyBindingContainer.Add(receptor);
+
+            keyCounter.SetReceptor(receptor);
+            keyCounter.AddRange(KeyBindingContainer.DefaultKeyBindings
+                                                   .Select(b => b.GetAction<T>())
+                                                   .Distinct()
+                                                   .OrderBy(action => action)
+                                                   .Select(action => new KeyCounterAction<T>(action)));
+        }
+
+        private class ActionReceptor : KeyCounterDisplay.Receptor, IKeyBindingHandler<T>
+        {
+            public ActionReceptor(KeyCounterDisplay target)
+                : base(target)
+            {
+            }
+
+            public bool OnPressed(KeyBindingPressEvent<T> e) => Target.Children.OfType<KeyCounterAction<T>>().Any(c => c.OnPressed(e.Action, Clock.Rate >= 0));
+
+            public void OnReleased(KeyBindingReleaseEvent<T> e)
+            {
+                foreach (var c in Target.Children.OfType<KeyCounterAction<T>>())
+                    c.OnReleased(e.Action, Clock.Rate >= 0);
+            }
         }
 
         #endregion
 
         #region Keys per second Counter Attachment
 
-        public void Attach(ClicksPerSecondController controller) => KeyBindingContainer.Add(new ActionListener(controller));
-
-        private partial class ActionListener : Component, IKeyBindingHandler<T>
+        public void Attach(ClicksPerSecondCalculator calculator)
         {
-            private readonly ClicksPerSecondController controller;
+            var listener = new ActionListener(calculator);
 
-            public ActionListener(ClicksPerSecondController controller)
+            KeyBindingContainer.Add(listener);
+        }
+
+        private class ActionListener : Component, IKeyBindingHandler<T>
+        {
+            private readonly ClicksPerSecondCalculator calculator;
+
+            public ActionListener(ClicksPerSecondCalculator calculator)
             {
-                this.controller = controller;
+                this.calculator = calculator;
             }
 
             public bool OnPressed(KeyBindingPressEvent<T> e)
             {
-                controller.AddInputTimestamp();
+                calculator.AddInputTimestamp();
                 return false;
             }
 
@@ -205,7 +221,7 @@ namespace osu.Game.Rulesets.UI
         protected virtual KeyBindingContainer<T> CreateKeyBindingContainer(RulesetInfo ruleset, int variant, SimultaneousBindingMode unique)
             => new RulesetKeyBindingContainer(ruleset, variant, unique);
 
-        public partial class RulesetKeyBindingContainer : DatabasedKeyBindingContainer<T>
+        public class RulesetKeyBindingContainer : DatabasedKeyBindingContainer<T>
         {
             protected override bool HandleRepeats => false;
 
@@ -218,10 +234,32 @@ namespace osu.Game.Rulesets.UI
             {
                 base.ReloadMappings(realmKeyBindings);
 
-                KeyBindings = KeyBindings.Where(static b => RealmKeyBindingStore.CheckValidForGameplay(b.KeyCombination)).ToList();
-                RealmKeyBindingStore.ClearDuplicateBindings(KeyBindings);
+                KeyBindings = KeyBindings.Where(b => RealmKeyBindingStore.CheckValidForGameplay(b.KeyCombination)).ToList();
             }
         }
+    }
+
+    /// <summary>
+    /// Expose the <see cref="ReplayInputHandler"/>  in a capable <see cref="InputManager"/>.
+    /// </summary>
+    public interface IHasReplayHandler
+    {
+        ReplayInputHandler ReplayInputHandler { get; set; }
+    }
+
+    public interface IHasRecordingHandler
+    {
+        public ReplayRecorder Recorder { set; }
+    }
+
+    /// <summary>
+    /// Supports attaching various HUD pieces.
+    /// Keys will be populated automatically and a receptor will be injected inside.
+    /// </summary>
+    public interface ICanAttachHUDPieces
+    {
+        void Attach(KeyCounterDisplay keyCounter);
+        void Attach(ClicksPerSecondCalculator calculator);
     }
 
     public class RulesetInputManagerInputState<T> : InputState

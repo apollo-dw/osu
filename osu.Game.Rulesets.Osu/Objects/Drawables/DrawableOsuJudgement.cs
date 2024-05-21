@@ -12,9 +12,9 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Objects.Drawables
 {
-    public partial class DrawableOsuJudgement : DrawableJudgement
+    public class DrawableOsuJudgement : DrawableJudgement
     {
-        internal SkinnableLighting Lighting { get; private set; }
+        protected SkinnableLighting Lighting { get; private set; }
 
         [Resolved]
         private OsuConfigManager config { get; set; }
@@ -52,7 +52,7 @@ namespace osu.Game.Rulesets.Osu.Objects.Drawables
 
             Lighting.Alpha = 0;
 
-            if (hitLightingEnabled)
+            if (hitLightingEnabled && Lighting.Drawable != null)
             {
                 // todo: this animation changes slightly based on new/old legacy skin versions.
                 Lighting.ScaleTo(0.8f).ScaleTo(1.2f, 600, Easing.Out);
@@ -67,7 +67,7 @@ namespace osu.Game.Rulesets.Osu.Objects.Drawables
 
         protected override Drawable CreateDefaultJudgement(HitResult result) => new OsuJudgementPiece(result);
 
-        private partial class OsuJudgementPiece : DefaultJudgementPiece
+        private class OsuJudgementPiece : DefaultJudgementPiece
         {
             public OsuJudgementPiece(HitResult result)
                 : base(result)

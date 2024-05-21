@@ -11,7 +11,7 @@ using osu.Game.Online.Rooms;
 
 namespace osu.Game.Screens.OnlinePlay.Match.Components
 {
-    public partial class MatchLeaderboard : Leaderboard<MatchLeaderboardScope, APIUserScoreAggregate>
+    public class MatchLeaderboard : Leaderboard<MatchLeaderboardScope, APIUserScoreAggregate>
     {
         [Resolved(typeof(Room), nameof(Room.RoomID))]
         private Bindable<long?> roomId { get; set; } = null!;

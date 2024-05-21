@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Colour;
@@ -16,11 +18,11 @@ namespace osu.Game.Screens.Ranking.Expanded.Statistics
     /// <summary>
     /// A <see cref="StatisticDisplay"/> to display the player's combo.
     /// </summary>
-    public partial class ComboStatistic : CounterStatistic
+    public class ComboStatistic : CounterStatistic
     {
         private readonly bool isPerfect;
 
-        private Drawable perfectText = null!;
+        private Drawable perfectText;
 
         /// <summary>
         /// Creates a new <see cref="ComboStatistic"/>.

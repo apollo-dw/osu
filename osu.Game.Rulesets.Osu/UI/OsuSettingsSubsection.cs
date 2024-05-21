@@ -1,17 +1,18 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Localisation;
-using osu.Game.Localisation;
 using osu.Game.Overlays.Settings;
 using osu.Game.Rulesets.Osu.Configuration;
 using osu.Game.Rulesets.UI;
 
 namespace osu.Game.Rulesets.Osu.UI
 {
-    public partial class OsuSettingsSubsection : RulesetSettingsSubsection
+    public class OsuSettingsSubsection : RulesetSettingsSubsection
     {
         protected override LocalisableString Header => "osu!";
 
@@ -29,28 +30,23 @@ namespace osu.Game.Rulesets.Osu.UI
             {
                 new SettingsCheckbox
                 {
-                    LabelText = RulesetSettingsStrings.SnakingInSliders,
+                    LabelText = "Snaking in sliders",
                     Current = config.GetBindable<bool>(OsuRulesetSetting.SnakingInSliders)
                 },
                 new SettingsCheckbox
                 {
                     ClassicDefault = false,
-                    LabelText = RulesetSettingsStrings.SnakingOutSliders,
+                    LabelText = "Snaking out sliders",
                     Current = config.GetBindable<bool>(OsuRulesetSetting.SnakingOutSliders)
                 },
                 new SettingsCheckbox
                 {
-                    LabelText = RulesetSettingsStrings.CursorTrail,
+                    LabelText = "Cursor trail",
                     Current = config.GetBindable<bool>(OsuRulesetSetting.ShowCursorTrail)
-                },
-                new SettingsCheckbox
-                {
-                    LabelText = RulesetSettingsStrings.CursorRipples,
-                    Current = config.GetBindable<bool>(OsuRulesetSetting.ShowCursorRipples)
                 },
                 new SettingsEnumDropdown<PlayfieldBorderStyle>
                 {
-                    LabelText = RulesetSettingsStrings.PlayfieldBorderStyle,
+                    LabelText = "Playfield border style",
                     Current = config.GetBindable<PlayfieldBorderStyle>(OsuRulesetSetting.PlayfieldBorderStyle),
                 },
             };

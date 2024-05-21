@@ -25,7 +25,7 @@ namespace osu.Game.Overlays
     /// <summary>
     /// Handles playback of the global music track.
     /// </summary>
-    public partial class MusicController : CompositeDrawable
+    public class MusicController : CompositeDrawable
     {
         [Resolved]
         private BeatmapManager beatmaps { get; set; }
@@ -39,11 +39,6 @@ namespace osu.Game.Overlays
         /// Whether the user has requested the track to be paused. Use <see cref="IsPlaying"/> to determine whether the track is still playing.
         /// </summary>
         public bool UserPauseRequested { get; private set; }
-
-        /// <summary>
-        /// Whether user control of the global track should be allowed.
-        /// </summary>
-        public readonly BindableBool AllowTrackControl = new BindableBool(true);
 
         /// <summary>
         /// Fired when the global <see cref="WorkingBeatmap"/> has changed.
@@ -97,10 +92,8 @@ namespace osu.Game.Overlays
             seekDelegate?.Cancel();
             seekDelegate = Schedule(() =>
             {
-                if (beatmap.Disabled || !AllowTrackControl.Value)
-                    return;
-
-                CurrentTrack.Seek(position);
+                if (!beatmap.Disabled)
+                    CurrentTrack.Seek(position);
             });
         }
 
@@ -114,7 +107,7 @@ namespace osu.Game.Overlays
 
             if (CurrentTrack.IsDummyDevice || beatmap.Value.BeatmapSetInfo.DeletePending)
             {
-                if (beatmap.Disabled || !AllowTrackControl.Value)
+                if (beatmap.Disabled)
                     return;
 
                 Logger.Log($"{nameof(MusicController)} skipping next track to {nameof(EnsurePlayingSomething)}");
@@ -139,9 +132,6 @@ namespace osu.Game.Overlays
         /// <returns>Whether the operation was successful.</returns>
         public bool Play(bool restart = false, bool requestedByUser = false)
         {
-            if (requestedByUser && !AllowTrackControl.Value)
-                return false;
-
             if (requestedByUser)
                 UserPauseRequested = false;
 
@@ -163,9 +153,6 @@ namespace osu.Game.Overlays
         /// </param>
         public void Stop(bool requestedByUser = false)
         {
-            if (requestedByUser && !AllowTrackControl.Value)
-                return;
-
             UserPauseRequested |= requestedByUser;
             if (CurrentTrack.IsRunning)
                 CurrentTrack.StopAsync();
@@ -177,9 +164,6 @@ namespace osu.Game.Overlays
         /// <returns>Whether the operation was successful.</returns>
         public bool TogglePause()
         {
-            if (!AllowTrackControl.Value)
-                return false;
-
             if (CurrentTrack.IsRunning)
                 Stop(true);
             else
@@ -205,7 +189,7 @@ namespace osu.Game.Overlays
         /// <returns>The <see cref="PreviousTrackResult"/> that indicate the decided action.</returns>
         private PreviousTrackResult prev()
         {
-            if (beatmap.Disabled || !AllowTrackControl.Value)
+            if (beatmap.Disabled)
                 return PreviousTrackResult.None;
 
             double currentTrackPosition = CurrentTrack.CurrentTime;
@@ -245,7 +229,7 @@ namespace osu.Game.Overlays
 
         private bool next()
         {
-            if (beatmap.Disabled || !AllowTrackControl.Value)
+            if (beatmap.Disabled)
                 return false;
 
             queuedDirection = TrackChangeDirection.Next;
@@ -332,8 +316,6 @@ namespace osu.Game.Overlays
             var queuedTrack = getQueuedTrack();
 
             var lastTrack = CurrentTrack;
-            lastTrack.Completed -= onTrackCompleted;
-
             CurrentTrack = queuedTrack;
 
             // At this point we may potentially be in an async context from tests. This is extremely dangerous but we have to make do for now.
@@ -362,30 +344,34 @@ namespace osu.Game.Overlays
             // Important to keep this in its own method to avoid inadvertently capturing unnecessary variables in the callback.
             // Can lead to leaks.
             var queuedTrack = new DrawableTrack(current.LoadTrack());
-            queuedTrack.Completed += onTrackCompleted;
+            queuedTrack.Completed += () => onTrackCompleted(current);
             return queuedTrack;
         }
 
-        private void onTrackCompleted()
+        private void onTrackCompleted(WorkingBeatmap workingBeatmap)
         {
-            if (!CurrentTrack.Looping && !beatmap.Disabled && AllowTrackControl.Value)
+            // the source of track completion is the audio thread, so the beatmap may have changed before firing.
+            if (current != workingBeatmap)
+                return;
+
+            if (!CurrentTrack.Looping && !beatmap.Disabled)
                 NextTrack();
         }
 
-        private bool applyModTrackAdjustments;
+        private bool allowTrackAdjustments;
 
         /// <summary>
         /// Whether mod track adjustments are allowed to be applied.
         /// </summary>
-        public bool ApplyModTrackAdjustments
+        public bool AllowTrackAdjustments
         {
-            get => applyModTrackAdjustments;
+            get => allowTrackAdjustments;
             set
             {
-                if (applyModTrackAdjustments == value)
+                if (allowTrackAdjustments == value)
                     return;
 
-                applyModTrackAdjustments = value;
+                allowTrackAdjustments = value;
                 ResetTrackAdjustments();
             }
         }
@@ -393,7 +379,7 @@ namespace osu.Game.Overlays
         private AudioAdjustments modTrackAdjustments;
 
         /// <summary>
-        /// Resets the adjustments currently applied on <see cref="CurrentTrack"/> and applies the mod adjustments if <see cref="ApplyModTrackAdjustments"/> is <c>true</c>.
+        /// Resets the adjustments currently applied on <see cref="CurrentTrack"/> and applies the mod adjustments if <see cref="AllowTrackAdjustments"/> is <c>true</c>.
         /// </summary>
         /// <remarks>
         /// Does not reset any adjustments applied directly to the beatmap track.
@@ -406,7 +392,7 @@ namespace osu.Game.Overlays
             CurrentTrack.RemoveAllAdjustments(AdjustableProperty.Tempo);
             CurrentTrack.RemoveAllAdjustments(AdjustableProperty.Volume);
 
-            if (applyModTrackAdjustments)
+            if (allowTrackAdjustments)
             {
                 CurrentTrack.BindAdjustments(modTrackAdjustments = new AudioAdjustments());
 

@@ -1,16 +1,17 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
+#nullable disable
+
 using Newtonsoft.Json;
 
 namespace osu.Game.Online.API
 {
     public class RegistrationRequest : OsuWebRequest
     {
-        internal string Username = string.Empty;
-        internal string Email = string.Empty;
-        internal string Password = string.Empty;
+        internal string Username;
+        internal string Email;
+        internal string Password;
 
         protected override void PrePerform()
         {
@@ -23,28 +24,18 @@ namespace osu.Game.Online.API
 
         public class RegistrationRequestErrors
         {
-            /// <summary>
-            /// An optional error message.
-            /// </summary>
-            public string? Message;
-
-            /// <summary>
-            /// An optional URL which the user should be directed towards to complete registration.
-            /// </summary>
-            public string? Redirect;
-
-            public UserErrors? User;
+            public UserErrors User;
 
             public class UserErrors
             {
                 [JsonProperty("username")]
-                public string[] Username = Array.Empty<string>();
+                public string[] Username;
 
                 [JsonProperty("user_email")]
-                public string[] Email = Array.Empty<string>();
+                public string[] Email;
 
                 [JsonProperty("password")]
-                public string[] Password = Array.Empty<string>();
+                public string[] Password;
             }
         }
     }

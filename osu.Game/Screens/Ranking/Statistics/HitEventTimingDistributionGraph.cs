@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Allocation;
-using osu.Framework.Extensions.EnumExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Layout;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Rulesets.Scoring;
@@ -20,7 +18,7 @@ namespace osu.Game.Screens.Ranking.Statistics
     /// <summary>
     /// A graph which displays the distribution of hit timing in a series of <see cref="HitEvent"/>s.
     /// </summary>
-    public partial class HitEventTimingDistributionGraph : CompositeDrawable
+    public class HitEventTimingDistributionGraph : CompositeDrawable
     {
         /// <summary>
         /// The number of bins on each side of the timing distribution.
@@ -59,7 +57,7 @@ namespace osu.Game.Screens.Ranking.Statistics
         /// <param name="hitEvents">The <see cref="HitEvent"/>s to display the timing distribution of.</param>
         public HitEventTimingDistributionGraph(IReadOnlyList<HitEvent> hitEvents)
         {
-            this.hitEvents = hitEvents.Where(e => !(e.HitObject.HitWindows is HitWindows.EmptyHitWindows) && e.Result.IsBasic() && e.Result.IsHit()).ToList();
+            this.hitEvents = hitEvents.Where(e => !(e.HitObject.HitWindows is HitWindows.EmptyHitWindows) && e.Result.IsHit()).ToList();
             bins = Enumerable.Range(0, total_timing_distribution_bins).Select(_ => new Dictionary<HitResult, int>()).ToArray<IDictionary<HitResult, int>>();
         }
 
@@ -115,111 +113,110 @@ namespace osu.Game.Screens.Ranking.Statistics
                 }
             }
 
-            if (barDrawables == null)
-                createBarDrawables();
-            else
+            if (barDrawables != null)
             {
                 for (int i = 0; i < barDrawables.Length; i++)
+                {
                     barDrawables[i].UpdateOffset(bins[i].Sum(b => b.Value));
-            }
-        }
-
-        private void createBarDrawables()
-        {
-            int maxCount = bins.Max(b => b.Values.Sum());
-            barDrawables = bins.Select((_, i) => new Bar(bins[i], maxCount, i == timing_distribution_centre_bin_index)).ToArray();
-
-            Container axisFlow;
-
-            Padding = new MarginPadding { Horizontal = 5 };
-
-            InternalChild = new GridContainer
-            {
-                RelativeSizeAxes = Axes.Both,
-                Content = new[]
-                {
-                    new Drawable[]
-                    {
-                        new GridContainer
-                        {
-                            RelativeSizeAxes = Axes.Both,
-                            Content = new[] { barDrawables }
-                        }
-                    },
-                    new Drawable[]
-                    {
-                        axisFlow = new Container
-                        {
-                            RelativeSizeAxes = Axes.X,
-                            Height = StatisticItem.FONT_SIZE,
-                        }
-                    },
-                },
-                RowDimensions = new[]
-                {
-                    new Dimension(),
-                    new Dimension(GridSizeMode.AutoSize),
                 }
-            };
-
-            // Our axis will contain one centre element + 5 points on each side, each with a value depending on the number of bins * bin size.
-            double maxValue = timing_distribution_bins * binSize;
-            double axisValueStep = maxValue / axis_points;
-
-            axisFlow.Add(new OsuSpriteText
+            }
+            else
             {
-                Anchor = Anchor.Centre,
-                Origin = Anchor.Centre,
-                Text = "0",
-                Font = OsuFont.GetFont(size: StatisticItem.FONT_SIZE, weight: FontWeight.SemiBold)
-            });
+                int maxCount = bins.Max(b => b.Values.Sum());
+                barDrawables = bins.Select((bin, i) => new Bar(bins[i], maxCount, i == timing_distribution_centre_bin_index)).ToArray();
 
-            for (int i = 1; i <= axis_points; i++)
-            {
-                double axisValue = i * axisValueStep;
-                float position = (float)(axisValue / maxValue);
-                float alpha = 1f - position * 0.8f;
+                Container axisFlow;
+
+                const float axis_font_size = 12;
+
+                InternalChild = new GridContainer
+                {
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    RelativeSizeAxes = Axes.Both,
+                    Width = 0.8f,
+                    Content = new[]
+                    {
+                        new Drawable[]
+                        {
+                            new GridContainer
+                            {
+                                RelativeSizeAxes = Axes.Both,
+                                Content = new[] { barDrawables }
+                            }
+                        },
+                        new Drawable[]
+                        {
+                            axisFlow = new Container
+                            {
+                                RelativeSizeAxes = Axes.X,
+                                Height = axis_font_size,
+                            }
+                        },
+                    },
+                    RowDimensions = new[]
+                    {
+                        new Dimension(),
+                        new Dimension(GridSizeMode.AutoSize),
+                    }
+                };
+
+                // Our axis will contain one centre element + 5 points on each side, each with a value depending on the number of bins * bin size.
+                double maxValue = timing_distribution_bins * binSize;
+                double axisValueStep = maxValue / axis_points;
 
                 axisFlow.Add(new OsuSpriteText
                 {
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
-                    RelativePositionAxes = Axes.X,
-                    X = -position / 2,
-                    Alpha = alpha,
-                    Text = axisValue.ToString("-0"),
-                    Font = OsuFont.GetFont(size: StatisticItem.FONT_SIZE, weight: FontWeight.SemiBold)
+                    Text = "0",
+                    Font = OsuFont.GetFont(size: axis_font_size, weight: FontWeight.SemiBold)
                 });
 
-                axisFlow.Add(new OsuSpriteText
+                for (int i = 1; i <= axis_points; i++)
                 {
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.Centre,
-                    RelativePositionAxes = Axes.X,
-                    X = position / 2,
-                    Alpha = alpha,
-                    Text = axisValue.ToString("+0"),
-                    Font = OsuFont.GetFont(size: StatisticItem.FONT_SIZE, weight: FontWeight.SemiBold)
-                });
+                    double axisValue = i * axisValueStep;
+                    float position = (float)(axisValue / maxValue);
+                    float alpha = 1f - position * 0.8f;
+
+                    axisFlow.Add(new OsuSpriteText
+                    {
+                        Anchor = Anchor.Centre,
+                        Origin = Anchor.Centre,
+                        RelativePositionAxes = Axes.X,
+                        X = -position / 2,
+                        Alpha = alpha,
+                        Text = axisValue.ToString("-0"),
+                        Font = OsuFont.GetFont(size: axis_font_size, weight: FontWeight.SemiBold)
+                    });
+
+                    axisFlow.Add(new OsuSpriteText
+                    {
+                        Anchor = Anchor.Centre,
+                        Origin = Anchor.Centre,
+                        RelativePositionAxes = Axes.X,
+                        X = position / 2,
+                        Alpha = alpha,
+                        Text = axisValue.ToString("+0"),
+                        Font = OsuFont.GetFont(size: axis_font_size, weight: FontWeight.SemiBold)
+                    });
+                }
             }
         }
 
-        private partial class Bar : CompositeDrawable
+        private class Bar : CompositeDrawable
         {
             private readonly IReadOnlyList<KeyValuePair<HitResult, int>> values;
             private readonly float maxValue;
             private readonly bool isCentre;
             private readonly float totalValue;
 
-            private const float minimum_height = 0.02f;
-
+            private float basalHeight;
             private float offsetAdjustment;
 
             private Circle[] boxOriginals = null!;
 
             private Circle? boxAdjustment;
-
-            private float? lastDrawHeight;
 
             [Resolved]
             private OsuColour colours { get; set; } = null!;
@@ -259,17 +256,15 @@ namespace osu.Game.Screens.Ranking.Statistics
                 else
                 {
                     // A bin with no value draws a grey dot instead.
-                    InternalChildren = boxOriginals = new[]
+                    Circle dot = new Circle
                     {
-                        new Circle
-                        {
-                            RelativeSizeAxes = Axes.Both,
-                            Anchor = Anchor.BottomCentre,
-                            Origin = Anchor.BottomCentre,
-                            Colour = isCentre ? Color4.White : Color4.Gray,
-                            Height = 0,
-                        }
+                        RelativeSizeAxes = Axes.Both,
+                        Anchor = Anchor.BottomCentre,
+                        Origin = Anchor.BottomCentre,
+                        Colour = isCentre ? Color4.White : Color4.Gray,
+                        Height = 0,
                     };
+                    InternalChildren = boxOriginals = new[] { dot };
                 }
             }
 
@@ -277,18 +272,31 @@ namespace osu.Game.Screens.Ranking.Statistics
             {
                 base.LoadComplete();
 
-                Scheduler.AddOnce(updateMetrics, true);
-            }
+                if (!values.Any())
+                    return;
 
-            protected override bool OnInvalidate(Invalidation invalidation, InvalidationSource source)
-            {
-                if (invalidation.HasFlagFast(Invalidation.DrawSize))
+                updateBasalHeight();
+
+                foreach (var boxOriginal in boxOriginals)
                 {
-                    if (lastDrawHeight != null && lastDrawHeight != DrawHeight)
-                        Scheduler.AddOnce(updateMetrics, false);
+                    boxOriginal.Y = 0;
+                    boxOriginal.Height = basalHeight;
                 }
 
-                return base.OnInvalidate(invalidation, source);
+                float offsetValue = 0;
+
+                for (int i = 0; i < values.Count; i++)
+                {
+                    boxOriginals[i].MoveToY(offsetForValue(offsetValue) * BoundingBox.Height, duration, Easing.OutQuint);
+                    boxOriginals[i].ResizeHeightTo(heightForValue(values[i].Value), duration, Easing.OutQuint);
+                    offsetValue -= values[i].Value;
+                }
+            }
+
+            protected override void Update()
+            {
+                base.Update();
+                updateBasalHeight();
             }
 
             public void UpdateOffset(float adjustment)
@@ -313,32 +321,45 @@ namespace osu.Game.Screens.Ranking.Statistics
                 }
 
                 offsetAdjustment = adjustment;
-
-                Scheduler.AddOnce(updateMetrics, true);
+                drawAdjustmentBar();
             }
 
-            private void updateMetrics(bool animate = true)
+            private void updateBasalHeight()
             {
-                float offsetValue = 0;
+                float newBasalHeight = DrawHeight > DrawWidth ? DrawWidth / DrawHeight : 1;
 
-                for (int i = 0; i < boxOriginals.Length; i++)
-                {
-                    int value = i < values.Count ? values[i].Value : 0;
+                if (newBasalHeight == basalHeight)
+                    return;
 
-                    var box = boxOriginals[i];
+                basalHeight = newBasalHeight;
+                foreach (var dot in boxOriginals)
+                    dot.Height = basalHeight;
 
-                    box.MoveToY(offsetForValue(offsetValue) * BoundingBox.Height, duration, Easing.OutQuint);
-                    box.ResizeHeightTo(heightForValue(value), duration, Easing.OutQuint);
-                    offsetValue -= value;
-                }
+                draw();
+            }
+
+            private float offsetForValue(float value) => (1 - basalHeight) * value / maxValue;
+
+            private float heightForValue(float value) => MathF.Max(basalHeight + offsetForValue(value), 0);
+
+            private void draw()
+            {
+                resizeBars();
 
                 if (boxAdjustment != null)
                     drawAdjustmentBar();
+            }
 
-                if (!animate)
-                    FinishTransforms(true);
+            private void resizeBars()
+            {
+                float offsetValue = 0;
 
-                lastDrawHeight = DrawHeight;
+                for (int i = 0; i < values.Count; i++)
+                {
+                    boxOriginals[i].Y = offsetForValue(offsetValue) * DrawHeight;
+                    boxOriginals[i].Height = heightForValue(values[i].Value);
+                    offsetValue -= values[i].Value;
+                }
             }
 
             private void drawAdjustmentBar()
@@ -348,10 +369,6 @@ namespace osu.Game.Screens.Ranking.Statistics
                 boxAdjustment.ResizeHeightTo(heightForValue(offsetAdjustment), duration, Easing.OutQuint);
                 boxAdjustment.FadeTo(!hasAdjustment ? 0 : 1, duration, Easing.OutQuint);
             }
-
-            private float offsetForValue(float value) => (1 - minimum_height) * value / maxValue;
-
-            private float heightForValue(float value) => minimum_height + offsetForValue(value);
         }
     }
 }

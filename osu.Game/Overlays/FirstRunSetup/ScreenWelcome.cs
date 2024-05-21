@@ -13,20 +13,20 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input.Events;
 using osu.Framework.Localisation;
 using osu.Framework.Threading;
+using osu.Game.Extensions;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Localisation;
-using osu.Game.Overlays.Settings;
 using osuTK;
 
 namespace osu.Game.Overlays.FirstRunSetup
 {
     [LocalisableDescription(typeof(FirstRunSetupOverlayStrings), nameof(FirstRunSetupOverlayStrings.WelcomeTitle))]
-    public partial class ScreenWelcome : FirstRunSetupScreen
+    public class ScreenWelcome : FirstRunSetupScreen
     {
         [BackgroundDependencyLoader]
-        private void load(FrameworkConfigManager frameworkConfig)
+        private void load()
         {
             Content.Children = new Drawable[]
             {
@@ -52,11 +52,6 @@ namespace osu.Game.Overlays.FirstRunSetup
                         },
                     }
                 },
-                new SettingsCheckbox
-                {
-                    LabelText = GeneralSettingsStrings.PreferOriginalMetadataLanguage,
-                    Current = frameworkConfig.GetBindable<bool>(FrameworkSetting.ShowUnicode)
-                },
                 new LanguageSelectionFlow
                 {
                     RelativeSizeAxes = Axes.X,
@@ -65,32 +60,36 @@ namespace osu.Game.Overlays.FirstRunSetup
             };
         }
 
-        private partial class LanguageSelectionFlow : FillFlowContainer
+        private class LanguageSelectionFlow : FillFlowContainer
         {
-            private Bindable<Language> language = null!;
+            private Bindable<string> frameworkLocale = null!;
 
             private ScheduledDelegate? updateSelectedDelegate;
 
             [BackgroundDependencyLoader]
-            private void load(OsuGameBase game)
+            private void load(FrameworkConfigManager frameworkConfig)
             {
                 Direction = FillDirection.Full;
                 Spacing = new Vector2(5);
 
-                ChildrenEnumerable = Enum.GetValues<Language>()
+                ChildrenEnumerable = Enum.GetValues(typeof(Language))
+                                         .Cast<Language>()
                                          .Select(l => new LanguageButton(l)
                                          {
-                                             Action = () => language.Value = l,
+                                             Action = () => frameworkLocale.Value = l.ToCultureCode()
                                          });
 
-                language = game.CurrentLanguage.GetBoundCopy();
-                language.BindValueChanged(v =>
+                frameworkLocale = frameworkConfig.GetBindable<string>(FrameworkSetting.Locale);
+                frameworkLocale.BindValueChanged(locale =>
                 {
+                    if (!LanguageExtensions.TryParseCultureCode(locale.NewValue, out var language))
+                        language = Language.en;
+
                     // Changing language may cause a short period of blocking the UI thread while the new glyphs are loaded.
                     // Scheduling ensures the button animation plays smoothly after any blocking operation completes.
                     // Note that a delay is required (the alternative would be a double-schedule; delay feels better).
                     updateSelectedDelegate?.Cancel();
-                    updateSelectedDelegate = Scheduler.AddDelayed(() => updateSelectedStates(v.NewValue), 50);
+                    updateSelectedDelegate = Scheduler.AddDelayed(() => updateSelectedStates(language), 50);
                 }, true);
             }
 
@@ -100,7 +99,7 @@ namespace osu.Game.Overlays.FirstRunSetup
                     c.Selected = c.Language == language;
             }
 
-            private partial class LanguageButton : OsuClickableContainer
+            private class LanguageButton : OsuClickableContainer
             {
                 public readonly Language Language;
 
@@ -140,7 +139,7 @@ namespace osu.Game.Overlays.FirstRunSetup
                 [BackgroundDependencyLoader]
                 private void load()
                 {
-                    AddRange(new Drawable[]
+                    InternalChildren = new Drawable[]
                     {
                         backgroundBox = new Box
                         {
@@ -155,7 +154,7 @@ namespace osu.Game.Overlays.FirstRunSetup
                             Colour = colourProvider.Light1,
                             Text = Language.GetDescription(),
                         }
-                    });
+                    };
                 }
 
                 protected override void LoadComplete()

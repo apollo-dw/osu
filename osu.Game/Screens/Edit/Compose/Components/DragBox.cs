@@ -4,7 +4,6 @@
 #nullable disable
 
 using System;
-using JetBrains.Annotations;
 using osu.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -19,7 +18,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
     /// <summary>
     /// A box that displays the drag selection and provides selection events for users to handle.
     /// </summary>
-    public partial class DragBox : CompositeDrawable, IStateful<Visibility>
+    public class DragBox : CompositeDrawable, IStateful<Visibility>
     {
         public Drawable Box { get; private set; }
 
@@ -70,10 +69,9 @@ namespace osu.Game.Screens.Edit.Compose.Components
 
         public override void Show() => State = Visibility.Visible;
 
-        [CanBeNull]
         public event Action<Visibility> StateChanged;
 
-        public partial class BoxWithBorders : CompositeDrawable
+        public class BoxWithBorders : CompositeDrawable
         {
             private readonly LayoutValue cache = new LayoutValue(Invalidation.RequiredParentSizeToFit);
 

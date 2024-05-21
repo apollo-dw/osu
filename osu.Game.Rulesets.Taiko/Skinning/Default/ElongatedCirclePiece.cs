@@ -1,13 +1,15 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Game.Graphics;
 
 namespace osu.Game.Rulesets.Taiko.Skinning.Default
 {
-    public partial class ElongatedCirclePiece : CirclePiece
+    public class ElongatedCirclePiece : CirclePiece
     {
         public ElongatedCirclePiece()
         {
@@ -23,7 +25,7 @@ namespace osu.Game.Rulesets.Taiko.Skinning.Default
         protected override void Update()
         {
             base.Update();
-            Width = Parent!.DrawSize.X + DrawHeight;
+            Width = Parent.DrawSize.X + DrawHeight;
         }
     }
 }

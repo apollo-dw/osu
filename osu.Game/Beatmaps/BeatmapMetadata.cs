@@ -4,6 +4,7 @@
 using System;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
+using osu.Framework.Testing;
 using osu.Game.Models;
 using osu.Game.Users;
 using osu.Game.Utils;
@@ -22,6 +23,7 @@ namespace osu.Game.Beatmaps
     ///
     /// Note that difficulty name is not stored in this metadata but in <see cref="BeatmapInfo"/>.
     /// </remarks>
+    [ExcludeFromDynamicCompile]
     [Serializable]
     [MapTo("BeatmapMetadata")]
     public class BeatmapMetadata : RealmObject, IBeatmapMetadataInfo, IDeepCloneable<BeatmapMetadata>

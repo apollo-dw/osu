@@ -13,7 +13,7 @@ using osu.Game.Scoring;
 
 namespace osu.Game.Screens.OnlinePlay.Match.Components
 {
-    public partial class MatchLeaderboardScore : LeaderboardScore
+    public class MatchLeaderboardScore : LeaderboardScore
     {
         private readonly APIUserScoreAggregate score;
 

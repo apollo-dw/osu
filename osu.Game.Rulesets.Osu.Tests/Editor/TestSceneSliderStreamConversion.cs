@@ -15,7 +15,7 @@ using osuTK.Input;
 
 namespace osu.Game.Rulesets.Osu.Tests.Editor
 {
-    public partial class TestSceneSliderStreamConversion : TestSceneOsuEditor
+    public class TestSceneSliderStreamConversion : TestSceneOsuEditor
     {
         private BindableBeatDivisor beatDivisor => (BindableBeatDivisor)Editor.Dependencies.Get(typeof(BindableBeatDivisor));
 
@@ -199,7 +199,8 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
                 Precision.AlmostEquals(circle.StartTime, time, 1)
                 && Precision.AlmostEquals(circle.Position, position, 0.01f)
                 && circle.NewCombo == startsNewCombo
-                && circle.Samples.SequenceEqual(slider.HeadCircle.Samples);
+                && circle.Samples.SequenceEqual(slider.HeadCircle.Samples)
+                && circle.SampleControlPoint.IsRedundant(slider.SampleControlPoint);
         }
 
         private bool sliderRestored(Slider slider)

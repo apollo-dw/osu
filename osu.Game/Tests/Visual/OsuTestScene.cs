@@ -16,7 +16,6 @@ using osu.Framework.Audio;
 using osu.Framework.Audio.Track;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
-using osu.Framework.Graphics.Colour;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.IO.Stores;
 using osu.Framework.Platform;
@@ -24,7 +23,6 @@ using osu.Framework.Testing;
 using osu.Framework.Timing;
 using osu.Game.Beatmaps;
 using osu.Game.Database;
-using osu.Game.Graphics;
 using osu.Game.Online.API;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Overlays;
@@ -38,7 +36,8 @@ using osu.Game.Tests.Rulesets;
 
 namespace osu.Game.Tests.Visual
 {
-    public abstract partial class OsuTestScene : TestScene
+    [ExcludeFromDynamicCompile]
+    public abstract class OsuTestScene : TestScene
     {
         [Cached]
         protected Bindable<WorkingBeatmap> Beatmap { get; } = new Bindable<WorkingBeatmap>();
@@ -160,24 +159,19 @@ namespace osu.Game.Tests.Visual
             return Dependencies;
         }
 
-        [Resolved]
-        private OsuColour colours { get; set; }
-
         protected override void LoadComplete()
         {
             base.LoadComplete();
 
-            ChangeBackgroundColour(ColourInfo.GradientVertical(colours.GreyCarmine, colours.GreyCarmineDarker));
-
-            var parentBeatmap = Parent!.Dependencies.Get<Bindable<WorkingBeatmap>>();
+            var parentBeatmap = Parent.Dependencies.Get<Bindable<WorkingBeatmap>>();
             parentBeatmap.Value = Beatmap.Value;
             Beatmap.BindTo(parentBeatmap);
 
-            var parentRuleset = Parent!.Dependencies.Get<Bindable<RulesetInfo>>();
+            var parentRuleset = Parent.Dependencies.Get<Bindable<RulesetInfo>>();
             parentRuleset.Value = Ruleset.Value;
             Ruleset.BindTo(parentRuleset);
 
-            var parentMods = Parent!.Dependencies.Get<Bindable<IReadOnlyList<Mod>>>();
+            var parentMods = Parent.Dependencies.Get<Bindable<IReadOnlyList<Mod>>>();
             parentMods.Value = SelectedMods.Value;
             SelectedMods.BindTo(parentMods);
         }
@@ -272,7 +266,7 @@ namespace osu.Game.Tests.Visual
         {
             Debug.Assert(original.BeatmapSet != null);
 
-            var result = new APIBeatmapSet
+            return new APIBeatmapSet
             {
                 OnlineID = original.BeatmapSet.OnlineID,
                 Status = BeatmapOnlineStatus.Ranked,
@@ -308,11 +302,6 @@ namespace osu.Game.Tests.Visual
                     }
                 }
             };
-
-            foreach (var beatmap in result.Beatmaps)
-                beatmap.BeatmapSet = result;
-
-            return result;
         }
 
         protected WorkingBeatmap CreateWorkingBeatmap(RulesetInfo ruleset) =>
@@ -432,11 +421,6 @@ namespace osu.Game.Tests.Visual
 
                 private bool running;
 
-                public override double Rate => base.Rate
-                                               // This is mainly to allow some tests to override the rate to zero
-                                               // and avoid interpolation.
-                                               * referenceClock.Rate;
-
                 public TrackVirtualManual(IFrameBasedClock referenceClock, string name = "virtual")
                     : base(name)
                 {
@@ -519,7 +503,7 @@ namespace osu.Game.Tests.Visual
             }
         }
 
-        public partial class OsuTestSceneTestRunner : OsuGameBase, ITestSceneTestRunner
+        public class OsuTestSceneTestRunner : OsuGameBase, ITestSceneTestRunner
         {
             private TestSceneTestRunner.TestRunner runner;
 

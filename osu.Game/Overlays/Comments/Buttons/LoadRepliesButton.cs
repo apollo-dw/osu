@@ -9,7 +9,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Comments.Buttons
 {
-    public partial class LoadRepliesButton : LoadingButton
+    public class LoadRepliesButton : LoadingButton
     {
         private ButtonContent content;
 
@@ -24,7 +24,7 @@ namespace osu.Game.Overlays.Comments.Buttons
 
         protected override void OnLoadFinished() => content.ToggleTextVisibility(true);
 
-        private partial class ButtonContent : CommentRepliesButton
+        private class ButtonContent : CommentRepliesButton
         {
             public ButtonContent()
             {

@@ -21,7 +21,7 @@ using APIUser = osu.Game.Online.API.Requests.Responses.APIUser;
 
 namespace osu.Game.Overlays.BeatmapSet
 {
-    public partial class AuthorInfo : Container
+    public class AuthorInfo : Container
     {
         private const float height = 50;
 
@@ -55,7 +55,7 @@ namespace osu.Game.Overlays.BeatmapSet
                     AutoSizeAxes = Axes.Both,
                     CornerRadius = 4,
                     Masking = true,
-                    Child = avatar = new UpdateableAvatar(showUserPanelOnHover: true, showGuestOnNull: false)
+                    Child = avatar = new UpdateableAvatar(showGuestOnNull: false)
                     {
                         Size = new Vector2(height),
                     },
@@ -105,7 +105,7 @@ namespace osu.Game.Overlays.BeatmapSet
             }
         }
 
-        private partial class Field : FillFlowContainer
+        private class Field : FillFlowContainer
         {
             public Field(string first, string second, FontUsage secondFont)
             {

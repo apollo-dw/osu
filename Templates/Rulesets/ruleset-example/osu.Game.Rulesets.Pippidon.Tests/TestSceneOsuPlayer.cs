@@ -7,7 +7,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Rulesets.Pippidon.Tests
 {
     [TestFixture]
-    public partial class TestSceneOsuPlayer : PlayerTestScene
+    public class TestSceneOsuPlayer : PlayerTestScene
     {
         protected override Ruleset CreatePlayerRuleset() => new PippidonRuleset();
     }

@@ -24,7 +24,7 @@ using APIUser = osu.Game.Online.API.Requests.Responses.APIUser;
 
 namespace osu.Game.Overlays.BeatmapSet.Scores
 {
-    public partial class ScoresContainer : BeatmapSetLayoutSection
+    public class ScoresContainer : BeatmapSetLayoutSection
     {
         private const int spacing = 15;
 
@@ -46,6 +46,9 @@ namespace osu.Game.Overlays.BeatmapSet.Scores
 
         [Resolved]
         private RulesetStore rulesets { get; set; }
+
+        [Resolved]
+        private ScoreManager scoreManager { get; set; }
 
         private GetScoresRequest getScoresRequest;
 
@@ -82,7 +85,7 @@ namespace osu.Game.Overlays.BeatmapSet.Scores
                     MD5Hash = apiBeatmap.MD5Hash
                 };
 
-                var scores = value.Scores.Select(s => s.ToScoreInfo(rulesets, beatmapInfo)).OrderByTotalScore().ToArray();
+                var scores = scoreManager.OrderByTotalScore(value.Scores.Select(s => s.ToScoreInfo(rulesets, beatmapInfo))).ToArray();
                 var topScore = scores.First();
 
                 scoreTable.DisplayScores(scores, apiBeatmap.Status.GrantsPerformancePoints());
@@ -113,7 +116,7 @@ namespace osu.Game.Overlays.BeatmapSet.Scores
                     RelativeSizeAxes = Axes.X,
                     AutoSizeAxes = Axes.Y,
                     Direction = FillDirection.Vertical,
-                    Padding = new MarginPadding { Horizontal = WaveOverlayContainer.HORIZONTAL_PADDING },
+                    Padding = new MarginPadding { Horizontal = 50 },
                     Margin = new MarginPadding { Vertical = 20 },
                     Children = new Drawable[]
                     {

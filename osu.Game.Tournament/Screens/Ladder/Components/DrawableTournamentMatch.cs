@@ -1,9 +1,10 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -12,27 +13,26 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input.Events;
 using osu.Game.Tournament.Models;
-using osu.Game.Tournament.Screens.Editors;
 using osuTK;
 using osuTK.Graphics;
 using osuTK.Input;
 
 namespace osu.Game.Tournament.Screens.Ladder.Components
 {
-    public partial class DrawableTournamentMatch : CompositeDrawable
+    public class DrawableTournamentMatch : CompositeDrawable
     {
         public readonly TournamentMatch Match;
         private readonly bool editor;
         protected readonly FillFlowContainer<DrawableMatchTeam> Flow;
         private readonly Drawable selectionBox;
-        private readonly Drawable currentMatchSelectionBox;
-        private Bindable<TournamentMatch>? globalSelection;
+        protected readonly Drawable CurrentMatchSelectionBox;
+        private Bindable<TournamentMatch> globalSelection;
 
-        [Resolved]
-        private LadderEditorInfo? editorInfo { get; set; }
+        [Resolved(CanBeNull = true)]
+        private LadderEditorInfo editorInfo { get; set; }
 
-        [Resolved]
-        private LadderInfo? ladderInfo { get; set; }
+        [Resolved(CanBeNull = true)]
+        private LadderInfo ladderInfo { get; set; }
 
         public DrawableTournamentMatch(TournamentMatch match, bool editor = false)
         {
@@ -41,60 +41,35 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
 
             AutoSizeAxes = Axes.Both;
 
-            const float border_thickness = 5;
-            const float spacing = 2;
+            Margin = new MarginPadding(5);
 
-            Margin = new MarginPadding(10);
-
-            InternalChildren = new Drawable[]
+            InternalChildren = new[]
             {
+                selectionBox = new Container
+                {
+                    Scale = new Vector2(1.1f),
+                    RelativeSizeAxes = Axes.Both,
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    Alpha = 0,
+                    Colour = Color4.YellowGreen,
+                    Child = new Box { RelativeSizeAxes = Axes.Both }
+                },
+                CurrentMatchSelectionBox = new Container
+                {
+                    Scale = new Vector2(1.05f, 1.1f),
+                    RelativeSizeAxes = Axes.Both,
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    Alpha = 0,
+                    Colour = Color4.White,
+                    Child = new Box { RelativeSizeAxes = Axes.Both }
+                },
                 Flow = new FillFlowContainer<DrawableMatchTeam>
                 {
                     AutoSizeAxes = Axes.Both,
                     Direction = FillDirection.Vertical,
-                    Spacing = new Vector2(spacing)
-                },
-                new Container
-                {
-                    RelativeSizeAxes = Axes.Both,
-                    Padding = new MarginPadding(-10),
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.Centre,
-                    Child = selectionBox = new Container
-                    {
-                        RelativeSizeAxes = Axes.Both,
-                        Alpha = 0,
-                        Masking = true,
-                        BorderColour = Color4.YellowGreen,
-                        BorderThickness = border_thickness,
-                        Child = new Box
-                        {
-                            RelativeSizeAxes = Axes.Both,
-                            AlwaysPresent = true,
-                            Alpha = 0,
-                        }
-                    },
-                },
-                new Container
-                {
-                    RelativeSizeAxes = Axes.Both,
-                    Padding = new MarginPadding(-(spacing + border_thickness)),
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.Centre,
-                    Child = currentMatchSelectionBox = new Container
-                    {
-                        RelativeSizeAxes = Axes.Both,
-                        Alpha = 0,
-                        BorderColour = Color4.White,
-                        BorderThickness = border_thickness,
-                        Masking = true,
-                        Child = new Box
-                        {
-                            RelativeSizeAxes = Axes.Both,
-                            AlwaysPresent = true,
-                            Alpha = 0,
-                        }
-                    },
+                    Spacing = new Vector2(2)
                 }
             };
 
@@ -122,13 +97,14 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
                     Position = new Vector2(pos.NewValue.X, pos.NewValue.Y);
                 Changed?.Invoke();
             }, true);
+
             updateTeams();
         }
 
         /// <summary>
-        /// Fired when something changed that requires a ladder redraw.
+        /// Fired when somethign changed that requires a ladder redraw.
         /// </summary>
-        public Action? Changed;
+        public Action Changed;
 
         private readonly List<IUnbindable> refBindables = new List<IUnbindable>();
 
@@ -150,9 +126,9 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
         private void updateCurrentMatch()
         {
             if (Match.Current.Value)
-                currentMatchSelectionBox.Show();
+                CurrentMatchSelectionBox.Show();
             else
-                currentMatchSelectionBox.Hide();
+                CurrentMatchSelectionBox.Hide();
         }
 
         private bool selected;
@@ -200,22 +176,20 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
             }
             else
             {
-                Debug.Assert(Match.Winner != null);
-                transferProgression(Match.Progression.Value, Match.Winner);
-                Debug.Assert(Match.Loser != null);
-                transferProgression(Match.LosersProgression.Value, Match.Loser);
+                transferProgression(Match.Progression?.Value, Match.Winner);
+                transferProgression(Match.LosersProgression?.Value, Match.Loser);
             }
 
             Changed?.Invoke();
         }
 
-        private void transferProgression(TournamentMatch? destination, TournamentTeam team)
+        private void transferProgression(TournamentMatch destination, TournamentTeam team)
         {
             if (destination == null) return;
 
             bool progressionAbove = destination.ID < Match.ID;
 
-            Bindable<TournamentTeam?> destinationTeam;
+            Bindable<TournamentTeam> destinationTeam;
 
             // check for the case where we have already transferred out value
             if (destination.Team1.Value == team)
@@ -239,8 +213,7 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
             int instantWinAmount = Match.Round.Value.BestOf.Value / 2;
 
             Match.Completed.Value = Match.Round.Value.BestOf.Value > 0
-                                    && (Match.Team1Score.Value + Match.Team2Score.Value >= Match.Round.Value.BestOf.Value || Match.Team1Score.Value > instantWinAmount
-                                                                                                                          || Match.Team2Score.Value > instantWinAmount);
+                                    && (Match.Team1Score.Value + Match.Team2Score.Value >= Match.Round.Value.BestOf.Value || Match.Team1Score.Value > instantWinAmount || Match.Team2Score.Value > instantWinAmount);
         }
 
         protected override void LoadComplete()
@@ -251,7 +224,10 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
             if (editorInfo != null)
             {
                 globalSelection = editorInfo.Selected.GetBoundCopy();
-                globalSelection.BindValueChanged(s => Selected = s.NewValue == Match, true);
+                globalSelection.BindValueChanged(s =>
+                {
+                    if (s.NewValue != Match) Selected = false;
+                });
             }
         }
 
@@ -269,8 +245,8 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
             {
                 foreach (var conditional in Match.ConditionalMatches)
                 {
-                    bool team1Match = Match.Team1Acronym != null && conditional.Acronyms.Contains(Match.Team1Acronym);
-                    bool team2Match = Match.Team2Acronym != null && conditional.Acronyms.Contains(Match.Team2Acronym);
+                    bool team1Match = conditional.Acronyms.Contains(Match.Team1Acronym);
+                    bool team2Match = conditional.Acronyms.Contains(Match.Team2Acronym);
 
                     if (team1Match && team2Match)
                         Match.Date.Value = conditional.Date.Value;
@@ -288,6 +264,8 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
         }
 
         protected override bool OnMouseDown(MouseDownEvent e) => e.Button == MouseButton.Left && editorInfo != null;
+
+        protected override bool OnDragStart(DragStartEvent e) => editorInfo != null;
 
         protected override bool OnKeyDown(KeyDownEvent e)
         {
@@ -309,44 +287,22 @@ namespace osu.Game.Tournament.Screens.Ladder.Components
             return true;
         }
 
-        private Vector2 positionAtStartOfDrag;
-
-        protected override bool OnDragStart(DragStartEvent e)
-        {
-            if (editorInfo != null)
-            {
-                positionAtStartOfDrag = Position;
-                return true;
-            }
-
-            return false;
-        }
-
         protected override void OnDrag(DragEvent e)
         {
             base.OnDrag(e);
 
             Selected = true;
+            this.MoveToOffset(e.Delta);
 
-            this.MoveTo(snapToGrid(positionAtStartOfDrag + (e.MousePosition - e.MouseDownPosition)));
-
-            Match.Position.Value = new Point((int)Position.X, (int)Position.Y);
+            var pos = Position;
+            Match.Position.Value = new Point((int)pos.X, (int)pos.Y);
         }
-
-        private Vector2 snapToGrid(Vector2 pos) =>
-            new Vector2(
-                (int)(pos.X / LadderEditorScreen.GRID_SPACING) * LadderEditorScreen.GRID_SPACING,
-                (int)(pos.Y / LadderEditorScreen.GRID_SPACING) * LadderEditorScreen.GRID_SPACING
-            );
 
         public void Remove()
         {
             Selected = false;
             Match.Progression.Value = null;
             Match.LosersProgression.Value = null;
-
-            if (ladderInfo == null)
-                return;
 
             ladderInfo.Matches.Remove(Match);
 

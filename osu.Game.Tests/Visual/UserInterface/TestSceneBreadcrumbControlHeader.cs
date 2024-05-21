@@ -11,7 +11,7 @@ using osu.Game.Overlays;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneBreadcrumbControlHeader : OsuTestScene
+    public class TestSceneBreadcrumbControlHeader : OsuTestScene
     {
         private static readonly string[] items = { "first", "second", "third", "fourth", "fifth" };
 
@@ -48,7 +48,7 @@ namespace osu.Game.Tests.Visual.UserInterface
                 AddStep($"Remove {item} item", () => header.RemoveItem(item));
         }
 
-        private partial class TestHeader : BreadcrumbControlOverlayHeader
+        private class TestHeader : BreadcrumbControlOverlayHeader
         {
             public TestHeader()
             {
@@ -77,7 +77,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             protected override OverlayTitle CreateTitle() => new TestTitle();
         }
 
-        private partial class TestTitle : OverlayTitle
+        private class TestTitle : OverlayTitle
         {
             public TestTitle()
             {

@@ -2,8 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Collections.Generic;
-using osu.Framework.Extensions.ListExtensions;
-using osu.Framework.Lists;
 
 namespace osu.Game.Screens.Select.Carousel
 {
@@ -14,9 +12,7 @@ namespace osu.Game.Screens.Select.Carousel
     {
         public override DrawableCarouselItem? CreateDrawableRepresentation() => null;
 
-        public SlimReadOnlyListWrapper<CarouselItem> Items => items.AsSlimReadOnly();
-
-        public int TotalItemsNotFiltered { get; private set; }
+        public IReadOnlyList<CarouselItem> Items => items;
 
         private readonly List<CarouselItem> items = new List<CarouselItem>();
 
@@ -34,9 +30,6 @@ namespace osu.Game.Screens.Select.Carousel
         public virtual void RemoveItem(CarouselItem i)
         {
             items.Remove(i);
-
-            if (!i.Filtered.Value)
-                TotalItemsNotFiltered--;
 
             // it's important we do the deselection after removing, so any further actions based on
             // State.ValueChanged make decisions post-removal.
@@ -62,9 +55,6 @@ namespace osu.Game.Screens.Select.Carousel
                 // criteria may be null for initial population. the filtering will be applied post-add.
                 items.Add(i);
             }
-
-            if (!i.Filtered.Value)
-                TotalItemsNotFiltered++;
         }
 
         public CarouselGroup(List<CarouselItem>? items = null)
@@ -94,29 +84,18 @@ namespace osu.Game.Screens.Select.Carousel
         {
             base.Filter(criteria);
 
-            TotalItemsNotFiltered = 0;
+            items.ForEach(c => c.Filter(criteria));
 
-            foreach (var c in items)
+            criteriaComparer = Comparer<CarouselItem>.Create((x, y) =>
             {
-                c.Filter(criteria);
-                if (!c.Filtered.Value)
-                    TotalItemsNotFiltered++;
-            }
+                int comparison = x.CompareTo(criteria, y);
+                if (comparison != 0)
+                    return comparison;
 
-            // Sorting is expensive, so only perform if it's actually changed.
-            if (lastCriteria?.RequiresSorting(criteria) != false)
-            {
-                criteriaComparer = Comparer<CarouselItem>.Create((x, y) =>
-                {
-                    int comparison = x.CompareTo(criteria, y);
-                    if (comparison != 0)
-                        return comparison;
+                return x.ItemID.CompareTo(y.ItemID);
+            });
 
-                    return x.ItemID.CompareTo(y.ItemID);
-                });
-
-                items.Sort(criteriaComparer);
-            }
+            items.Sort(criteriaComparer);
 
             lastCriteria = criteria;
         }

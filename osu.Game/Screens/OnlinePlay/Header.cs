@@ -16,7 +16,7 @@ using osuTK;
 
 namespace osu.Game.Screens.OnlinePlay
 {
-    public partial class Header : Container
+    public class Header : Container
     {
         public const float HEIGHT = 80;
 
@@ -44,7 +44,7 @@ namespace osu.Game.Screens.OnlinePlay
 
         private void updateSubScreenTitle() => title.Screen = stack.CurrentScreen as IOnlinePlaySubScreen;
 
-        private partial class MultiHeaderTitle : CompositeDrawable
+        private class MultiHeaderTitle : CompositeDrawable
         {
             private const float spacing = 6;
 

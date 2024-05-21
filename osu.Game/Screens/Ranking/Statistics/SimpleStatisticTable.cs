@@ -1,9 +1,12 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using osu.Framework.Allocation;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
@@ -14,23 +17,24 @@ namespace osu.Game.Screens.Ranking.Statistics
 {
     /// <summary>
     /// Represents a table with simple statistics (ones that only need textual display).
-    /// Richer visualisations should be done with <see cref="StatisticItem"/>s.
+    /// Richer visualisations should be done with <see cref="StatisticRow"/>s and <see cref="StatisticItem"/>s.
     /// </summary>
-    public partial class SimpleStatisticTable : CompositeDrawable
+    public class SimpleStatisticTable : CompositeDrawable
     {
         private readonly SimpleStatisticItem[] items;
         private readonly int columnCount;
 
-        private FillFlowContainer[] columns = null!;
+        private FillFlowContainer[] columns;
 
         /// <summary>
         /// Creates a statistic row for the supplied <see cref="SimpleStatisticItem"/>s.
         /// </summary>
         /// <param name="columnCount">The number of columns to layout the <paramref name="items"/> into.</param>
         /// <param name="items">The <see cref="SimpleStatisticItem"/>s to display in this row.</param>
-        public SimpleStatisticTable(int columnCount, IEnumerable<SimpleStatisticItem> items)
+        public SimpleStatisticTable(int columnCount, [ItemNotNull] IEnumerable<SimpleStatisticItem> items)
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(columnCount);
+            if (columnCount < 1)
+                throw new ArgumentOutOfRangeException(nameof(columnCount));
 
             this.columnCount = columnCount;
             this.items = items.ToArray();
@@ -94,11 +98,12 @@ namespace osu.Game.Screens.Ranking.Statistics
             Direction = FillDirection.Vertical
         };
 
-        public partial class Spacer : CompositeDrawable
+        private class Spacer : CompositeDrawable
         {
             public Spacer()
             {
                 RelativeSizeAxes = Axes.Both;
+                Padding = new MarginPadding { Vertical = 4 };
 
                 InternalChild = new CircularContainer
                 {

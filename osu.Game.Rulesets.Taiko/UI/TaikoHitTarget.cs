@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osuTK;
 using osuTK.Graphics;
 using osu.Framework.Graphics;
@@ -13,7 +15,7 @@ namespace osu.Game.Rulesets.Taiko.UI
     /// <summary>
     /// A component that is displayed at the hit position in the taiko playfield.
     /// </summary>
-    internal partial class TaikoHitTarget : Container
+    internal class TaikoHitTarget : Container
     {
         /// <summary>
         /// Thickness of all drawn line pieces.

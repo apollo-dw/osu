@@ -6,7 +6,6 @@ using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
-using osu.Framework.Graphics.Textures;
 using osu.Framework.Utils;
 using osu.Game.Graphics;
 using osu.Game.Overlays;
@@ -16,7 +15,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.UI
 {
-    public partial class ModSwitchSmall : CompositeDrawable
+    public class ModSwitchSmall : CompositeDrawable
     {
         public BindableBool Active { get; } = new BindableBool();
 
@@ -24,8 +23,8 @@ namespace osu.Game.Rulesets.UI
 
         private readonly IMod mod;
 
-        private Drawable background = null!;
-        private SpriteIcon? modIcon;
+        private readonly SpriteIcon background;
+        private readonly SpriteIcon? modIcon;
 
         private Color4 activeForegroundColour;
         private Color4 inactiveForegroundColour;
@@ -37,24 +36,19 @@ namespace osu.Game.Rulesets.UI
         {
             this.mod = mod;
 
-            Size = new Vector2(DEFAULT_SIZE);
-        }
+            AutoSizeAxes = Axes.Both;
 
-        [BackgroundDependencyLoader]
-        private void load(TextureStore textures, OsuColour colours, OverlayColourProvider? colourProvider)
-        {
             FillFlowContainer contentFlow;
             ModSwitchTiny tinySwitch;
 
-            InternalChildren = new[]
+            InternalChildren = new Drawable[]
             {
-                background = new Sprite
+                background = new SpriteIcon
                 {
-                    RelativeSizeAxes = Axes.Both,
-                    FillMode = FillMode.Fit,
-                    Texture = textures.Get("Icons/BeatmapDetails/mod-icon"),
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
+                    Size = new Vector2(DEFAULT_SIZE),
+                    Icon = OsuIcon.ModBg
                 },
                 contentFlow = new FillFlowContainer
                 {
@@ -84,14 +78,16 @@ namespace osu.Game.Rulesets.UI
                 });
                 tinySwitch.Scale = new Vector2(0.3f);
             }
+        }
 
-            var modTypeColour = colours.ForModType(mod.Type);
-
+        [BackgroundDependencyLoader(true)]
+        private void load(OsuColour colours, OverlayColourProvider? colourProvider)
+        {
             inactiveForegroundColour = colourProvider?.Background5 ?? colours.Gray3;
-            activeForegroundColour = modTypeColour;
+            activeForegroundColour = colours.ForModType(mod.Type);
 
             inactiveBackgroundColour = colourProvider?.Background2 ?? colours.Gray5;
-            activeBackgroundColour = Interpolation.ValueAt<Colour4>(0.1f, Colour4.Black, modTypeColour, 0, 1);
+            activeBackgroundColour = Interpolation.ValueAt<Colour4>(0.1f, Colour4.Black, activeForegroundColour, 0, 1);
         }
 
         protected override void LoadComplete()

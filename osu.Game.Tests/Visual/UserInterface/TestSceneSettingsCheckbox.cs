@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System;
 using System.Linq;
@@ -13,7 +15,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneSettingsCheckbox : OsuTestScene
+    public class TestSceneSettingsCheckbox : OsuTestScene
     {
         [TestCase]
         public void TestCheckbox()
@@ -54,7 +56,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             });
         }
 
-        private partial class OverlayColourContainer : Container
+        private class OverlayColourContainer : Container
         {
             [Cached]
             private OverlayColourProvider colourProvider;

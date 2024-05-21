@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Linq;
 using osu.Framework.Allocation;
@@ -18,9 +20,9 @@ namespace osu.Game.Screens.Edit.Timing
     /// <summary>
     /// A button with variable constant output based on hold position and length.
     /// </summary>
-    public partial class TimingAdjustButton : CompositeDrawable
+    public class TimingAdjustButton : CompositeDrawable
     {
-        public Action<double>? Action;
+        public Action<double> Action;
 
         private readonly double adjustAmount;
 
@@ -42,10 +44,10 @@ namespace osu.Game.Screens.Edit.Timing
         private readonly RepeatingButtonBehaviour repeatBehaviour;
 
         [Resolved]
-        private OverlayColourProvider colourProvider { get; set; } = null!;
+        private OverlayColourProvider colourProvider { get; set; }
 
         [Resolved]
-        private EditorBeatmap editorBeatmap { get; set; } = null!;
+        private EditorBeatmap editorBeatmap { get; set; }
 
         public TimingAdjustButton(double adjustAmount)
         {
@@ -102,7 +104,7 @@ namespace osu.Game.Screens.Edit.Timing
             if (hoveredBox == null)
                 return false;
 
-            Action?.Invoke(adjustAmount * hoveredBox.Multiplier);
+            Action(adjustAmount * hoveredBox.Multiplier);
 
             hoveredBox.Flash();
 
@@ -110,15 +112,12 @@ namespace osu.Game.Screens.Edit.Timing
             return true;
         }
 
-        private partial class IncrementBox : CompositeDrawable
+        private class IncrementBox : CompositeDrawable
         {
             public readonly float Multiplier;
 
             private readonly Box box;
             private readonly OsuSpriteText text;
-
-            [Resolved]
-            private OverlayColourProvider colourProvider { get; set; } = null!;
 
             public IncrementBox(int index, double amount)
             {
@@ -156,6 +155,9 @@ namespace osu.Game.Screens.Edit.Timing
                     }
                 };
             }
+
+            [Resolved]
+            private OverlayColourProvider colourProvider { get; set; }
 
             protected override void LoadComplete()
             {

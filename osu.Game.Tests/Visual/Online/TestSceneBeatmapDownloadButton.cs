@@ -16,7 +16,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.Online
 {
-    public partial class TestSceneBeatmapDownloadButton : OsuTestScene
+    public class TestSceneBeatmapDownloadButton : OsuTestScene
     {
         private TestDownloadButton downloadButton;
 
@@ -139,7 +139,7 @@ namespace osu.Game.Tests.Visual.Online
             return apiBeatmapSet;
         }
 
-        private partial class TestDownloadButton : BeatmapDownloadButton
+        private class TestDownloadButton : BeatmapDownloadButton
         {
             public new bool DownloadEnabled => base.DownloadEnabled;
 

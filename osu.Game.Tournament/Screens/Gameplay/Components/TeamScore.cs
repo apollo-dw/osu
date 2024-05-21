@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.Color4Extensions;
@@ -15,7 +17,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tournament.Screens.Gameplay.Components
 {
-    public partial class TeamScore : CompositeDrawable
+    public class TeamScore : CompositeDrawable
     {
         private readonly Bindable<int?> currentTeamScore = new Bindable<int?>();
         private readonly StarCounter counter;
@@ -39,7 +41,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
 
         private void scoreChanged(ValueChangedEvent<int?> score) => counter.Current = score.NewValue ?? 0;
 
-        public partial class TeamScoreStarCounter : StarCounter
+        public class TeamScoreStarCounter : StarCounter
         {
             public TeamScoreStarCounter(int count)
                 : base(count)
@@ -48,7 +50,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
 
             public override Star CreateStar() => new LightSquare();
 
-            public partial class LightSquare : Star
+            public class LightSquare : Star
             {
                 private readonly Box box;
 

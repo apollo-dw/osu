@@ -1,18 +1,19 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Taiko.Objects;
-using osu.Game.Rulesets.Taiko.Skinning.Default;
 using osu.Game.Skinning;
 using osuTK;
 
 namespace osu.Game.Rulesets.Taiko.UI
 {
-    public partial class KiaiHitExplosion : Container
+    public class KiaiHitExplosion : Container
     {
         public override bool RemoveWhenNotAlive => true;
 
@@ -21,7 +22,7 @@ namespace osu.Game.Rulesets.Taiko.UI
 
         private readonly HitType hitType;
 
-        private SkinnableDrawable skinnable = null!;
+        private SkinnableDrawable skinnable;
 
         public override double LifetimeStart => skinnable.Drawable.LifetimeStart;
 
@@ -32,7 +33,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             JudgedObject = judgedObject;
             this.hitType = hitType;
 
-            Anchor = Anchor.Centre;
+            Anchor = Anchor.CentreLeft;
             Origin = Anchor.Centre;
 
             RelativeSizeAxes = Axes.Both;
@@ -42,7 +43,7 @@ namespace osu.Game.Rulesets.Taiko.UI
         [BackgroundDependencyLoader]
         private void load()
         {
-            Child = skinnable = new SkinnableDrawable(new TaikoSkinComponentLookup(TaikoSkinComponents.TaikoExplosionKiai), _ => new DefaultKiaiHitExplosion(hitType));
+            Child = skinnable = new SkinnableDrawable(new TaikoSkinComponent(TaikoSkinComponents.TaikoExplosionKiai), _ => new DefaultKiaiHitExplosion(hitType));
         }
     }
 }

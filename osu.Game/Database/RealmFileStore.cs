@@ -2,14 +2,14 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using osu.Framework.Extensions;
 using osu.Framework.IO.Stores;
 using osu.Framework.Logging;
 using osu.Framework.Platform;
+using osu.Framework.Testing;
 using osu.Game.Extensions;
-using osu.Game.IO;
 using osu.Game.Models;
 using Realms;
 
@@ -18,6 +18,7 @@ namespace osu.Game.Database
     /// <summary>
     /// Handles the storing of files to the file system (and database) backing.
     /// </summary>
+    [ExcludeFromDynamicCompile]
     public class RealmFileStore
     {
         private readonly RealmAccess realm;
@@ -40,8 +41,7 @@ namespace osu.Game.Database
         /// <param name="data">The file data stream.</param>
         /// <param name="realm">The realm instance to add to. Should already be in a transaction.</param>
         /// <param name="addToRealm">Whether the <see cref="RealmFile"/> should immediately be added to the underlying realm. If <c>false</c> is provided here, the instance must be manually added.</param>
-        /// <param name="preferHardLinks">Whether this import should use hard links rather than file copy operations if available.</param>
-        public RealmFile Add(Stream data, Realm realm, bool addToRealm = true, bool preferHardLinks = false)
+        public RealmFile Add(Stream data, Realm realm, bool addToRealm = true)
         {
             string hash = data.ComputeSHA2Hash();
 
@@ -50,7 +50,7 @@ namespace osu.Game.Database
             var file = existing ?? new RealmFile { Hash = hash };
 
             if (!checkFileExistsAndMatchesHash(file))
-                copyToStore(file, data, preferHardLinks);
+                copyToStore(file, data);
 
             if (addToRealm && !file.IsManaged)
                 realm.Add(file);
@@ -58,15 +58,8 @@ namespace osu.Game.Database
             return file;
         }
 
-        private void copyToStore(RealmFile file, Stream data, bool preferHardLinks)
+        private void copyToStore(RealmFile file, Stream data)
         {
-            if (data is FileStream fs && preferHardLinks)
-            {
-                // attempt to do a fast hard link rather than copy.
-                if (HardLinkHelper.TryCreateHardLink(Storage.GetFullPath(file.GetStoragePath(), true), fs.Name))
-                    return;
-            }
-
             data.Seek(0, SeekOrigin.Begin);
 
             using (var output = Storage.CreateFileSafely(file.GetStoragePath()))
@@ -98,11 +91,15 @@ namespace osu.Game.Database
             // can potentially be run asynchronously, although we will need to consider operation order for disk deletion vs realm removal.
             realm.Write(r =>
             {
-                foreach (var file in r.All<RealmFile>().Filter(@$"{nameof(RealmFile.Usages)}.@count = 0"))
+                // TODO: consider using a realm native query to avoid iterating all files (https://github.com/realm/realm-dotnet/issues/2659#issuecomment-927823707)
+                var files = r.All<RealmFile>().ToList();
+
+                foreach (var file in files)
                 {
                     totalFiles++;
 
-                    Debug.Assert(file.BacklinksCount == 0);
+                    if (file.BacklinksCount > 0)
+                        continue;
 
                     try
                     {

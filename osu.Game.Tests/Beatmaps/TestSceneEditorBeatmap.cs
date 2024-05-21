@@ -18,7 +18,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Beatmaps
 {
     [HeadlessTest]
-    public partial class TestSceneEditorBeatmap : EditorClockTestScene
+    public class TestSceneEditorBeatmap : EditorClockTestScene
     {
         /// <summary>
         /// Tests that the addition event is correctly invoked after a hitobject is added.

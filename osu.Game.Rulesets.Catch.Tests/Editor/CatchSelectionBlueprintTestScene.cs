@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -15,7 +17,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Catch.Tests.Editor
 {
-    public abstract partial class CatchSelectionBlueprintTestScene : SelectionBlueprintTestScene
+    public abstract class CatchSelectionBlueprintTestScene : SelectionBlueprintTestScene
     {
         protected ScrollingHitObjectContainer HitObjectContainer => contentContainer.Playfield.HitObjectContainer;
 
@@ -60,7 +62,7 @@ namespace osu.Game.Rulesets.Catch.Tests.Editor
             InputManager.MoveMouseTo(pos);
         });
 
-        private partial class EditorBeatmapDependencyContainer : Container
+        private class EditorBeatmapDependencyContainer : Container
         {
             [Cached]
             private readonly EditorClock editorClock;

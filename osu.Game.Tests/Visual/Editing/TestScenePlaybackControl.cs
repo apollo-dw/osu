@@ -10,7 +10,7 @@ using osuTK;
 namespace osu.Game.Tests.Visual.Editing
 {
     [TestFixture]
-    public partial class TestScenePlaybackControl : EditorClockTestScene
+    public class TestScenePlaybackControl : EditorClockTestScene
     {
         [BackgroundDependencyLoader]
         private void load()

@@ -24,6 +24,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             foreach (var v in base.ToDatabaseAttributes())
                 yield return v;
 
+            yield return (ATTRIB_ID_MAX_COMBO, MaxCombo);
             yield return (ATTRIB_ID_DIFFICULTY, StarRating);
             yield return (ATTRIB_ID_GREAT_HIT_WINDOW, GreatHitWindow);
         }
@@ -32,6 +33,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         {
             base.FromDatabaseAttributes(values, onlineInfo);
 
+            MaxCombo = (int)values[ATTRIB_ID_MAX_COMBO];
             StarRating = values[ATTRIB_ID_DIFFICULTY];
             GreatHitWindow = values[ATTRIB_ID_GREAT_HIT_WINDOW];
         }

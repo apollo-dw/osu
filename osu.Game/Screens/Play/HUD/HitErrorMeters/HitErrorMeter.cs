@@ -14,7 +14,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.HUD.HitErrorMeters
 {
-    public abstract partial class HitErrorMeter : CompositeDrawable, ISerialisableDrawable
+    public abstract class HitErrorMeter : CompositeDrawable, ISkinnableDrawable
     {
         protected HitWindows HitWindows { get; private set; }
 

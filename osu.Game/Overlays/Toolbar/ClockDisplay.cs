@@ -1,12 +1,14 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System;
 using osu.Framework.Graphics.Containers;
 
 namespace osu.Game.Overlays.Toolbar
 {
-    public abstract partial class ClockDisplay : CompositeDrawable
+    public abstract class ClockDisplay : CompositeDrawable
     {
         private int? lastSecond;
 

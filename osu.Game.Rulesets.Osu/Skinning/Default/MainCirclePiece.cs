@@ -1,19 +1,21 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
-using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.Objects.Drawables;
+using osuTK;
 using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Default
 {
-    public partial class MainCirclePiece : CompositeDrawable
+    public class MainCirclePiece : CompositeDrawable
     {
         private readonly CirclePiece circle;
         private readonly RingPiece ring;
@@ -24,7 +26,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Default
 
         public MainCirclePiece()
         {
-            Size = OsuHitObject.OBJECT_DIMENSIONS;
+            Size = new Vector2(OsuHitObject.OBJECT_RADIUS * 2);
 
             Anchor = Anchor.Centre;
             Origin = Anchor.Centre;
@@ -44,7 +46,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Default
         private readonly IBindable<int> indexInCurrentCombo = new Bindable<int>();
 
         [Resolved]
-        private DrawableHitObject drawableObject { get; set; } = null!;
+        private DrawableHitObject drawableObject { get; set; }
 
         [BackgroundDependencyLoader]
         private void load()
@@ -111,7 +113,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Default
         {
             base.Dispose(isDisposing);
 
-            if (drawableObject.IsNotNull())
+            if (drawableObject != null)
                 drawableObject.ApplyCustomUpdateState -= updateStateTransforms;
         }
     }

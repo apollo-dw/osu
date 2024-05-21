@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -53,7 +54,7 @@ namespace osu.Game.Tests.Database
                 registration.Dispose();
             });
 
-            void onChanged(IRealmCollection<BeatmapSetInfo> sender, ChangeSet? changes)
+            void onChanged(IRealmCollection<BeatmapSetInfo> sender, ChangeSet? changes, Exception error)
             {
                 lastChanges = changes;
 
@@ -91,7 +92,7 @@ namespace osu.Game.Tests.Database
                 registration.Dispose();
             });
 
-            void onChanged(IRealmCollection<BeatmapSetInfo> sender, ChangeSet? changes) => lastChanges = changes;
+            void onChanged(IRealmCollection<BeatmapSetInfo> sender, ChangeSet? changes, Exception error) => lastChanges = changes;
         }
 
         [Test]
@@ -184,7 +185,7 @@ namespace osu.Game.Tests.Database
                 }
             });
 
-            void onChanged(IRealmCollection<BeatmapSetInfo> sender, ChangeSet? changes)
+            void onChanged(IRealmCollection<BeatmapSetInfo> sender, ChangeSet? changes, Exception error)
             {
                 if (changes == null)
                     resolvedItems = sender;

@@ -7,10 +7,10 @@ using NUnit.Framework;
 using osu.Framework.Screens;
 using osu.Framework.Testing;
 using osu.Game.Beatmaps;
+using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Replays;
 using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Objects;
-using osu.Game.Rulesets.Objects.Legacy;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.Replays;
@@ -24,19 +24,21 @@ using osuTK;
 namespace osu.Game.Rulesets.Osu.Tests
 {
     [HeadlessTest]
-    public partial class TestSceneSliderFollowCircleInput : RateAdjustedBeatmapTestScene
+    public class TestSceneSliderFollowCircleInput : RateAdjustedBeatmapTestScene
     {
         private List<JudgementResult>? judgementResults;
         private ScoreAccessibleReplayPlayer? currentPlayer;
 
         [Test]
         public void TestMaximumDistanceTrackingWithoutMovement(
-            [Values(0, 5, 10)] float circleSize,
-            [Values(0, 5, 10)] double velocity)
+            [Values(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)]
+            float circleSize,
+            [Values(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)]
+            double velocity)
         {
             const double time_slider_start = 1000;
 
-            float circleRadius = OsuHitObject.OBJECT_RADIUS * LegacyRulesetExtensions.CalculateScaleFromCircleSize(circleSize, true);
+            float circleRadius = OsuHitObject.OBJECT_RADIUS * (1.0f - 0.7f * (circleSize - 5) / 5) / 2;
             float followCircleRadius = circleRadius * 1.2f;
 
             performTest(new Beatmap<OsuHitObject>
@@ -47,8 +49,8 @@ namespace osu.Game.Rulesets.Osu.Tests
                     {
                         StartTime = time_slider_start,
                         Position = new Vector2(0, 0),
-                        SliderVelocityMultiplier = velocity,
-                        Path = new SliderPath(PathType.LINEAR, new[]
+                        DifficultyControlPoint = new DifficultyControlPoint { SliderVelocity = velocity },
+                        Path = new SliderPath(PathType.Linear, new[]
                         {
                             Vector2.Zero,
                             new Vector2(followCircleRadius, 0),
@@ -99,7 +101,7 @@ namespace osu.Game.Rulesets.Osu.Tests
             AddUntilStep("Wait for completion", () => currentPlayer?.ScoreProcessor.HasCompleted.Value == true);
         }
 
-        private partial class ScoreAccessibleReplayPlayer : ReplayPlayer
+        private class ScoreAccessibleReplayPlayer : ReplayPlayer
         {
             public new ScoreProcessor ScoreProcessor => base.ScoreProcessor;
 

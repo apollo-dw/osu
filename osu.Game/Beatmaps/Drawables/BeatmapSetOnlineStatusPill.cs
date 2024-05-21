@@ -17,10 +17,8 @@ using osuTK.Graphics;
 
 namespace osu.Game.Beatmaps.Drawables
 {
-    public partial class BeatmapSetOnlineStatusPill : CircularContainer, IHasTooltip
+    public class BeatmapSetOnlineStatusPill : CircularContainer, IHasTooltip
     {
-        private const double animation_duration = 400;
-
         private BeatmapOnlineStatus status;
 
         public BeatmapOnlineStatus Status
@@ -34,12 +32,7 @@ namespace osu.Game.Beatmaps.Drawables
                 status = value;
 
                 if (IsLoaded)
-                {
-                    AutoSizeDuration = (float)animation_duration;
-                    AutoSizeEasing = Easing.OutQuint;
-
                     updateState();
-                }
             }
         }
 
@@ -68,8 +61,6 @@ namespace osu.Game.Beatmaps.Drawables
         {
             Masking = true;
 
-            Alpha = 0;
-
             Children = new Drawable[]
             {
                 background = new Box
@@ -92,32 +83,21 @@ namespace osu.Game.Beatmaps.Drawables
         protected override void LoadComplete()
         {
             base.LoadComplete();
-
             updateState();
-            FinishTransforms(true);
         }
 
         private void updateState()
         {
-            if (Status == BeatmapOnlineStatus.None)
-            {
-                this.FadeOut(animation_duration, Easing.OutQuint);
-                return;
-            }
-
-            this.FadeIn(animation_duration, Easing.OutQuint);
-
-            Color4 statusTextColour;
-
-            if (colourProvider != null)
-                statusTextColour = status == BeatmapOnlineStatus.Graveyard ? colourProvider.Background1 : colourProvider.Background3;
-            else
-                statusTextColour = status == BeatmapOnlineStatus.Graveyard ? colours.GreySeaFoamLight : Color4.Black;
-
-            statusText.FadeColour(statusTextColour, animation_duration, Easing.OutQuint);
-            background.FadeColour(OsuColour.ForBeatmapSetOnlineStatus(Status) ?? colourProvider?.Light1 ?? colours.GreySeaFoamLighter, animation_duration, Easing.OutQuint);
+            Alpha = Status == BeatmapOnlineStatus.None ? 0 : 1;
 
             statusText.Text = Status.GetLocalisableDescription().ToUpper();
+
+            if (colourProvider != null)
+                statusText.Colour = status == BeatmapOnlineStatus.Graveyard ? colourProvider.Background1 : colourProvider.Background3;
+            else
+                statusText.Colour = status == BeatmapOnlineStatus.Graveyard ? colours.GreySeaFoamLight : Color4.Black;
+
+            background.Colour = OsuColour.ForBeatmapSetOnlineStatus(Status) ?? colourProvider?.Light1 ?? colours.GreySeaFoamLighter;
         }
 
         public LocalisableString TooltipText

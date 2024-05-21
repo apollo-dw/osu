@@ -10,7 +10,7 @@ using osu.Game.Rulesets;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {
-    public partial class TestSceneOverlayActivation : OsuPlayerTestScene
+    public class TestSceneOverlayActivation : OsuPlayerTestScene
     {
         protected new OverlayTestPlayer Player => base.Player as OverlayTestPlayer;
 
@@ -64,7 +64,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
         protected override TestPlayer CreatePlayer(Ruleset ruleset) => new OverlayTestPlayer();
 
-        protected partial class OverlayTestPlayer : TestPlayer
+        protected class OverlayTestPlayer : TestPlayer
         {
             public new OverlayActivation OverlayActivationMode => base.OverlayActivationMode.Value;
         }

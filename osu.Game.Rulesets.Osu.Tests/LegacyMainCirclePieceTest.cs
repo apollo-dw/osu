@@ -18,7 +18,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Rulesets.Osu.Tests
 {
     [HeadlessTest]
-    public partial class LegacyMainCirclePieceTest : OsuTestScene
+    public class LegacyMainCirclePieceTest : OsuTestScene
     {
         [Resolved]
         private IRenderer renderer { get; set; } = null!;
@@ -93,7 +93,7 @@ namespace osu.Game.Rulesets.Osu.Tests
                     Child = piece = new TestLegacyMainCirclePiece(priorityLookup),
                 };
 
-                var sprites = this.ChildrenOfType<Sprite>().Where(s => !string.IsNullOrEmpty(s.Texture?.AssetName)).DistinctBy(s => s.Texture.AssetName).ToArray();
+                var sprites = this.ChildrenOfType<Sprite>().Where(s => !string.IsNullOrEmpty(s.Texture.AssetName)).DistinctBy(s => s.Texture.AssetName).ToArray();
                 Debug.Assert(sprites.Length <= 2);
             });
 
@@ -101,10 +101,10 @@ namespace osu.Game.Rulesets.Osu.Tests
             AddAssert("check overlay sprite", () => piece.OverlaySprite?.Texture?.AssetName == expectedOverlay);
         }
 
-        private partial class TestLegacyMainCirclePiece : LegacyMainCirclePiece
+        private class TestLegacyMainCirclePiece : LegacyMainCirclePiece
         {
-            public new Sprite? CircleSprite => base.CircleSprite.ChildrenOfType<Sprite>().Where(s => !string.IsNullOrEmpty(s.Texture?.AssetName)).DistinctBy(s => s.Texture.AssetName).SingleOrDefault();
-            public new Sprite? OverlaySprite => base.OverlaySprite.ChildrenOfType<Sprite>().Where(s => !string.IsNullOrEmpty(s.Texture?.AssetName)).DistinctBy(s => s.Texture.AssetName).SingleOrDefault();
+            public new Sprite? CircleSprite => base.CircleSprite.ChildrenOfType<Sprite>().DistinctBy(s => s.Texture.AssetName).SingleOrDefault();
+            public new Sprite? OverlaySprite => base.OverlaySprite.ChildrenOfType<Sprite>().DistinctBy(s => s.Texture.AssetName).SingleOrDefault();
 
             public TestLegacyMainCirclePiece(string? priorityLookupPrefix)
                 : base(priorityLookupPrefix, false)

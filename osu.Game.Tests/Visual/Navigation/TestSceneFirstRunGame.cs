@@ -13,7 +13,7 @@ using osu.Game.Overlays.Notifications;
 namespace osu.Game.Tests.Visual.Navigation
 {
     [System.ComponentModel.Description("game with first-run setup overlay")]
-    public partial class TestSceneFirstRunGame : OsuGameTestScene
+    public class TestSceneFirstRunGame : OsuGameTestScene
     {
         public override void SetUpSteps()
         {
@@ -32,7 +32,7 @@ namespace osu.Game.Tests.Visual.Navigation
 
         protected override TestOsuGame CreateTestGame() => new FirstRunGame(LocalStorage, API);
 
-        private partial class FirstRunGame : TestOsuGame
+        private class FirstRunGame : TestOsuGame
         {
             public FirstRunGame(Storage storage, IAPIProvider api, string[] args = null)
                 : base(storage, api, args)

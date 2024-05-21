@@ -6,19 +6,17 @@
 using osu.Framework.Allocation;
 using osu.Framework.Audio;
 using osu.Framework.Audio.Sample;
+using osuTK.Graphics;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.UserInterface;
-using osu.Framework.Input.Events;
 using osu.Game.Graphics.Containers;
 using osuTK;
-using osuTK.Graphics;
 
 namespace osu.Game.Graphics.UserInterface
 {
-    public partial class OsuMenu : Menu
+    public class OsuMenu : Menu
     {
         private Sample sampleOpen;
         private Sample sampleClose;
@@ -80,9 +78,6 @@ namespace osu.Game.Graphics.UserInterface
             {
                 case StatefulMenuItem stateful:
                     return new DrawableStatefulMenuItem(stateful);
-
-                case OsuMenuItemSpacer spacer:
-                    return new DrawableSpacer(spacer);
             }
 
             return new DrawableOsuMenuItem(item);
@@ -94,28 +89,5 @@ namespace osu.Game.Graphics.UserInterface
         {
             Anchor = Direction == Direction.Horizontal ? Anchor.BottomLeft : Anchor.TopRight
         };
-
-        protected partial class DrawableSpacer : DrawableOsuMenuItem
-        {
-            public DrawableSpacer(MenuItem item)
-                : base(item)
-            {
-                Scale = new Vector2(1, 0.6f);
-
-                AddInternal(new Box
-                {
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.Centre,
-                    Colour = BackgroundColourHover,
-                    RelativeSizeAxes = Axes.X,
-                    Height = 2f,
-                    Width = 0.8f,
-                });
-            }
-
-            protected override bool OnHover(HoverEvent e) => true;
-
-            protected override bool OnClick(ClickEvent e) => true;
-        }
     }
 }

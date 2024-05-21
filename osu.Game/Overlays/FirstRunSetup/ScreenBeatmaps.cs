@@ -15,18 +15,15 @@ using osu.Game.Graphics.Containers;
 using osu.Game.Localisation;
 using osu.Game.Online;
 using osuTK;
-using osuTK.Graphics;
 using Realms;
 
 namespace osu.Game.Overlays.FirstRunSetup
 {
     [LocalisableDescription(typeof(FirstRunSetupBeatmapScreenStrings), nameof(FirstRunSetupBeatmapScreenStrings.Header))]
-    public partial class ScreenBeatmaps : FirstRunSetupScreen
+    public class ScreenBeatmaps : FirstRunSetupScreen
     {
         private ProgressRoundedButton downloadBundledButton = null!;
         private ProgressRoundedButton downloadTutorialButton = null!;
-
-        private OsuTextFlowContainer downloadInBackgroundText = null!;
 
         private OsuTextFlowContainer currentlyLoadedBeatmaps = null!;
 
@@ -103,15 +100,6 @@ namespace osu.Game.Overlays.FirstRunSetup
                     Text = FirstRunSetupBeatmapScreenStrings.BundledButton,
                     Action = downloadBundled
                 },
-                downloadInBackgroundText = new OsuTextFlowContainer(cp => cp.Font = OsuFont.Default.With(size: CONTENT_FONT_SIZE))
-                {
-                    Colour = OverlayColourProvider.Light2,
-                    Alpha = 0,
-                    TextAnchor = Anchor.TopCentre,
-                    Text = FirstRunSetupBeatmapScreenStrings.DownloadingInBackground,
-                    RelativeSizeAxes = Axes.X,
-                    AutoSizeAxes = Axes.Y
-                },
                 new OsuTextFlowContainer(cp => cp.Font = OsuFont.Default.With(size: CONTENT_FONT_SIZE))
                 {
                     Colour = OverlayColourProvider.Content1,
@@ -135,7 +123,7 @@ namespace osu.Game.Overlays.FirstRunSetup
             beatmapSubscription?.Dispose();
         }
 
-        private void beatmapsChanged(IRealmCollection<BeatmapSetInfo> sender, ChangeSet? changes) => Schedule(() =>
+        private void beatmapsChanged(IRealmCollection<BeatmapSetInfo> sender, ChangeSet? changes, Exception error) => Schedule(() =>
         {
             currentlyLoadedBeatmaps.Text = FirstRunSetupBeatmapScreenStrings.CurrentlyLoadedBeatmaps(sender.Count);
 
@@ -180,10 +168,6 @@ namespace osu.Game.Overlays.FirstRunSetup
         {
             if (bundledDownloader != null)
                 return;
-
-            downloadInBackgroundText
-                .FlashColour(Color4.White, 500)
-                .FadeIn(200);
 
             bundledDownloader = new BundledBeatmapDownloader(false);
 

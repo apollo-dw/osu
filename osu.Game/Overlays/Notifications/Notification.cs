@@ -23,7 +23,7 @@ using osuTK.Input;
 
 namespace osu.Game.Overlays.Notifications
 {
-    public abstract partial class Notification : Container
+    public abstract class Notification : Container
     {
         /// <summary>
         /// Notification was closed, either by user or otherwise.
@@ -50,10 +50,7 @@ namespace osu.Game.Overlays.Notifications
         /// </summary>
         public virtual bool DisplayOnTop => true;
 
-        public virtual string PopInSampleName => "UI/notification-default";
-        public virtual string PopOutSampleName => "UI/overlay-pop-out";
-
-        protected const float CORNER_RADIUS = 6;
+        public virtual string PopInSampleName => "UI/notification-pop-in";
 
         protected NotificationLight Light;
 
@@ -61,7 +58,7 @@ namespace osu.Game.Overlays.Notifications
 
         public bool WasClosed { get; private set; }
 
-        private readonly FillFlowContainer content;
+        private readonly Container content;
 
         protected override Container<Drawable> Content => content;
 
@@ -130,7 +127,7 @@ namespace osu.Game.Overlays.Notifications
                     AutoSizeAxes = Axes.Y,
                 }.WithChild(MainContent = new Container
                 {
-                    CornerRadius = CORNER_RADIUS,
+                    CornerRadius = 6,
                     Masking = true,
                     RelativeSizeAxes = Axes.X,
                     AutoSizeAxes = Axes.Y,
@@ -168,13 +165,11 @@ namespace osu.Game.Overlays.Notifications
                                         Padding = new MarginPadding(10),
                                         Children = new Drawable[]
                                         {
-                                            content = new FillFlowContainer
+                                            content = new Container
                                             {
                                                 Masking = true,
                                                 RelativeSizeAxes = Axes.X,
                                                 AutoSizeAxes = Axes.Y,
-                                                Direction = FillDirection.Vertical,
-                                                Spacing = new Vector2(15)
                                             },
                                         }
                                     },
@@ -274,7 +269,7 @@ namespace osu.Game.Overlays.Notifications
             });
         }
 
-        private partial class DragContainer : Container
+        private class DragContainer : Container
         {
             private Vector2 velocity;
             private Vector2 lastPosition;
@@ -386,7 +381,7 @@ namespace osu.Game.Overlays.Notifications
             }
         }
 
-        internal partial class CloseButton : OsuClickableContainer
+        internal class CloseButton : OsuClickableContainer
         {
             private SpriteIcon icon = null!;
             private Box background = null!;
@@ -441,7 +436,7 @@ namespace osu.Game.Overlays.Notifications
             }
         }
 
-        public partial class NotificationLight : Container
+        public class NotificationLight : Container
         {
             private bool pulsate;
             private Container pulsateLayer = null!;
@@ -475,9 +470,10 @@ namespace osu.Game.Overlays.Notifications
                     base.Colour = value;
                     pulsateLayer.EdgeEffect = new EdgeEffectParameters
                     {
-                        Colour = ((Color4)value).Opacity(0.18f),
+                        Colour = ((Color4)value).Opacity(0.5f), //todo: avoid cast
                         Type = EdgeEffectType.Glow,
-                        Radius = 14,
+                        Radius = 12,
+                        Roundness = 12,
                     };
                 }
             }

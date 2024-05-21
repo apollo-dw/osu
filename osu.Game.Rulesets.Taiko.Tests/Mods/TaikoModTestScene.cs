@@ -5,7 +5,7 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Taiko.Tests.Mods
 {
-    public abstract partial class TaikoModTestScene : ModTestScene
+    public abstract class TaikoModTestScene : ModTestScene
     {
         protected sealed override Ruleset CreatePlayerRuleset() => new TaikoRuleset();
     }

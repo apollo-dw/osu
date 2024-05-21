@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +15,7 @@ using osuTK;
 
 namespace osu.Game.Screens.Edit.Compose.Components
 {
-    public partial class RectangularPositionSnapGrid : CompositeDrawable
+    public class RectangularPositionSnapGrid : CompositeDrawable
     {
         /// <summary>
         /// The position of the origin of this <see cref="RectangularPositionSnapGrid"/> in local coordinates.
@@ -54,10 +56,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
             if (!gridCache.IsValid)
             {
                 ClearInternal();
-
-                if (DrawWidth > 0 && DrawHeight > 0)
-                    createContent();
-
+                createContent();
                 gridCache.Validate();
             }
         }

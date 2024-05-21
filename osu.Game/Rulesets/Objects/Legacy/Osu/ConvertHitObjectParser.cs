@@ -14,31 +14,44 @@ namespace osu.Game.Rulesets.Objects.Legacy.Osu
     /// </summary>
     public class ConvertHitObjectParser : Legacy.ConvertHitObjectParser
     {
-        private ConvertHitObject lastObject;
-
         public ConvertHitObjectParser(double offset, int formatVersion)
             : base(offset, formatVersion)
         {
         }
 
+        private bool forceNewCombo;
+        private int extraComboOffset;
+
         protected override HitObject CreateHit(Vector2 position, bool newCombo, int comboOffset)
         {
-            return lastObject = new ConvertHit
+            newCombo |= forceNewCombo;
+            comboOffset += extraComboOffset;
+
+            forceNewCombo = false;
+            extraComboOffset = 0;
+
+            return new ConvertHit
             {
                 Position = position,
-                NewCombo = FirstObject || lastObject is ConvertSpinner || newCombo,
-                ComboOffset = newCombo ? comboOffset : 0
+                NewCombo = FirstObject || newCombo,
+                ComboOffset = comboOffset
             };
         }
 
         protected override HitObject CreateSlider(Vector2 position, bool newCombo, int comboOffset, PathControlPoint[] controlPoints, double? length, int repeatCount,
                                                   IList<IList<HitSampleInfo>> nodeSamples)
         {
-            return lastObject = new ConvertSlider
+            newCombo |= forceNewCombo;
+            comboOffset += extraComboOffset;
+
+            forceNewCombo = false;
+            extraComboOffset = 0;
+
+            return new ConvertSlider
             {
                 Position = position,
-                NewCombo = FirstObject || lastObject is ConvertSpinner || newCombo,
-                ComboOffset = newCombo ? comboOffset : 0,
+                NewCombo = FirstObject || newCombo,
+                ComboOffset = comboOffset,
                 Path = new SliderPath(controlPoints, length),
                 NodeSamples = nodeSamples,
                 RepeatCount = repeatCount
@@ -47,18 +60,21 @@ namespace osu.Game.Rulesets.Objects.Legacy.Osu
 
         protected override HitObject CreateSpinner(Vector2 position, bool newCombo, int comboOffset, double duration)
         {
-            return lastObject = new ConvertSpinner
+            // Convert spinners don't create the new combo themselves, but force the next non-spinner hitobject to create a new combo
+            // Their combo offset is still added to that next hitobject's combo index
+            forceNewCombo |= FormatVersion <= 8 || newCombo;
+            extraComboOffset += comboOffset;
+
+            return new ConvertSpinner
             {
                 Position = position,
-                Duration = duration,
-                NewCombo = newCombo
-                // Spinners cannot have combo offset.
+                Duration = duration
             };
         }
 
         protected override HitObject CreateHold(Vector2 position, bool newCombo, int comboOffset, double duration)
         {
-            return lastObject = null;
+            return null;
         }
     }
 }

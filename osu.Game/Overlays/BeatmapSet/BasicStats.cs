@@ -22,7 +22,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.BeatmapSet
 {
-    public partial class BasicStats : Container
+    public class BasicStats : Container
     {
         private readonly Statistic length, bpm, circleCount, sliderCount;
 
@@ -58,25 +58,23 @@ namespace osu.Game.Overlays.BeatmapSet
 
         private void updateDisplay()
         {
+            bpm.Value = BeatmapSet?.BPM.ToLocalisableString(@"0.##") ?? (LocalisableString)"-";
+
             if (beatmapInfo == null)
             {
-                bpm.Value = "-";
-
                 length.Value = string.Empty;
                 circleCount.Value = string.Empty;
                 sliderCount.Value = string.Empty;
             }
             else
             {
-                bpm.Value = beatmapInfo.BPM.ToLocalisableString(@"0.##");
-
+                length.TooltipText = BeatmapsetsStrings.ShowStatsTotalLength(TimeSpan.FromMilliseconds(beatmapInfo.Length).ToFormattedDuration());
                 length.Value = TimeSpan.FromMilliseconds(beatmapInfo.Length).ToFormattedDuration();
 
-                if (beatmapInfo is not IBeatmapOnlineInfo onlineInfo) return;
+                var onlineInfo = beatmapInfo as IBeatmapOnlineInfo;
 
-                circleCount.Value = onlineInfo.CircleCount.ToLocalisableString(@"N0");
-                sliderCount.Value = onlineInfo.SliderCount.ToLocalisableString(@"N0");
-                length.TooltipText = BeatmapsetsStrings.ShowStatsTotalLength(TimeSpan.FromMilliseconds(onlineInfo.HitLength).ToFormattedDuration());
+                circleCount.Value = (onlineInfo?.CircleCount ?? 0).ToLocalisableString(@"N0");
+                sliderCount.Value = (onlineInfo?.SliderCount ?? 0).ToLocalisableString(@"N0");
             }
         }
 
@@ -119,7 +117,7 @@ namespace osu.Game.Overlays.BeatmapSet
             updateDisplay();
         }
 
-        private partial class Statistic : Container, IHasTooltip
+        private class Statistic : Container, IHasTooltip
         {
             private readonly OsuSpriteText value;
 

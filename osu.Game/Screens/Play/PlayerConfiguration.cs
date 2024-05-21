@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 namespace osu.Game.Screens.Play
 {
@@ -14,12 +16,6 @@ namespace osu.Game.Screens.Play
         /// Whether results screen should be pushed on completion.
         /// </summary>
         public bool ShowResults { get; set; } = true;
-
-        /// <summary>
-        /// Whether the fail animation / screen should be triggered on failing.
-        /// If false, the score will still be marked as failed but gameplay will continue.
-        /// </summary>
-        public bool AllowFailAnimation { get; set; } = true;
 
         /// <summary>
         /// Whether the player should be allowed to trigger a restart.

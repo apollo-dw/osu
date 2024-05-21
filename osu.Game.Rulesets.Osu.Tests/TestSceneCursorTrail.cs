@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Audio.Sample;
@@ -14,7 +13,6 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Rendering;
 using osu.Framework.Graphics.Textures;
-using osu.Framework.Testing;
 using osu.Framework.Testing.Input;
 using osu.Game.Audio;
 using osu.Game.Rulesets.Osu.Skinning.Legacy;
@@ -25,7 +23,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Tests
 {
-    public partial class TestSceneCursorTrail : OsuTestScene
+    public class TestSceneCursorTrail : OsuTestScene
     {
         [Resolved]
         private IRenderer renderer { get; set; }
@@ -49,7 +47,7 @@ namespace osu.Game.Rulesets.Osu.Tests
         {
             createTest(() =>
             {
-                var skinContainer = new LegacySkinContainer(renderer, provideMiddle: false);
+                var skinContainer = new LegacySkinContainer(renderer, false);
                 var legacyCursorTrail = new LegacyCursorTrail(skinContainer);
 
                 skinContainer.Child = legacyCursorTrail;
@@ -63,29 +61,13 @@ namespace osu.Game.Rulesets.Osu.Tests
         {
             createTest(() =>
             {
-                var skinContainer = new LegacySkinContainer(renderer, provideMiddle: true);
+                var skinContainer = new LegacySkinContainer(renderer, true);
                 var legacyCursorTrail = new LegacyCursorTrail(skinContainer);
 
                 skinContainer.Child = legacyCursorTrail;
 
                 return skinContainer;
             });
-        }
-
-        [Test]
-        public void TestLegacyDisjointCursorTrailViaNoCursor()
-        {
-            createTest(() =>
-            {
-                var skinContainer = new LegacySkinContainer(renderer, provideMiddle: false, provideCursor: false);
-                var legacyCursorTrail = new LegacyCursorTrail(skinContainer);
-
-                skinContainer.Child = legacyCursorTrail;
-
-                return skinContainer;
-            });
-
-            AddAssert("trail is disjoint", () => this.ChildrenOfType<LegacyCursorTrail>().Single().DisjointTrail, () => Is.True);
         }
 
         private void createTest(Func<Drawable> createContent) => AddStep("create trail", () =>
@@ -96,40 +78,39 @@ namespace osu.Game.Rulesets.Osu.Tests
             {
                 RelativeSizeAxes = Axes.Both,
                 Size = new Vector2(0.8f),
-                Child = new MovingCursorInputManager { Child = createContent() }
+                Child = new MovingCursorInputManager { Child = createContent?.Invoke() }
             });
         });
 
         [Cached(typeof(ISkinSource))]
-        private partial class LegacySkinContainer : Container, ISkinSource
+        private class LegacySkinContainer : Container, ISkinSource
         {
             private readonly IRenderer renderer;
-            private readonly bool provideMiddle;
-            private readonly bool provideCursor;
+            private readonly bool disjoint;
 
-            public LegacySkinContainer(IRenderer renderer, bool provideMiddle, bool provideCursor = true)
+            public LegacySkinContainer(IRenderer renderer, bool disjoint)
             {
                 this.renderer = renderer;
-                this.provideMiddle = provideMiddle;
-                this.provideCursor = provideCursor;
+                this.disjoint = disjoint;
 
                 RelativeSizeAxes = Axes.Both;
             }
 
-            public Drawable GetDrawableComponent(ISkinComponentLookup lookup) => null;
+            public Drawable GetDrawableComponent(ISkinComponent component) => null;
 
             public Texture GetTexture(string componentName, WrapMode wrapModeS, WrapMode wrapModeT)
             {
                 switch (componentName)
                 {
-                    case "cursor":
-                        return provideCursor ? new Texture(renderer.WhitePixel) : null;
-
                     case "cursortrail":
-                        return new Texture(renderer.WhitePixel);
+                        var tex = new Texture(renderer.WhitePixel);
+
+                        if (disjoint)
+                            tex.ScaleAdjust = 1 / 25f;
+                        return tex;
 
                     case "cursormiddle":
-                        return provideMiddle ? null : renderer.WhitePixel;
+                        return disjoint ? null : renderer.WhitePixel;
                 }
 
                 return null;
@@ -150,7 +131,7 @@ namespace osu.Game.Rulesets.Osu.Tests
             }
         }
 
-        private partial class MovingCursorInputManager : ManualInputManager
+        private class MovingCursorInputManager : ManualInputManager
         {
             public MovingCursorInputManager()
             {

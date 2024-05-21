@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -11,7 +13,7 @@ using osuTK;
 namespace osu.Game.Tests.Visual.Editing
 {
     [TestFixture]
-    public partial class TestSceneTimelineTickDisplay : TimelineTestScene
+    public class TestSceneTimelineTickDisplay : TimelineTestScene
     {
         public override Drawable CreateTestComponent() => Empty(); // tick display is implicitly inside the timeline.
 
@@ -23,7 +25,7 @@ namespace osu.Game.Tests.Visual.Editing
         {
             BeatDivisor.Value = 4;
 
-            Add(new BeatDivisorControl
+            Add(new BeatDivisorControl(BeatDivisor)
             {
                 Anchor = Anchor.TopRight,
                 Origin = Anchor.TopRight,

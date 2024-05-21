@@ -10,7 +10,6 @@ using osu.Framework.Graphics.Colour;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Effects;
 using osu.Framework.Graphics.Shapes;
-using osu.Game.Configuration;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Rulesets.Objects.Drawables;
@@ -22,7 +21,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Argon
 {
-    public partial class ArgonMainCirclePiece : CompositeDrawable
+    public class ArgonMainCirclePiece : CompositeDrawable
     {
         public const float BORDER_THICKNESS = (OsuHitObject.OBJECT_RADIUS * 2) * (2f / 58);
 
@@ -44,60 +43,44 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
         private readonly IBindable<Color4> accentColour = new Bindable<Color4>();
         private readonly IBindable<int> indexInCurrentCombo = new Bindable<int>();
         private readonly FlashPiece flash;
-        private readonly Container kiaiContainer;
-
-        private Bindable<bool> configHitLighting = null!;
-
-        private static readonly Vector2 circle_size = OsuHitObject.OBJECT_DIMENSIONS;
 
         [Resolved]
         private DrawableHitObject drawableObject { get; set; } = null!;
 
         public ArgonMainCirclePiece(bool withOuterFill)
         {
-            Size = circle_size;
+            Size = new Vector2(OsuHitObject.OBJECT_RADIUS * 2);
 
             Anchor = Anchor.Centre;
             Origin = Anchor.Centre;
 
             InternalChildren = new Drawable[]
             {
-                outerFill = new Circle // renders dark fill
+                outerFill = new Circle // renders white outer border and dark fill
                 {
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.Centre,
-                    // Slightly inset to prevent bleeding outside the ring
-                    Size = circle_size - new Vector2(1),
+                    Size = Size,
                     Alpha = withOuterFill ? 1 : 0,
                 },
                 outerGradient = new Circle // renders the outer bright gradient
                 {
                     Size = new Vector2(OUTER_GRADIENT_SIZE),
+                    Alpha = 1,
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
                 },
                 innerGradient = new Circle // renders the inner bright gradient
                 {
                     Size = new Vector2(INNER_GRADIENT_SIZE),
+                    Alpha = 1,
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
                 },
                 innerFill = new Circle // renders the inner dark fill
                 {
                     Size = new Vector2(INNER_FILL_SIZE),
+                    Alpha = 1,
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
-                },
-                kiaiContainer = new CircularContainer
-                {
-                    Masking = true,
-                    Anchor = Anchor.Centre,
-                    Origin = Anchor.Centre,
-                    Size = circle_size,
-                    Child = new KiaiFlash
-                    {
-                        RelativeSizeAxes = Axes.Both,
-                    }
                 },
                 number = new OsuSpriteText
                 {
@@ -113,14 +96,12 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
         }
 
         [BackgroundDependencyLoader]
-        private void load(OsuConfigManager config)
+        private void load()
         {
             var drawableOsuObject = (DrawableOsuHitObject)drawableObject;
 
             accentColour.BindTo(drawableObject.AccentColour);
             indexInCurrentCombo.BindTo(drawableOsuObject.IndexInCurrentComboBindable);
-
-            configHitLighting = config.GetBindable<bool>(OsuSetting.HitLighting);
         }
 
         protected override void LoadComplete()
@@ -136,20 +117,11 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                 outerGradient.ClearTransforms(targetMember: nameof(Colour));
                 outerGradient.Colour = ColourInfo.GradientVertical(colour.NewValue, colour.NewValue.Darken(0.1f));
 
-                kiaiContainer.Colour = colour.NewValue;
                 outerFill.Colour = innerFill.Colour = colour.NewValue.Darken(4);
                 innerGradient.Colour = ColourInfo.GradientVertical(colour.NewValue.Darken(0.5f), colour.NewValue.Darken(0.6f));
                 flash.Colour = colour.NewValue;
 
-                // Accent colour may be changed many times during a paused gameplay state.
-                // Schedule the change to avoid transforms piling up.
-                Scheduler.AddOnce(() =>
-                {
-                    ApplyTransformsAt(double.MinValue, true);
-                    ClearTransformsAfter(double.MinValue, true);
-
-                    updateStateTransforms(drawableObject, drawableObject.State.Value);
-                });
+                updateStateTransforms(drawableObject, drawableObject.State.Value);
             }, true);
 
             drawableObject.ApplyCustomUpdateState += updateStateTransforms;
@@ -164,6 +136,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                     case ArmedState.Hit:
                         // Fade out time is at a maximum of 800. Must match `DrawableHitCircle`'s arbitrary lifetime spec.
                         const double fade_out_time = 800;
+
                         const double flash_in_duration = 150;
                         const double resize_duration = 400;
 
@@ -194,40 +167,20 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                         // gradient layers.
                         border.ResizeTo(Size * shrink_size + new Vector2(border.BorderThickness), resize_duration, Easing.OutElasticHalf);
 
-                        // Kiai flash should track the overall size but also be cleaned up quite fast, so we don't get additional
-                        // flashes after the hit animation is already in a mostly-completed state.
-                        kiaiContainer.ResizeTo(Size * shrink_size, resize_duration, Easing.OutElasticHalf);
-                        kiaiContainer.FadeOut(flash_in_duration, Easing.OutQuint);
-
                         // The outer gradient is resize with a slight delay from the border.
                         // This is to give it a bomb-like effect, with the border "triggering" its animation when getting close.
                         using (BeginDelayedSequence(flash_in_duration / 12))
                         {
-                            outerGradient.ResizeTo(OUTER_GRADIENT_SIZE * shrink_size, resize_duration, Easing.OutElasticHalf);
-
+                            outerGradient.ResizeTo(outerGradient.Size * shrink_size, resize_duration, Easing.OutElasticHalf);
                             outerGradient
                                 .FadeColour(Color4.White, 80)
                                 .Then()
                                 .FadeOut(flash_in_duration);
                         }
 
-                        if (configHitLighting.Value)
-                        {
-                            flash.HitLighting = true;
-                            flash.FadeTo(1, flash_in_duration, Easing.OutQuint);
+                        flash.FadeTo(1, flash_in_duration, Easing.OutQuint);
 
-                            this.FadeOut(fade_out_time, Easing.OutQuad);
-                        }
-                        else
-                        {
-                            flash.HitLighting = false;
-                            flash.FadeTo(1, flash_in_duration, Easing.OutQuint)
-                                 .Then()
-                                 .FadeOut(flash_in_duration, Easing.OutQuint);
-
-                            this.FadeOut(fade_out_time * 0.8f, Easing.OutQuad);
-                        }
-
+                        this.FadeOut(fade_out_time, Easing.OutQuad);
                         break;
                 }
             }
@@ -241,7 +194,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                 drawableObject.ApplyCustomUpdateState -= updateStateTransforms;
         }
 
-        private partial class FlashPiece : Circle
+        private class FlashPiece : Circle
         {
             public FlashPiece()
             {
@@ -258,8 +211,6 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                 Child.AlwaysPresent = true;
             }
 
-            public bool HitLighting { get; set; }
-
             protected override void Update()
             {
                 base.Update();
@@ -268,7 +219,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                 {
                     Type = EdgeEffectType.Glow,
                     Colour = Colour,
-                    Radius = OsuHitObject.OBJECT_RADIUS * (HitLighting ? 1.2f : 0.6f),
+                    Radius = OsuHitObject.OBJECT_RADIUS * 1.2f,
                 };
             }
         }

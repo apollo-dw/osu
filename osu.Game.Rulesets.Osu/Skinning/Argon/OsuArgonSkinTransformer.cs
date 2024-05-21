@@ -14,28 +14,14 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
         {
         }
 
-        public override Drawable? GetDrawableComponent(ISkinComponentLookup lookup)
+        public override Drawable? GetDrawableComponent(ISkinComponent component)
         {
-            switch (lookup)
+            switch (component)
             {
-                case GameplaySkinComponentLookup<HitResult> resultComponent:
-                    HitResult result = resultComponent.Component;
+                case GameplaySkinComponent<HitResult> resultComponent:
+                    return new ArgonJudgementPiece(resultComponent.Component);
 
-                    // This should eventually be moved to a skin setting, when supported.
-                    if (Skin is ArgonProSkin && (result == HitResult.Great || result == HitResult.Perfect))
-                        return Drawable.Empty();
-
-                    switch (result)
-                    {
-                        case HitResult.IgnoreMiss:
-                        case HitResult.LargeTickMiss:
-                            return new ArgonJudgementPieceSliderTickMiss(result);
-
-                        default:
-                            return new ArgonJudgementPiece(result);
-                    }
-
-                case OsuSkinComponentLookup osuComponent:
+                case OsuSkinComponent osuComponent:
                     // TODO: Once everything is finalised, consider throwing UnsupportedSkinComponentException on missing entries.
                     switch (osuComponent.Component)
                     {
@@ -76,7 +62,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Argon
                     break;
             }
 
-            return base.GetDrawableComponent(lookup);
+            return base.GetDrawableComponent(component);
         }
     }
 }

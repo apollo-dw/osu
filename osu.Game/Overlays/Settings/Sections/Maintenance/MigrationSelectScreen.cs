@@ -17,7 +17,7 @@ using osu.Game.Overlays.Dialog;
 
 namespace osu.Game.Overlays.Settings.Sections.Maintenance
 {
-    public partial class MigrationSelectScreen : DirectorySelectScreen
+    public class MigrationSelectScreen : DirectorySelectScreen
     {
         [Resolved]
         private Storage storage { get; set; }
@@ -47,7 +47,7 @@ namespace osu.Game.Overlays.Settings.Sections.Maintenance
                 var directoryInfos = target.GetDirectories();
                 var fileInfos = target.GetFiles();
 
-                if (directoryInfos.Length > 0 || fileInfos.Length > 0 || target.Parent == null)
+                if (directoryInfos.Length > 0 || fileInfos.Length > 0)
                 {
                     // Quick test for whether there's already an osu! install at the target path.
                     if (fileInfos.Any(f => f.Name == OsuGameBase.CLIENT_DATABASE_FILENAME))
@@ -65,9 +65,7 @@ namespace osu.Game.Overlays.Settings.Sections.Maintenance
                         return;
                     }
 
-                    // Not using CreateSubDirectory as it throws unexpectedly when attempting to create a directory when already at the root of a disk.
-                    // See https://cs.github.com/dotnet/runtime/blob/f1bdd5a6182f43f3928b389b03f7bc26f826c8bc/src/libraries/System.Private.CoreLib/src/System/IO/DirectoryInfo.cs#L88-L94
-                    target = Directory.CreateDirectory(Path.Combine(target.FullName, @"osu-lazer"));
+                    target = target.CreateSubdirectory("osu-lazer");
                 }
             }
             catch (Exception e)

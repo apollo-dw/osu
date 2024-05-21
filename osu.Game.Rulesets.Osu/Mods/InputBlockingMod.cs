@@ -11,7 +11,6 @@ using osu.Game.Beatmaps.Timing;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Objects;
-using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.UI;
 using osu.Game.Screens.Play;
@@ -19,7 +18,7 @@ using osu.Game.Utils;
 
 namespace osu.Game.Rulesets.Osu.Mods
 {
-    public abstract partial class InputBlockingMod : Mod, IApplicableToDrawableRuleset<OsuHitObject>, IUpdatableByPlayfield
+    public abstract class InputBlockingMod : Mod, IApplicableToDrawableRuleset<OsuHitObject>, IUpdatableByPlayfield
     {
         public override double ScoreMultiplier => 1.0;
         public override Type[] IncompatibleMods => new[] { typeof(ModAutoplay), typeof(ModRelax), typeof(OsuModCinema) };
@@ -27,7 +26,7 @@ namespace osu.Game.Rulesets.Osu.Mods
 
         private const double flash_duration = 1000;
 
-        private DrawableOsuRuleset ruleset = null!;
+        private DrawableRuleset<OsuHitObject> ruleset = null!;
 
         protected OsuAction? LastAcceptedAction { get; private set; }
 
@@ -43,8 +42,8 @@ namespace osu.Game.Rulesets.Osu.Mods
 
         public void ApplyToDrawableRuleset(DrawableRuleset<OsuHitObject> drawableRuleset)
         {
-            ruleset = (DrawableOsuRuleset)drawableRuleset;
-            ruleset.KeyBindingInputManager.Add(new InputInterceptor(this));
+            ruleset = drawableRuleset;
+            drawableRuleset.KeyBindingInputManager.Add(new InputInterceptor(this));
 
             var periods = new List<Period>();
 
@@ -97,7 +96,7 @@ namespace osu.Game.Rulesets.Osu.Mods
             return false;
         }
 
-        private partial class InputInterceptor : Component, IKeyBindingHandler<OsuAction>
+        private class InputInterceptor : Component, IKeyBindingHandler<OsuAction>
         {
             private readonly InputBlockingMod mod;
 

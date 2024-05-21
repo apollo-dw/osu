@@ -5,11 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using osu.Framework.Bindables;
 using osu.Framework.Configuration;
-using osu.Framework.Extensions;
 using osu.Game.Configuration;
 using osu.Game.Database;
 
@@ -69,7 +67,7 @@ namespace osu.Game.Rulesets.Configuration
                 {
                     var setting = r.All<RealmRulesetSetting>().First(s => s.RulesetName == rulesetName && s.Variant == variant && s.Key == c.ToString());
 
-                    setting.Value = ConfigStore[c].ToString(CultureInfo.InvariantCulture);
+                    setting.Value = ConfigStore[c].ToString();
                 }
             });
 
@@ -84,14 +82,14 @@ namespace osu.Game.Rulesets.Configuration
 
             if (setting != null)
             {
-                bindable.Parse(setting.Value, CultureInfo.InvariantCulture);
+                bindable.Parse(setting.Value);
             }
             else
             {
                 setting = new RealmRulesetSetting
                 {
                     Key = lookup.ToString(),
-                    Value = bindable.ToString(CultureInfo.InvariantCulture),
+                    Value = bindable.Value.ToString(),
                     RulesetName = rulesetName,
                     Variant = variant,
                 };

@@ -4,19 +4,18 @@
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Localisation;
-using osu.Game.Graphics;
 using osu.Game.Localisation;
 using osu.Game.Overlays.Settings.Sections.Maintenance;
 
 namespace osu.Game.Overlays.Settings.Sections
 {
-    public partial class MaintenanceSection : SettingsSection
+    public class MaintenanceSection : SettingsSection
     {
         public override LocalisableString Header => MaintenanceSettingsStrings.MaintenanceSectionHeader;
 
         public override Drawable CreateIcon() => new SpriteIcon
         {
-            Icon = OsuIcon.Maintenance
+            Icon = FontAwesome.Solid.Wrench
         };
 
         public MaintenanceSection()

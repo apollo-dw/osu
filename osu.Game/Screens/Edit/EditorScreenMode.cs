@@ -1,26 +1,27 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using osu.Framework.Localisation;
-using osu.Game.Localisation;
+#nullable disable
+
+using System.ComponentModel;
 
 namespace osu.Game.Screens.Edit
 {
     public enum EditorScreenMode
     {
-        [LocalisableDescription(typeof(EditorStrings), nameof(EditorStrings.SetupScreen))]
+        [Description("setup")]
         SongSetup,
 
-        [LocalisableDescription(typeof(EditorStrings), nameof(EditorStrings.ComposeScreen))]
+        [Description("compose")]
         Compose,
 
-        [LocalisableDescription(typeof(EditorStrings), nameof(EditorStrings.DesignScreen))]
+        [Description("design")]
         Design,
 
-        [LocalisableDescription(typeof(EditorStrings), nameof(EditorStrings.TimingScreen))]
+        [Description("timing")]
         Timing,
 
-        [LocalisableDescription(typeof(EditorStrings), nameof(EditorStrings.VerifyScreen))]
+        [Description("verify")]
         Verify,
     }
 }

@@ -1,24 +1,25 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Collections.Generic;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics.Sprites;
 using osu.Game.IO;
-using osu.Game.Localisation;
 using osu.Game.Overlays;
 using osu.Game.Overlays.Dialog;
 
 namespace osu.Game.Screens.Menu
 {
-    public partial class StorageErrorDialog : PopupDialog
+    public class StorageErrorDialog : PopupDialog
     {
         [Resolved]
-        private IDialogOverlay dialogOverlay { get; set; } = null!;
+        private IDialogOverlay dialogOverlay { get; set; }
 
         public StorageErrorDialog(OsuStorage storage, OsuStorageError error)
         {
-            HeaderText = StorageErrorDialogStrings.StorageError;
+            HeaderText = "osu! storage error";
             Icon = FontAwesome.Solid.ExclamationTriangle;
 
             var buttons = new List<PopupDialogButton>();
@@ -26,13 +27,13 @@ namespace osu.Game.Screens.Menu
             switch (error)
             {
                 case OsuStorageError.NotAccessible:
-                    BodyText = StorageErrorDialogStrings.LocationIsNotAccessible(storage.CustomStoragePath);
+                    BodyText = $"The specified osu! data location (\"{storage.CustomStoragePath}\") is not accessible. If it is on external storage, please reconnect the device and try again.";
 
                     buttons.AddRange(new PopupDialogButton[]
                     {
                         new PopupDialogCancelButton
                         {
-                            Text = StorageErrorDialogStrings.TryAgain,
+                            Text = "Try again",
                             Action = () =>
                             {
                                 if (!storage.TryChangeToCustomStorage(out var nextError))
@@ -41,29 +42,29 @@ namespace osu.Game.Screens.Menu
                         },
                         new PopupDialogCancelButton
                         {
-                            Text = StorageErrorDialogStrings.UseDefaultLocation,
+                            Text = "Use default location until restart",
                         },
                         new PopupDialogOkButton
                         {
-                            Text = StorageErrorDialogStrings.ResetToDefaultLocation,
+                            Text = "Reset to default location",
                             Action = storage.ResetCustomStoragePath
                         },
                     });
                     break;
 
                 case OsuStorageError.AccessibleButEmpty:
-                    BodyText = StorageErrorDialogStrings.LocationIsEmpty(storage.CustomStoragePath);
+                    BodyText = $"The specified osu! data location (\"{storage.CustomStoragePath}\") is empty. If you have moved the files, please close osu! and move them back.";
 
                     // Todo: Provide the option to search for the files similar to migration.
                     buttons.AddRange(new PopupDialogButton[]
                     {
                         new PopupDialogCancelButton
                         {
-                            Text = StorageErrorDialogStrings.StartFresh
+                            Text = "Start fresh at specified location"
                         },
                         new PopupDialogOkButton
                         {
-                            Text = StorageErrorDialogStrings.ResetToDefaultLocation,
+                            Text = "Reset to default location",
                             Action = storage.ResetCustomStoragePath
                         },
                     });

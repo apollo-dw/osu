@@ -19,7 +19,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Select
 {
-    public partial class FooterButton : OsuClickableContainer, IKeyBindingHandler<GlobalAction>
+    public class FooterButton : OsuClickableContainer, IKeyBindingHandler<GlobalAction>
     {
         public const float SHEAR_WIDTH = 7.5f;
 
@@ -120,17 +120,9 @@ namespace osu.Game.Screens.Select
             };
         }
 
-        protected override void LoadComplete()
-        {
-            base.LoadComplete();
-            Enabled.BindValueChanged(_ => updateDisplay(), true);
-        }
-
         public Action Hovered;
         public Action HoverLost;
         public GlobalAction? Hotkey;
-
-        private bool mouseDown;
 
         protected override void UpdateAfterChildren()
         {
@@ -148,38 +140,32 @@ namespace osu.Game.Screens.Select
         protected override bool OnHover(HoverEvent e)
         {
             Hovered?.Invoke();
-            updateDisplay();
+            light.ScaleTo(new Vector2(1, 2), Footer.TRANSITION_LENGTH, Easing.OutQuint);
+            light.FadeColour(SelectedColour, Footer.TRANSITION_LENGTH, Easing.OutQuint);
             return true;
         }
 
         protected override void OnHoverLost(HoverLostEvent e)
         {
             HoverLost?.Invoke();
-            updateDisplay();
+            light.ScaleTo(new Vector2(1, 1), Footer.TRANSITION_LENGTH, Easing.OutQuint);
+            light.FadeColour(DeselectedColour, Footer.TRANSITION_LENGTH, Easing.OutQuint);
         }
 
         protected override bool OnMouseDown(MouseDownEvent e)
         {
-            if (!Enabled.Value)
-                return true;
-
-            mouseDown = true;
-            updateDisplay();
+            box.FadeTo(0.3f, Footer.TRANSITION_LENGTH * 2, Easing.OutQuint);
             return base.OnMouseDown(e);
         }
 
         protected override void OnMouseUp(MouseUpEvent e)
         {
-            mouseDown = false;
-            updateDisplay();
+            box.FadeOut(Footer.TRANSITION_LENGTH, Easing.OutQuint);
             base.OnMouseUp(e);
         }
 
         protected override bool OnClick(ClickEvent e)
         {
-            if (!Enabled.Value)
-                return true;
-
             box.ClearTransforms();
             box.Alpha = 1;
             box.FadeOut(Footer.TRANSITION_LENGTH * 3, Easing.OutQuint);
@@ -198,20 +184,5 @@ namespace osu.Game.Screens.Select
         }
 
         public virtual void OnReleased(KeyBindingReleaseEvent<GlobalAction> e) { }
-
-        private void updateDisplay()
-        {
-            this.FadeTo(Enabled.Value ? 1 : 0.25f, Footer.TRANSITION_LENGTH, Easing.OutQuint);
-
-            light.ScaleTo(Enabled.Value && IsHovered ? new Vector2(1, 2) : new Vector2(1), Footer.TRANSITION_LENGTH, Easing.OutQuint);
-            light.FadeColour(Enabled.Value && IsHovered ? SelectedColour : DeselectedColour, Footer.TRANSITION_LENGTH, Easing.OutQuint);
-
-            box.FadeTo(Enabled.Value & mouseDown ? 0.3f : 0f, Footer.TRANSITION_LENGTH * 2, Easing.OutQuint);
-
-            if (Enabled.Value && IsHovered)
-                Hovered?.Invoke();
-            else
-                HoverLost?.Invoke();
-        }
     }
 }

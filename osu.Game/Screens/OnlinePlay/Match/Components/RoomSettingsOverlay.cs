@@ -18,7 +18,7 @@ using osuTK;
 
 namespace osu.Game.Screens.OnlinePlay.Match.Components
 {
-    public abstract partial class RoomSettingsOverlay : FocusedOverlayContainer, IKeyBindingHandler<GlobalAction>
+    public abstract class RoomSettingsOverlay : FocusedOverlayContainer, IKeyBindingHandler<GlobalAction>
     {
         protected const float TRANSITION_DURATION = 350;
         protected const float FIELD_PADDING = 25;
@@ -54,12 +54,14 @@ namespace osu.Game.Screens.OnlinePlay.Match.Components
 
         protected override void PopIn()
         {
+            base.PopIn();
             Settings.MoveToY(0, TRANSITION_DURATION, Easing.OutQuint);
             Settings.FadeIn(TRANSITION_DURATION / 2);
         }
 
         protected override void PopOut()
         {
+            base.PopOut();
             Settings.MoveToY(-1, TRANSITION_DURATION, Easing.InSine);
             Settings.Delay(TRANSITION_DURATION / 2).FadeOut(TRANSITION_DURATION / 2);
         }
@@ -99,7 +101,7 @@ namespace osu.Game.Screens.OnlinePlay.Match.Components
         /// use expanded overhanging content (like an <see cref="OsuDropdown{T}"/>'s dropdown),
         /// then the overhanging content will be correctly Z-ordered.
         /// </remarks>
-        protected partial class SectionContainer : ReverseChildIDFillFlowContainer<Section>
+        protected class SectionContainer : ReverseChildIDFillFlowContainer<Section>
         {
             public SectionContainer()
             {
@@ -111,9 +113,9 @@ namespace osu.Game.Screens.OnlinePlay.Match.Components
             }
         }
 
-        protected partial class Section : Container
+        protected class Section : Container
         {
-            private readonly ReverseChildIDFillFlowContainer<Drawable> content;
+            private readonly Container content;
 
             protected override Container<Drawable> Content => content;
 
@@ -135,11 +137,10 @@ namespace osu.Game.Screens.OnlinePlay.Match.Components
                             Font = OsuFont.GetFont(weight: FontWeight.Bold, size: 12),
                             Text = title.ToUpperInvariant(),
                         },
-                        content = new ReverseChildIDFillFlowContainer<Drawable>
+                        content = new Container
                         {
                             AutoSizeAxes = Axes.Y,
                             RelativeSizeAxes = Axes.X,
-                            Direction = FillDirection.Vertical
                         },
                     },
                 };

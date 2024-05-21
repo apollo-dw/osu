@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -14,7 +16,7 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Taiko.Tests.Editor
 {
-    public partial class TestSceneTaikoHitObjectComposer : EditorClockTestScene
+    public class TestSceneTaikoHitObjectComposer : EditorClockTestScene
     {
         [SetUp]
         public void Setup() => Schedule(() =>
@@ -30,7 +32,7 @@ namespace osu.Game.Rulesets.Taiko.Tests.Editor
         {
         }
 
-        private partial class TestComposer : CompositeDrawable
+        private class TestComposer : CompositeDrawable
         {
             [Cached(typeof(EditorBeatmap))]
             [Cached(typeof(IBeatSnapProvider))]

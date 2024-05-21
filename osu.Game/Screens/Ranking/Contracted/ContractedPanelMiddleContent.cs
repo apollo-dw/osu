@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Linq;
 using osu.Framework.Allocation;
@@ -29,12 +31,12 @@ namespace osu.Game.Screens.Ranking.Contracted
     /// <summary>
     /// The content that appears in the middle of a contracted <see cref="ScorePanel"/>.
     /// </summary>
-    public partial class ContractedPanelMiddleContent : CompositeDrawable
+    public class ContractedPanelMiddleContent : CompositeDrawable
     {
         private readonly ScoreInfo score;
 
         [Resolved]
-        private ScoreManager scoreManager { get; set; } = null!;
+        private ScoreManager scoreManager { get; set; }
 
         /// <summary>
         /// Creates a new <see cref="ContractedPanelMiddleContent"/>.
@@ -150,40 +152,44 @@ namespace osu.Game.Screens.Ranking.Contracted
                     },
                     new Drawable[]
                     {
-                        new GridContainer
+                        new Container
                         {
                             RelativeSizeAxes = Axes.Both,
                             Padding = new MarginPadding { Vertical = 5 },
-                            Content = new[]
+                            Child = new GridContainer
                             {
-                                new Drawable[]
+                                RelativeSizeAxes = Axes.Both,
+                                Content = new[]
                                 {
-                                    new OsuSpriteText
+                                    new Drawable[]
                                     {
-                                        Anchor = Anchor.Centre,
-                                        Origin = Anchor.Centre,
-                                        Current = scoreManager.GetBindableTotalScoreString(score),
-                                        Font = OsuFont.GetFont(size: 20, weight: FontWeight.Medium, fixedWidth: true),
-                                        Spacing = new Vector2(-1, 0)
-                                    },
-                                },
-                                new Drawable[]
-                                {
-                                    new Container
-                                    {
-                                        RelativeSizeAxes = Axes.Both,
-                                        Padding = new MarginPadding { Top = 2 },
-                                        Child = new DrawableRank(score.Rank)
+                                        new OsuSpriteText
                                         {
                                             Anchor = Anchor.Centre,
                                             Origin = Anchor.Centre,
+                                            Current = scoreManager.GetBindableTotalScoreString(score),
+                                            Font = OsuFont.GetFont(size: 20, weight: FontWeight.Medium, fixedWidth: true),
+                                            Spacing = new Vector2(-1, 0)
+                                        },
+                                    },
+                                    new Drawable[]
+                                    {
+                                        new Container
+                                        {
+                                            RelativeSizeAxes = Axes.Both,
+                                            Padding = new MarginPadding { Top = 2 },
+                                            Child = new DrawableRank(score.Rank)
+                                            {
+                                                Anchor = Anchor.Centre,
+                                                Origin = Anchor.Centre,
+                                            }
                                         }
-                                    }
+                                    },
                                 },
-                            },
-                            RowDimensions = new[]
-                            {
-                                new Dimension(GridSizeMode.AutoSize),
+                                RowDimensions = new[]
+                                {
+                                    new Dimension(GridSizeMode.AutoSize),
+                                }
                             }
                         }
                     },

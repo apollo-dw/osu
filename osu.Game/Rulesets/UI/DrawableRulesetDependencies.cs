@@ -25,28 +25,21 @@ namespace osu.Game.Rulesets.UI
         /// <summary>
         /// The texture store to be used for the ruleset.
         /// </summary>
-        /// <remarks>
-        /// Reads textures from the "Textures" folder in ruleset resources.
-        /// If not available locally, lookups will fallback to the global texture store.
-        /// </remarks>
         public TextureStore TextureStore { get; }
 
         /// <summary>
         /// The sample store to be used for the ruleset.
         /// </summary>
         /// <remarks>
-        /// Reads samples from the "Samples" folder in ruleset resources.
-        /// If not available locally, lookups will fallback to the global sample store.
+        /// This is the local sample store pointing to the ruleset sample resources,
+        /// the cached sample store (<see cref="FallbackSampleStore"/>) retrieves from
+        /// this store and falls back to the parent store if this store doesn't have the requested sample.
         /// </remarks>
         public ISampleStore SampleStore { get; }
 
         /// <summary>
         /// The shader manager to be used for the ruleset.
         /// </summary>
-        /// <remarks>
-        /// Reads shaders from the "Shaders" folder in ruleset resources.
-        /// If not available locally, lookups will fallback to the global shader manager.
-        /// </remarks>
         public ShaderManager ShaderManager { get; }
 
         /// <summary>
@@ -68,7 +61,8 @@ namespace osu.Game.Rulesets.UI
             SampleStore.PlaybackConcurrency = OsuGameBase.SAMPLE_CONCURRENCY;
             CacheAs(SampleStore = new FallbackSampleStore(SampleStore, parent.Get<ISampleStore>()));
 
-            CacheAs(ShaderManager = new RulesetShaderManager(host.Renderer, new NamespacedResourceStore<byte[]>(resources, @"Shaders"), parent.Get<ShaderManager>()));
+            ShaderManager = new ShaderManager(host.Renderer, new NamespacedResourceStore<byte[]>(resources, @"Shaders"));
+            CacheAs(ShaderManager = new FallbackShaderManager(host.Renderer, ShaderManager, parent.Get<ShaderManager>()));
 
             RulesetConfigManager = parent.Get<IRulesetConfigCache>().GetConfigFor(ruleset);
             if (RulesetConfigManager != null)
@@ -98,7 +92,7 @@ namespace osu.Game.Rulesets.UI
 
             isDisposed = true;
 
-            if (SampleStore.IsNotNull()) SampleStore.Dispose();
+            if (ShaderManager.IsNotNull()) SampleStore.Dispose();
             if (TextureStore.IsNotNull()) TextureStore.Dispose();
             if (ShaderManager.IsNotNull()) ShaderManager.Dispose();
         }
@@ -121,11 +115,7 @@ namespace osu.Game.Rulesets.UI
 
             public Sample Get(string name) => primary.Get(name) ?? fallback.Get(name);
 
-            public async Task<Sample> GetAsync(string name, CancellationToken cancellationToken = default)
-            {
-                return await primary.GetAsync(name, cancellationToken).ConfigureAwait(false)
-                       ?? await fallback.GetAsync(name, cancellationToken).ConfigureAwait(false);
-            }
+            public Task<Sample> GetAsync(string name, CancellationToken cancellationToken = default) => primary.GetAsync(name, cancellationToken) ?? fallback.GetAsync(name, cancellationToken);
 
             public Stream GetStream(string name) => primary.GetStream(name) ?? fallback.GetStream(name);
 
@@ -163,8 +153,6 @@ namespace osu.Game.Rulesets.UI
                 set => throw new NotSupportedException();
             }
 
-            public void AddExtension(string extension) => throw new NotSupportedException();
-
             public void Dispose()
             {
                 if (primary.IsNotNull()) primary.Dispose();
@@ -186,7 +174,7 @@ namespace osu.Game.Rulesets.UI
                 this.fallback = fallback;
             }
 
-            public override Texture? Get(string name, WrapMode wrapModeS, WrapMode wrapModeT)
+            public override Texture Get(string name, WrapMode wrapModeS, WrapMode wrapModeT)
                 => primary.Get(name, wrapModeS, wrapModeT) ?? fallback.Get(name, wrapModeS, wrapModeT);
 
             protected override void Dispose(bool disposing)
@@ -196,21 +184,25 @@ namespace osu.Game.Rulesets.UI
             }
         }
 
-        private class RulesetShaderManager : ShaderManager
+        private class FallbackShaderManager : ShaderManager
         {
-            private readonly ShaderManager parent;
+            private readonly ShaderManager primary;
+            private readonly ShaderManager fallback;
 
-            public RulesetShaderManager(IRenderer renderer, NamespacedResourceStore<byte[]> rulesetResources, ShaderManager parent)
-                : base(renderer, rulesetResources)
+            public FallbackShaderManager(IRenderer renderer, ShaderManager primary, ShaderManager fallback)
+                : base(renderer, new ResourceStore<byte[]>())
             {
-                this.parent = parent;
+                this.primary = primary;
+                this.fallback = fallback;
             }
 
-            public override IShader? GetCachedShader(string vertex, string fragment) => base.GetCachedShader(vertex, fragment) ?? parent.GetCachedShader(vertex, fragment);
+            public override byte[]? LoadRaw(string name) => primary.LoadRaw(name) ?? fallback.LoadRaw(name);
 
-            public override IShaderPart? GetCachedShaderPart(string name) => base.GetCachedShaderPart(name) ?? parent.GetCachedShaderPart(name);
-
-            public override byte[]? GetRawData(string fileName) => base.GetRawData(fileName) ?? parent.GetRawData(fileName);
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                if (primary.IsNotNull()) primary.Dispose();
+            }
         }
     }
 }

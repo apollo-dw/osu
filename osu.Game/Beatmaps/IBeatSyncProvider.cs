@@ -22,8 +22,8 @@ namespace osu.Game.Beatmaps
         ControlPointInfo? ControlPoints { get; }
 
         /// <summary>
-        /// Access a clock currently responsible for providing beat sync.
+        /// Access a clock currently responsible for providing beat sync. If <c>null</c>, no current provider is available.
         /// </summary>
-        IClock Clock { get; }
+        IClock? Clock { get; }
     }
 }

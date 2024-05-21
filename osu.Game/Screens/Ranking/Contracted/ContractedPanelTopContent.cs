@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -10,11 +12,11 @@ using osu.Game.Graphics.Sprites;
 
 namespace osu.Game.Screens.Ranking.Contracted
 {
-    public partial class ContractedPanelTopContent : CompositeDrawable
+    public class ContractedPanelTopContent : CompositeDrawable
     {
         public readonly Bindable<int?> ScorePosition = new Bindable<int?>();
 
-        private OsuSpriteText text = null!;
+        private OsuSpriteText text;
 
         public ContractedPanelTopContent()
         {

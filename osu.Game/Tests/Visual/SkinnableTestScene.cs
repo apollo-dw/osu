@@ -27,7 +27,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual
 {
-    public abstract partial class SkinnableTestScene : OsuGridTestScene, IStorageResourceProvider
+    public abstract class SkinnableTestScene : OsuGridTestScene, IStorageResourceProvider
     {
         private TrianglesSkin trianglesSkin;
         private Skin metricsSkin;
@@ -91,7 +91,7 @@ namespace osu.Game.Tests.Visual
             {
                 RelativeSizeAxes = Axes.Both,
                 BorderColour = Color4.White,
-                BorderThickness = 3,
+                BorderThickness = 5,
                 Masking = true,
 
                 Children = new Drawable[]
@@ -142,15 +142,8 @@ namespace osu.Game.Tests.Visual
                     c.AutoSizeAxes = Axes.None;
                     c.Size = Vector2.Zero;
 
-                    if (autoSize)
-                        c.AutoSizeAxes = Axes.Both;
-                    else
-                    {
-                        c.RelativeSizeAxes = Axes.Both;
-                        c.Anchor = Anchor.Centre;
-                        c.Origin = Anchor.Centre;
-                        c.Size = new Vector2(0.97f);
-                    }
+                    c.RelativeSizeAxes = !autoSize ? Axes.Both : Axes.None;
+                    c.AutoSizeAxes = autoSize ? Axes.Both : Axes.None;
                 }
 
                 outlineBox.Alpha = autoSize ? 1 : 0;
@@ -171,14 +164,14 @@ namespace osu.Game.Tests.Visual
 
         public IRenderer Renderer => host.Renderer;
         public AudioManager AudioManager => Audio;
-        public IResourceStore<byte[]> Files => null!;
+        public IResourceStore<byte[]> Files => null;
         public new IResourceStore<byte[]> Resources => base.Resources;
         public IResourceStore<TextureUpload> CreateTextureLoaderStore(IResourceStore<byte[]> underlyingStore) => host.CreateTextureLoaderStore(underlyingStore);
-        RealmAccess IStorageResourceProvider.RealmAccess => null!;
+        RealmAccess IStorageResourceProvider.RealmAccess => null;
 
         #endregion
 
-        private partial class OutlineBox : CompositeDrawable
+        private class OutlineBox : CompositeDrawable
         {
             public OutlineBox()
             {
@@ -201,8 +194,8 @@ namespace osu.Game.Tests.Visual
         {
             private readonly bool extrapolateAnimations;
 
-            public TestLegacySkin(SkinInfo skin, IResourceStore<byte[]> fallbackStore, IStorageResourceProvider resources, bool extrapolateAnimations)
-                : base(skin, resources, fallbackStore)
+            public TestLegacySkin(SkinInfo skin, IResourceStore<byte[]> storage, IStorageResourceProvider resources, bool extrapolateAnimations)
+                : base(skin, resources, storage)
             {
                 this.extrapolateAnimations = extrapolateAnimations;
             }

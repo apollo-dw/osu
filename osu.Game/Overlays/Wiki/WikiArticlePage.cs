@@ -12,7 +12,7 @@ using osu.Game.Overlays.Wiki.Markdown;
 
 namespace osu.Game.Overlays.Wiki
 {
-    public partial class WikiArticlePage : CompositeDrawable
+    public class WikiArticlePage : CompositeDrawable
     {
         public Container SidebarContainer { get; }
 
@@ -56,7 +56,7 @@ namespace osu.Game.Overlays.Wiki
                             {
                                 Vertical = 20,
                                 Left = 30,
-                                Right = WaveOverlayContainer.HORIZONTAL_PADDING,
+                                Right = 50,
                             },
                             OnAddHeading = sidebar.AddEntry,
                         }
@@ -65,7 +65,7 @@ namespace osu.Game.Overlays.Wiki
             };
         }
 
-        private partial class ArticleMarkdownContainer : WikiMarkdownContainer
+        private class ArticleMarkdownContainer : WikiMarkdownContainer
         {
             public Action<HeadingBlock, MarkdownHeading> OnAddHeading;
 

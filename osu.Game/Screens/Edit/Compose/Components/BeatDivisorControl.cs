@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -14,14 +16,12 @@ using osu.Framework.Graphics.Cursor;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
-using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Graphics.UserInterfaceV2;
-using osu.Game.Input.Bindings;
 using osu.Game.Overlays;
 using osuTK;
 using osuTK.Graphics;
@@ -29,12 +29,14 @@ using osuTK.Input;
 
 namespace osu.Game.Screens.Edit.Compose.Components
 {
-    public partial class BeatDivisorControl : CompositeDrawable, IKeyBindingHandler<GlobalAction>
+    public class BeatDivisorControl : CompositeDrawable
     {
-        private int? lastCustomDivisor;
+        private readonly BindableBeatDivisor beatDivisor = new BindableBeatDivisor();
 
-        [Resolved]
-        private BindableBeatDivisor beatDivisor { get; set; } = null!;
+        public BeatDivisorControl(BindableBeatDivisor beatDivisor)
+        {
+            this.beatDivisor.BindTo(beatDivisor);
+        }
 
         [BackgroundDependencyLoader]
         private void load(OverlayColourProvider colourProvider)
@@ -86,31 +88,35 @@ namespace osu.Game.Screens.Edit.Compose.Components
                                         RelativeSizeAxes = Axes.Both,
                                         Colour = colourProvider.Background3
                                     },
-                                    new GridContainer
+                                    new Container
                                     {
                                         RelativeSizeAxes = Axes.Both,
-                                        Content = new[]
+                                        Child = new GridContainer
                                         {
-                                            new Drawable[]
+                                            RelativeSizeAxes = Axes.Both,
+                                            Content = new[]
                                             {
-                                                new ChevronButton
+                                                new Drawable[]
                                                 {
-                                                    Icon = FontAwesome.Solid.ChevronLeft,
-                                                    Action = beatDivisor.SelectPrevious
+                                                    new ChevronButton
+                                                    {
+                                                        Icon = FontAwesome.Solid.ChevronLeft,
+                                                        Action = beatDivisor.Previous
+                                                    },
+                                                    new DivisorDisplay { BeatDivisor = { BindTarget = beatDivisor } },
+                                                    new ChevronButton
+                                                    {
+                                                        Icon = FontAwesome.Solid.ChevronRight,
+                                                        Action = beatDivisor.Next
+                                                    }
                                                 },
-                                                new DivisorDisplay { BeatDivisor = { BindTarget = beatDivisor } },
-                                                new ChevronButton
-                                                {
-                                                    Icon = FontAwesome.Solid.ChevronRight,
-                                                    Action = beatDivisor.SelectNext
-                                                }
                                             },
-                                        },
-                                        ColumnDimensions = new[]
-                                        {
-                                            new Dimension(GridSizeMode.Absolute, 20),
-                                            new Dimension(),
-                                            new Dimension(GridSizeMode.Absolute, 20)
+                                            ColumnDimensions = new[]
+                                            {
+                                                new Dimension(GridSizeMode.Absolute, 20),
+                                                new Dimension(),
+                                                new Dimension(GridSizeMode.Absolute, 20)
+                                            }
                                         }
                                     }
                                 }
@@ -118,31 +124,42 @@ namespace osu.Game.Screens.Edit.Compose.Components
                         },
                         new Drawable[]
                         {
-                            new GridContainer
+                            new Container
                             {
                                 RelativeSizeAxes = Axes.Both,
-                                Content = new[]
+                                Children = new Drawable[]
                                 {
-                                    new Drawable[]
+                                    new Container
                                     {
-                                        new ChevronButton
+                                        RelativeSizeAxes = Axes.Both,
+                                        Child = new GridContainer
                                         {
-                                            Icon = FontAwesome.Solid.ChevronLeft,
-                                            Action = () => cycleDivisorType(-1)
-                                        },
-                                        new DivisorTypeText { BeatDivisor = { BindTarget = beatDivisor } },
-                                        new ChevronButton
-                                        {
-                                            Icon = FontAwesome.Solid.ChevronRight,
-                                            Action = () => cycleDivisorType(1)
+                                            RelativeSizeAxes = Axes.Both,
+                                            Content = new[]
+                                            {
+                                                new Drawable[]
+                                                {
+                                                    new ChevronButton
+                                                    {
+                                                        Icon = FontAwesome.Solid.ChevronLeft,
+                                                        Action = () => cycleDivisorType(-1)
+                                                    },
+                                                    new DivisorTypeText { BeatDivisor = { BindTarget = beatDivisor } },
+                                                    new ChevronButton
+                                                    {
+                                                        Icon = FontAwesome.Solid.ChevronRight,
+                                                        Action = () => cycleDivisorType(1)
+                                                    }
+                                                },
+                                            },
+                                            ColumnDimensions = new[]
+                                            {
+                                                new Dimension(GridSizeMode.Absolute, 20),
+                                                new Dimension(),
+                                                new Dimension(GridSizeMode.Absolute, 20)
+                                            }
                                         }
-                                    },
-                                },
-                                ColumnDimensions = new[]
-                                {
-                                    new Dimension(GridSizeMode.Absolute, 20),
-                                    new Dimension(),
-                                    new Dimension(GridSizeMode.Absolute, 20)
+                                    }
                                 }
                             }
                         },
@@ -167,87 +184,38 @@ namespace osu.Game.Screens.Edit.Compose.Components
             };
         }
 
-        protected override void LoadComplete()
-        {
-            base.LoadComplete();
-
-            beatDivisor.ValidDivisors.BindValueChanged(valid =>
-            {
-                if (valid.NewValue.Type == BeatDivisorType.Custom)
-                    lastCustomDivisor = valid.NewValue.Presets.Last();
-            }, true);
-        }
-
         private void cycleDivisorType(int direction)
         {
-            int totalTypes = Enum.GetValues<BeatDivisorType>().Length;
-            BeatDivisorType currentType = beatDivisor.ValidDivisors.Value.Type;
-
             Debug.Assert(Math.Abs(direction) == 1);
+            int nextDivisorType = (int)beatDivisor.ValidDivisors.Value.Type + direction;
+            if (nextDivisorType > (int)BeatDivisorType.Triplets)
+                nextDivisorType = (int)BeatDivisorType.Common;
+            else if (nextDivisorType < (int)BeatDivisorType.Common)
+                nextDivisorType = (int)BeatDivisorType.Triplets;
 
-            cycleOnce();
-
-            if (lastCustomDivisor == null && currentType == BeatDivisorType.Custom)
-                cycleOnce();
-
-            switch (currentType)
+            switch ((BeatDivisorType)nextDivisorType)
             {
                 case BeatDivisorType.Common:
-                    beatDivisor.SetArbitraryDivisor(4, true);
+                    beatDivisor.ValidDivisors.Value = BeatDivisorPresetCollection.COMMON;
                     break;
 
                 case BeatDivisorType.Triplets:
-                    beatDivisor.SetArbitraryDivisor(6, true);
+                    beatDivisor.ValidDivisors.Value = BeatDivisorPresetCollection.TRIPLETS;
                     break;
 
                 case BeatDivisorType.Custom:
-                    Debug.Assert(lastCustomDivisor != null);
-                    beatDivisor.SetArbitraryDivisor(lastCustomDivisor.Value);
+                    beatDivisor.ValidDivisors.Value = BeatDivisorPresetCollection.Custom(beatDivisor.ValidDivisors.Value.Presets.Max());
                     break;
             }
-
-            void cycleOnce() => currentType = (BeatDivisorType)(((int)currentType + totalTypes + direction) % totalTypes);
         }
 
-        protected override bool OnKeyDown(KeyDownEvent e)
-        {
-            if (e.ShiftPressed && e.Key >= Key.Number1 && e.Key <= Key.Number9)
-            {
-                beatDivisor.SetArbitraryDivisor(e.Key - Key.Number0);
-                return true;
-            }
-
-            return base.OnKeyDown(e);
-        }
-
-        public bool OnPressed(KeyBindingPressEvent<GlobalAction> e)
-        {
-            switch (e.Action)
-            {
-                case GlobalAction.EditorCycleNextBeatSnapDivisor:
-                    beatDivisor.SelectNext();
-                    return true;
-
-                case GlobalAction.EditorCyclePreviousBeatSnapDivisor:
-                    beatDivisor.SelectPrevious();
-                    return true;
-            }
-
-            return false;
-        }
-
-        public void OnReleased(KeyBindingReleaseEvent<GlobalAction> e)
-        {
-        }
-
-        internal partial class DivisorDisplay : OsuAnimatedButton, IHasPopover
+        internal class DivisorDisplay : OsuAnimatedButton, IHasPopover
         {
             public BindableBeatDivisor BeatDivisor { get; } = new BindableBeatDivisor();
 
             private readonly OsuSpriteText divisorText;
 
             public DivisorDisplay()
-                : base(HoverSampleSet.Default)
             {
                 Anchor = Anchor.Centre;
                 Origin = Anchor.Centre;
@@ -291,7 +259,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
             };
         }
 
-        internal partial class CustomDivisorPopover : OsuPopover
+        internal class CustomDivisorPopover : OsuPopover
         {
             public BindableBeatDivisor BeatDivisor { get; } = new BindableBeatDivisor();
 
@@ -306,7 +274,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
                     Spacing = new Vector2(10),
                     Children = new Drawable[]
                     {
-                        divisorTextBox = new AutoSelectTextBox
+                        divisorTextBox = new OsuNumberBox
                         {
                             RelativeSizeAxes = Axes.X,
                             PlaceholderText = "Beat divisor"
@@ -325,10 +293,12 @@ namespace osu.Game.Screens.Edit.Compose.Components
             {
                 base.LoadComplete();
                 BeatDivisor.BindValueChanged(_ => updateState(), true);
-                divisorTextBox.OnCommit += (_, _) => setPresetsFromTextBoxEntry();
+                divisorTextBox.OnCommit += (_, _) => setPresets();
+
+                Schedule(() => GetContainingInputManager().ChangeFocus(divisorTextBox));
             }
 
-            private void setPresetsFromTextBoxEntry()
+            private void setPresets()
             {
                 if (!int.TryParse(divisorTextBox.Text, out int divisor) || divisor < 1 || divisor > 64)
                 {
@@ -336,7 +306,17 @@ namespace osu.Game.Screens.Edit.Compose.Components
                     return;
                 }
 
-                BeatDivisor.SetArbitraryDivisor(divisor);
+                if (!BeatDivisor.ValidDivisors.Value.Presets.Contains(divisor))
+                {
+                    if (BeatDivisorPresetCollection.COMMON.Presets.Contains(divisor))
+                        BeatDivisor.ValidDivisors.Value = BeatDivisorPresetCollection.COMMON;
+                    else if (BeatDivisorPresetCollection.TRIPLETS.Presets.Contains(divisor))
+                        BeatDivisor.ValidDivisors.Value = BeatDivisorPresetCollection.TRIPLETS;
+                    else
+                        BeatDivisor.ValidDivisors.Value = BeatDivisorPresetCollection.Custom(divisor);
+                }
+
+                BeatDivisor.Value = divisor;
 
                 this.HidePopover();
             }
@@ -347,7 +327,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
             }
         }
 
-        private partial class DivisorTypeText : OsuSpriteText
+        private class DivisorTypeText : OsuSpriteText
         {
             public BindableBeatDivisor BeatDivisor { get; } = new BindableBeatDivisor();
 
@@ -366,7 +346,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
             }
         }
 
-        internal partial class ChevronButton : IconButton
+        internal class ChevronButton : IconButton
         {
             public ChevronButton()
             {
@@ -389,12 +369,12 @@ namespace osu.Game.Screens.Edit.Compose.Components
             }
         }
 
-        private partial class TickSliderBar : SliderBar<int>
+        private class TickSliderBar : SliderBar<int>
         {
-            private Marker marker = null!;
+            private Marker marker;
 
             [Resolved]
-            private OsuColour colours { get; set; } = null!;
+            private OsuColour colours { get; set; }
 
             private readonly BindableBeatDivisor beatDivisor;
 
@@ -402,8 +382,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
             {
                 CurrentNumber.BindTo(this.beatDivisor = beatDivisor);
 
-                RangePadding = 5;
-                Padding = new MarginPadding { Horizontal = RangePadding };
+                Padding = new MarginPadding { Horizontal = 5 };
             }
 
             protected override void LoadComplete()
@@ -418,20 +397,15 @@ namespace osu.Game.Screens.Edit.Compose.Components
                 ClearInternal();
                 CurrentNumber.ValueChanged -= moveMarker;
 
-                int largestDivisor = beatDivisor.ValidDivisors.Value.Presets.Last();
-
-                for (int tickIndex = 0; tickIndex <= largestDivisor; tickIndex++)
+                foreach (int divisor in beatDivisor.ValidDivisors.Value.Presets)
                 {
-                    int divisor = BindableBeatDivisor.GetDivisorForBeatIndex(tickIndex, largestDivisor, (int[])beatDivisor.ValidDivisors.Value.Presets);
-                    bool isSolidTick = divisor * (largestDivisor - tickIndex) == largestDivisor;
-
-                    AddInternal(new Tick(divisor, isSolidTick)
+                    AddInternal(new Tick(divisor)
                     {
                         Anchor = Anchor.CentreLeft,
                         Origin = Anchor.Centre,
                         RelativePositionAxes = Axes.Both,
                         Colour = BindableBeatDivisor.GetColourFor(divisor, colours),
-                        X = tickIndex / (float)largestDivisor,
+                        X = getMappedPosition(divisor),
                     });
                 }
 
@@ -443,11 +417,6 @@ namespace osu.Game.Screens.Edit.Compose.Components
             private void moveMarker(ValueChangedEvent<int> divisor)
             {
                 marker.MoveToX(getMappedPosition(divisor.NewValue), 100, Easing.OutQuint);
-
-                foreach (Tick tick in InternalChildren.OfType<Tick>().Where(t => !t.AlwaysDisplayed))
-                {
-                    tick.FadeTo(divisor.NewValue % tick.Divisor == 0 ? 0.2f : 0f, 100, Easing.OutQuint);
-                }
             }
 
             protected override void UpdateValue(float value)
@@ -461,12 +430,12 @@ namespace osu.Game.Screens.Edit.Compose.Components
                 switch (e.Key)
                 {
                     case Key.Right:
-                        beatDivisor.SelectNext();
+                        beatDivisor.Next();
                         OnUserChange(Current.Value);
                         return true;
 
                     case Key.Left:
-                        beatDivisor.SelectPrevious();
+                        beatDivisor.Previous();
                         OnUserChange(Current.Value);
                         return true;
 
@@ -509,34 +478,25 @@ namespace osu.Game.Screens.Edit.Compose.Components
                 // copied from SliderBar so we can do custom spacing logic.
                 float xPosition = (ToLocalSpace(screenSpaceMousePosition).X - RangePadding) / UsableWidth;
 
-                CurrentNumber.Value = beatDivisor.ValidDivisors.Value.Presets.MinBy(d => Math.Abs(getMappedPosition(d) - xPosition));
+                CurrentNumber.Value = beatDivisor.ValidDivisors.Value.Presets.OrderBy(d => Math.Abs(getMappedPosition(d) - xPosition)).First();
                 OnUserChange(Current.Value);
             }
 
-            private float getMappedPosition(float divisor) => 1 - 1 / divisor;
+            private float getMappedPosition(float divisor) => MathF.Pow((divisor - 1) / (beatDivisor.ValidDivisors.Value.Presets.Last() - 1), 0.90f);
 
-            private partial class Tick : Circle
+            private class Tick : Circle
             {
-                public readonly bool AlwaysDisplayed;
-
-                public readonly int Divisor;
-
-                public Tick(int divisor, bool alwaysDisplayed)
+                public Tick(int divisor)
                 {
-                    AlwaysDisplayed = alwaysDisplayed;
-                    Divisor = divisor;
-
                     Size = new Vector2(6f, 12) * BindableBeatDivisor.GetSize(divisor);
-                    Alpha = alwaysDisplayed ? 1 : 0;
-
                     InternalChild = new Box { RelativeSizeAxes = Axes.Both };
                 }
             }
 
-            private partial class Marker : CompositeDrawable
+            private class Marker : CompositeDrawable
             {
                 [Resolved]
-                private OverlayColourProvider colourProvider { get; set; } = null!;
+                private OverlayColourProvider colourProvider { get; set; }
 
                 [BackgroundDependencyLoader]
                 private void load()
@@ -571,17 +531,6 @@ namespace osu.Game.Screens.Edit.Compose.Components
                         active = value;
                     }
                 }
-            }
-        }
-
-        private partial class AutoSelectTextBox : OsuNumberBox
-        {
-            protected override void LoadComplete()
-            {
-                base.LoadComplete();
-
-                GetContainingInputManager().ChangeFocus(this);
-                SelectAll();
             }
         }
     }

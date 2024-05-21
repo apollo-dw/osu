@@ -1,6 +1,9 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
+using JetBrains.Annotations;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.Color4Extensions;
@@ -17,7 +20,7 @@ namespace osu.Game.Rulesets.Mania.Skinning.Default
     /// <summary>
     /// Represents the static hit markers of notes.
     /// </summary>
-    internal partial class DefaultNotePiece : CompositeDrawable
+    internal class DefaultNotePiece : CompositeDrawable
     {
         public const float NOTE_HEIGHT = 12;
 
@@ -50,7 +53,7 @@ namespace osu.Game.Rulesets.Mania.Skinning.Default
         }
 
         [BackgroundDependencyLoader(true)]
-        private void load(IScrollingInfo scrollingInfo, DrawableHitObject? drawableObject)
+        private void load([NotNull] IScrollingInfo scrollingInfo, [CanBeNull] DrawableHitObject drawableObject)
         {
             direction.BindTo(scrollingInfo.Direction);
             direction.BindValueChanged(onDirectionChanged, true);

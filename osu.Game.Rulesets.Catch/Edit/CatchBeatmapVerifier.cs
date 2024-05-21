@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Catch.Edit.Checks;
@@ -13,8 +15,7 @@ namespace osu.Game.Rulesets.Catch.Edit
     {
         private readonly List<ICheck> checks = new List<ICheck>
         {
-            new CheckBananaShowerGap(),
-            new CheckCatchAbnormalDifficultySettings(),
+            new CheckBananaShowerGap()
         };
 
         public IEnumerable<Issue> Run(BeatmapVerifierContext context)

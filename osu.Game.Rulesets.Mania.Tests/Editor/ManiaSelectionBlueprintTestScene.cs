@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Collections.Generic;
 using osu.Framework.Allocation;
@@ -13,11 +15,11 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Mania.Tests.Editor
 {
-    public abstract partial class ManiaSelectionBlueprintTestScene : SelectionBlueprintTestScene
+    public abstract class ManiaSelectionBlueprintTestScene : SelectionBlueprintTestScene
     {
         protected override Container<Drawable> Content => blueprints ?? base.Content;
 
-        private readonly Container? blueprints;
+        private readonly Container blueprints;
 
         [Cached(typeof(Playfield))]
         public Playfield Playfield { get; }

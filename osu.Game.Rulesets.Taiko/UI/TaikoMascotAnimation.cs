@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using osu.Framework.Allocation;
 using osu.Framework.Audio.Track;
@@ -14,7 +16,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Taiko.UI
 {
-    public sealed partial class TaikoMascotAnimation : BeatSyncedContainer
+    public sealed class TaikoMascotAnimation : BeatSyncedContainer
     {
         private readonly TextureAnimation textureAnimation;
 
@@ -27,8 +29,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             InternalChild = textureAnimation = createTextureAnimation(state).With(animation =>
             {
                 animation.Origin = animation.Anchor = Anchor.BottomLeft;
-                // matches stable (https://github.com/peppy/osu-stable-reference/blob/e53980dd76857ee899f66ce519ba1597e7874f28/osu!/GameModes/Play/Rulesets/Taiko/TaikoMascot.cs#L34)
-                animation.Scale = new Vector2(0.6f);
+                animation.Scale = new Vector2(0.51f); // close enough to stable
             });
 
             RelativeSizeAxes = Axes.Both;
@@ -74,7 +75,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             }
         }
 
-        private partial class ManualMascotTextureAnimation : TextureAnimation
+        private class ManualMascotTextureAnimation : TextureAnimation
         {
             private readonly TaikoMascotAnimationState state;
 
@@ -88,7 +89,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             [BackgroundDependencyLoader]
             private void load(ISkinSource source)
             {
-                ISkin? skin = source.FindProvider(s => getAnimationFrame(s, state, 0) != null);
+                ISkin skin = source.FindProvider(s => getAnimationFrame(s, state, 0) != null);
 
                 if (skin == null) return;
 
@@ -104,7 +105,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             }
         }
 
-        private partial class ClearMascotTextureAnimation : TextureAnimation
+        private class ClearMascotTextureAnimation : TextureAnimation
         {
             private const float clear_animation_speed = 1000 / 10f;
 
@@ -119,7 +120,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             [BackgroundDependencyLoader]
             private void load(ISkinSource source)
             {
-                ISkin? skin = source.FindProvider(s => getAnimationFrame(s, TaikoMascotAnimationState.Clear, 0) != null);
+                ISkin skin = source.FindProvider(s => getAnimationFrame(s, TaikoMascotAnimationState.Clear, 0) != null);
 
                 if (skin == null) return;
 
@@ -136,7 +137,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             }
         }
 
-        private static Texture? getAnimationFrame(ISkin skin, TaikoMascotAnimationState state, int frameIndex)
+        private static Texture getAnimationFrame(ISkin skin, TaikoMascotAnimationState state, int frameIndex)
         {
             var texture = skin.GetTexture($"pippidon{state.ToString().ToLowerInvariant()}{frameIndex}");
 

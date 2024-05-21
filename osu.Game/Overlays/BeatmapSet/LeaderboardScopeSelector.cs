@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Game.Screens.Select.Leaderboards;
 using osu.Game.Graphics.UserInterface;
 using osu.Framework.Allocation;
@@ -11,7 +13,7 @@ using osu.Framework.Graphics;
 
 namespace osu.Game.Overlays.BeatmapSet
 {
-    public partial class LeaderboardScopeSelector : GradientLineTabControl<BeatmapLeaderboardScope>
+    public class LeaderboardScopeSelector : GradientLineTabControl<BeatmapLeaderboardScope>
     {
         protected override bool AddEnumEntriesAutomatically => false;
 
@@ -31,7 +33,7 @@ namespace osu.Game.Overlays.BeatmapSet
             LineColour = colourProvider.Background1;
         }
 
-        private partial class ScopeSelectorTabItem : PageTabItem
+        private class ScopeSelectorTabItem : PageTabItem
         {
             public ScopeSelectorTabItem(BeatmapLeaderboardScope value)
                 : base(value)

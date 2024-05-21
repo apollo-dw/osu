@@ -1,48 +1,52 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using osu.Framework.Graphics;
 using osu.Game.Rulesets.Mania.Beatmaps;
 using osu.Game.Rulesets.Mania.Objects;
 using osu.Game.Rulesets.Mania.UI;
 
 namespace osu.Game.Rulesets.Mania.Tests.Skinning
 {
-    public partial class TestSceneBarLine : ManiaSkinnableTestScene
+    public class TestSceneBarLine : ManiaSkinnableTestScene
     {
         [Test]
         public void TestMinor()
         {
-            AddStep("Create barlines", recreate);
+            AddStep("Create barlines", () => recreate());
         }
 
-        private void recreate()
+        private void recreate(Func<IEnumerable<BarLine>>? createBarLines = null)
         {
             var stageDefinitions = new List<StageDefinition>
             {
                 new StageDefinition(4),
             };
 
-            SetContents(_ =>
+            SetContents(_ => new ManiaPlayfield(stageDefinitions).With(s =>
             {
-                var maniaPlayfield = new ManiaPlayfield(stageDefinitions);
-
-                // Must be scheduled so the pool is loaded before we try and retrieve from it.
-                Schedule(() =>
+                if (createBarLines != null)
                 {
-                    for (int i = 0; i < 64; i++)
-                    {
-                        maniaPlayfield.Add(new BarLine
-                        {
-                            StartTime = Time.Current + i * 500,
-                            Major = i % 4 == 0,
-                        });
-                    }
-                });
+                    var barLines = createBarLines();
 
-                return maniaPlayfield;
-            });
+                    foreach (var b in barLines)
+                        s.Add(b);
+
+                    return;
+                }
+
+                for (int i = 0; i < 64; i++)
+                {
+                    s.Add(new BarLine
+                    {
+                        StartTime = Time.Current + i * 500,
+                        Major = i % 4 == 0,
+                    });
+                }
+            }));
         }
     }
 }

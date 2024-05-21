@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System;
 using osu.Framework.Allocation;
@@ -17,9 +19,9 @@ namespace osu.Game.Graphics.UserInterface
     /// <summary>
     /// An <see cref="IExpandable"/> implementation for the UI slider bar control.
     /// </summary>
-    public partial class ExpandableSlider<T, TSlider> : CompositeDrawable, IExpandable, IHasCurrentValue<T>
+    public class ExpandableSlider<T, TSlider> : CompositeDrawable, IExpandable, IHasCurrentValue<T>
         where T : struct, IEquatable<T>, IComparable<T>, IConvertible
-        where TSlider : RoundedSliderBar<T>, new()
+        where TSlider : OsuSliderBar<T>, new()
     {
         private readonly OsuSpriteText label;
         private readonly TSlider slider;
@@ -104,8 +106,8 @@ namespace osu.Game.Graphics.UserInterface
             };
         }
 
-        [Resolved]
-        private IExpandingContainer? expandingContainer { get; set; }
+        [Resolved(canBeNull: true)]
+        private IExpandingContainer expandingContainer { get; set; }
 
         protected override void LoadComplete()
         {
@@ -128,7 +130,7 @@ namespace osu.Game.Graphics.UserInterface
     /// <summary>
     /// An <see cref="IExpandable"/> implementation for the UI slider bar control.
     /// </summary>
-    public partial class ExpandableSlider<T> : ExpandableSlider<T, RoundedSliderBar<T>>
+    public class ExpandableSlider<T> : ExpandableSlider<T, OsuSliderBar<T>>
         where T : struct, IEquatable<T>, IComparable<T>, IConvertible
     {
     }

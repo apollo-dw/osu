@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -15,22 +17,21 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Catch.Skinning.Legacy
 {
-    public abstract partial class LegacyCatchHitObjectPiece : PoolableDrawable
+    public abstract class LegacyCatchHitObjectPiece : PoolableDrawable
     {
-        protected readonly Bindable<int> IndexInBeatmap = new Bindable<int>();
-
-        private readonly Bindable<Color4> accentColour = new Bindable<Color4>();
-        private readonly Bindable<bool> hyperDash = new Bindable<bool>();
+        public readonly Bindable<Color4> AccentColour = new Bindable<Color4>();
+        public readonly Bindable<bool> HyperDash = new Bindable<bool>();
+        public readonly Bindable<int> IndexInBeatmap = new Bindable<int>();
 
         private readonly Sprite colouredSprite;
         private readonly Sprite overlaySprite;
         private readonly Sprite hyperSprite;
 
         [Resolved]
-        protected ISkinSource Skin { get; private set; } = null!;
+        protected ISkinSource Skin { get; private set; }
 
         [Resolved]
-        protected IHasCatchObjectState ObjectState { get; private set; } = null!;
+        protected IHasCatchObjectState ObjectState { get; private set; }
 
         protected LegacyCatchHitObjectPiece()
         {
@@ -64,26 +65,26 @@ namespace osu.Game.Rulesets.Catch.Skinning.Legacy
         {
             base.LoadComplete();
 
-            accentColour.BindTo(ObjectState.AccentColour);
-            hyperDash.BindTo(ObjectState.HyperDash);
+            AccentColour.BindTo(ObjectState.AccentColour);
+            HyperDash.BindTo(ObjectState.HyperDash);
             IndexInBeatmap.BindTo(ObjectState.IndexInBeatmap);
 
             hyperSprite.Colour = Skin.GetConfig<CatchSkinColour, Color4>(CatchSkinColour.HyperDashFruit)?.Value ??
                                  Skin.GetConfig<CatchSkinColour, Color4>(CatchSkinColour.HyperDash)?.Value ??
                                  Catcher.DEFAULT_HYPER_DASH_COLOUR;
 
-            accentColour.BindValueChanged(colour =>
+            AccentColour.BindValueChanged(colour =>
             {
                 colouredSprite.Colour = LegacyColourCompatibility.DisallowZeroAlpha(colour.NewValue);
             }, true);
 
-            hyperDash.BindValueChanged(hyper =>
+            HyperDash.BindValueChanged(hyper =>
             {
                 hyperSprite.Alpha = hyper.NewValue ? 0.7f : 0;
             }, true);
         }
 
-        protected void SetTexture(Texture? texture, Texture? overlayTexture)
+        protected void SetTexture(Texture texture, Texture overlayTexture)
         {
             colouredSprite.Texture = texture;
             overlaySprite.Texture = overlayTexture;

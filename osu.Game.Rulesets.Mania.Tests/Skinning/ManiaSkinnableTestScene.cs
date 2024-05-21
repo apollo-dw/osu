@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -18,7 +20,7 @@ namespace osu.Game.Rulesets.Mania.Tests.Skinning
     /// <summary>
     /// A test scene for skinnable mania components.
     /// </summary>
-    public abstract partial class ManiaSkinnableTestScene : SkinnableTestScene
+    public abstract class ManiaSkinnableTestScene : SkinnableTestScene
     {
         [Cached(Type = typeof(IScrollingInfo))]
         private readonly TestScrollingInfo scrollingInfo = new TestScrollingInfo();
@@ -58,7 +60,7 @@ namespace osu.Game.Rulesets.Mania.Tests.Skinning
 
             IBindable<ScrollingDirection> IScrollingInfo.Direction => Direction;
             IBindable<double> IScrollingInfo.TimeRange { get; } = new Bindable<double>(5000);
-            IBindable<IScrollAlgorithm> IScrollingInfo.Algorithm { get; } = new Bindable<IScrollAlgorithm>(new ConstantScrollAlgorithm());
+            IScrollAlgorithm IScrollingInfo.Algorithm { get; } = new ConstantScrollAlgorithm();
         }
     }
 }

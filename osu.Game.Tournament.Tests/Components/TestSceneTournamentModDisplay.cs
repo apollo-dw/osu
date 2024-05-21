@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -14,15 +16,15 @@ using osuTK;
 
 namespace osu.Game.Tournament.Tests.Components
 {
-    public partial class TestSceneTournamentModDisplay : TournamentTestScene
+    public class TestSceneTournamentModDisplay : TournamentTestScene
     {
         [Resolved]
-        private IAPIProvider api { get; set; } = null!;
+        private IAPIProvider api { get; set; }
 
         [Resolved]
-        private IRulesetStore rulesets { get; set; } = null!;
+        private IRulesetStore rulesets { get; set; }
 
-        private FillFlowContainer<TournamentBeatmapPanel> fillFlow = null!;
+        private FillFlowContainer<TournamentBeatmapPanel> fillFlow;
 
         [BackgroundDependencyLoader]
         private void load()
@@ -43,7 +45,7 @@ namespace osu.Game.Tournament.Tests.Components
 
         private void success(APIBeatmap beatmap)
         {
-            var ruleset = rulesets.GetRuleset(Ladder.Ruleset.Value?.OnlineID ?? -1);
+            var ruleset = rulesets.GetRuleset(Ladder.Ruleset.Value.OnlineID);
 
             if (ruleset == null)
                 return;

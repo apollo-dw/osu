@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Bindables;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
@@ -11,27 +13,22 @@ using osu.Framework.Input.Events;
 
 namespace osu.Game.Overlays.BeatmapListing
 {
-    public partial class BeatmapListingSortTabControl : OverlaySortTabControl<SortCriteria>
+    public class BeatmapListingSortTabControl : OverlaySortTabControl<SortCriteria>
     {
         public readonly Bindable<SortDirection> SortDirection = new Bindable<SortDirection>(Overlays.SortDirection.Descending);
 
-        private (SearchCategory category, bool hasQuery)? currentParameters;
+        private SearchCategory? lastCategory;
+        private bool? lastHasQuery;
 
         protected override void LoadComplete()
         {
             base.LoadComplete();
-
-            if (currentParameters == null)
-                Reset(SearchCategory.Leaderboard, false);
-
-            Current.BindValueChanged(_ => SortDirection.Value = Overlays.SortDirection.Descending);
+            Reset(SearchCategory.Leaderboard, false);
         }
 
         public void Reset(SearchCategory category, bool hasQuery)
         {
-            var newParameters = (category, hasQuery);
-
-            if (currentParameters != newParameters)
+            if (category != lastCategory || hasQuery != lastHasQuery)
             {
                 TabControl.Clear();
 
@@ -66,7 +63,8 @@ namespace osu.Game.Overlays.BeatmapListing
             // see: https://github.com/ppy/osu-framework/issues/5412
             TabControl.Current.TriggerChange();
 
-            currentParameters = newParameters;
+            lastCategory = category;
+            lastHasQuery = hasQuery;
         }
 
         protected override SortTabControl CreateControl() => new BeatmapSortTabControl
@@ -74,7 +72,7 @@ namespace osu.Game.Overlays.BeatmapListing
             SortDirection = { BindTarget = SortDirection },
         };
 
-        private partial class BeatmapSortTabControl : SortTabControl
+        private class BeatmapSortTabControl : SortTabControl
         {
             protected override bool AddEnumEntriesAutomatically => false;
 
@@ -86,7 +84,7 @@ namespace osu.Game.Overlays.BeatmapListing
             };
         }
 
-        private partial class BeatmapSortTabItem : SortTabItem
+        private class BeatmapSortTabItem : SortTabItem
         {
             public readonly Bindable<SortDirection> SortDirection = new Bindable<SortDirection>();
 
@@ -102,7 +100,7 @@ namespace osu.Game.Overlays.BeatmapListing
             };
         }
 
-        public partial class BeatmapTabButton : TabButton
+        private class BeatmapTabButton : TabButton
         {
             public readonly Bindable<SortDirection> SortDirection = new Bindable<SortDirection>();
 
@@ -136,7 +134,7 @@ namespace osu.Game.Overlays.BeatmapListing
 
                 SortDirection.BindValueChanged(direction =>
                 {
-                    icon.Icon = direction.NewValue == Overlays.SortDirection.Ascending && Active.Value ? FontAwesome.Solid.CaretUp : FontAwesome.Solid.CaretDown;
+                    icon.Icon = direction.NewValue == Overlays.SortDirection.Ascending ? FontAwesome.Solid.CaretUp : FontAwesome.Solid.CaretDown;
                 }, true);
             }
 

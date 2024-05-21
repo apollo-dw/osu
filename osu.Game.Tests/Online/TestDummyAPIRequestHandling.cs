@@ -14,7 +14,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Online
 {
     [HeadlessTest]
-    public partial class TestDummyAPIRequestHandling : OsuTestScene
+    public class TestDummyAPIRequestHandling : OsuTestScene
     {
         [Test]
         public void TestGenericRequestHandling()

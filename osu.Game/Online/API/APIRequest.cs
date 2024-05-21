@@ -7,10 +7,8 @@ using System;
 using System.Globalization;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
-using osu.Framework.Extensions.TypeExtensions;
 using osu.Framework.IO.Network;
 using osu.Framework.Logging;
-using osu.Game.Extensions;
 using osu.Game.Online.API.Requests.Responses;
 
 namespace osu.Game.Online.API
@@ -47,7 +45,7 @@ namespace osu.Game.Online.API
             if (WebRequest != null)
             {
                 Response = ((OsuJsonWebRequest<T>)WebRequest).ResponseObject;
-                Logger.Log($"{GetType().ReadableName()} finished with response size of {WebRequest.ResponseStream.Length:#,0} bytes", LoggingTarget.Network);
+                Logger.Log($"{GetType()} finished with response size of {WebRequest.ResponseStream.Length:#,0} bytes", LoggingTarget.Network);
             }
         }
 
@@ -118,11 +116,10 @@ namespace osu.Game.Online.API
             WebRequest.Failed += Fail;
             WebRequest.AllowRetryOnTimeout = false;
 
-            WebRequest.AddHeader(@"Accept-Language", API.Language.ToCultureCode());
-            WebRequest.AddHeader(@"x-api-version", API.APIVersion.ToString(CultureInfo.InvariantCulture));
+            WebRequest.AddHeader("x-api-version", API.APIVersion.ToString(CultureInfo.InvariantCulture));
 
             if (!string.IsNullOrEmpty(API.AccessToken))
-                WebRequest.AddHeader(@"Authorization", $@"Bearer {API.AccessToken}");
+                WebRequest.AddHeader("Authorization", $"Bearer {API.AccessToken}");
 
             if (isFailing) return;
 

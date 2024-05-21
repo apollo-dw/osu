@@ -11,7 +11,7 @@ using osu.Game.Rulesets.Edit.Checks.Components;
 
 namespace osu.Game.Screens.Edit.Verify
 {
-    internal partial class VisibilitySection : EditorRoundedScreenSettingsSection
+    internal class VisibilitySection : EditorRoundedScreenSettingsSection
     {
         private readonly IssueType[] configurableIssueTypes =
         {

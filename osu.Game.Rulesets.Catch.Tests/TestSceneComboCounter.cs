@@ -19,7 +19,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Catch.Tests
 {
-    public partial class TestSceneComboCounter : CatchSkinnableTestScene
+    public class TestSceneComboCounter : CatchSkinnableTestScene
     {
         private ScoreProcessor scoreProcessor = null!;
 

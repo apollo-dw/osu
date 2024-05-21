@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -11,6 +12,7 @@ using osu.Framework.Platform;
 using osu.Framework.Testing;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets;
+using osu.Game.Rulesets.Scoring;
 using osu.Game.Scoring;
 using osu.Game.Screens.Select.Carousel;
 using osu.Game.Tests.Resources;
@@ -18,7 +20,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.SongSelect
 {
-    public partial class TestSceneTopLocalRank : OsuTestScene
+    public class TestSceneTopLocalRank : OsuTestScene
     {
         private RulesetStore rulesets = null!;
         private BeatmapManager beatmapManager = null!;
@@ -141,20 +143,25 @@ namespace osu.Game.Tests.Visual.SongSelect
 
                 testScoreInfo.User = API.LocalUser.Value;
                 testScoreInfo.Rank = ScoreRank.B;
+                testScoreInfo.TotalScore = scoreManager.GetTotalScore(testScoreInfo, ScoringMode.Classic);
 
                 scoreManager.Import(testScoreInfo);
             });
 
             AddUntilStep("B rank displayed", () => topLocalRank.DisplayedRank == ScoreRank.B);
 
-            AddStep("Add higher-graded score for current user", () =>
+            AddStep("Add higher score for current user", () =>
             {
                 var testScoreInfo2 = TestResources.CreateTestScoreInfo(importedBeatmap);
 
                 testScoreInfo2.User = API.LocalUser.Value;
                 testScoreInfo2.Rank = ScoreRank.X;
                 testScoreInfo2.Statistics = testScoreInfo2.MaximumStatistics;
-                testScoreInfo2.TotalScore = testScoreInfo.TotalScore + 1;
+                testScoreInfo2.TotalScore = scoreManager.GetTotalScore(testScoreInfo2);
+
+                // ensure second score has a total score (standardised) less than first one (classic)
+                // despite having better statistics, otherwise this test is pointless.
+                Debug.Assert(testScoreInfo2.TotalScore < testScoreInfo.TotalScore);
 
                 scoreManager.Import(testScoreInfo2);
             });

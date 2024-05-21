@@ -19,7 +19,7 @@ using osu.Game.Graphics.UserInterface;
 
 namespace osu.Game.Tests.Visual.Audio
 {
-    public partial class TestSceneAudioFilter : OsuTestScene
+    public class TestSceneAudioFilter : OsuTestScene
     {
         private OsuSpriteText lowPassText;
         private AudioFilter lowPassFilter;
@@ -31,8 +31,8 @@ namespace osu.Game.Tests.Visual.Audio
 
         private WaveformTestBeatmap beatmap;
 
-        private RoundedSliderBar<int> lowPassSlider;
-        private RoundedSliderBar<int> highPassSlider;
+        private OsuSliderBar<int> lowPassSlider;
+        private OsuSliderBar<int> highPassSlider;
 
         [BackgroundDependencyLoader]
         private void load(AudioManager audio)
@@ -52,7 +52,7 @@ namespace osu.Game.Tests.Visual.Audio
                         Text = $"Low Pass: {lowPassFilter.Cutoff}hz",
                         Font = new FontUsage(size: 40)
                     },
-                    lowPassSlider = new RoundedSliderBar<int>
+                    lowPassSlider = new OsuSliderBar<int>
                     {
                         Width = 500,
                         Height = 50,
@@ -69,7 +69,7 @@ namespace osu.Game.Tests.Visual.Audio
                         Text = $"High Pass: {highPassFilter.Cutoff}hz",
                         Font = new FontUsage(size: 40)
                     },
-                    highPassSlider = new RoundedSliderBar<int>
+                    highPassSlider = new OsuSliderBar<int>
                     {
                         Width = 500,
                         Height = 50,

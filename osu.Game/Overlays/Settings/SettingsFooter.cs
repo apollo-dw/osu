@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Development;
 using osu.Framework.Graphics;
@@ -16,7 +18,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.Settings
 {
-    public partial class SettingsFooter : FillFlowContainer
+    public class SettingsFooter : FillFlowContainer
     {
         [BackgroundDependencyLoader]
         private void load(OsuGameBase game, RulesetStore rulesets)
@@ -47,7 +49,7 @@ namespace osu.Game.Overlays.Settings
                     Text = game.Name,
                     Font = OsuFont.GetFont(size: 18, weight: FontWeight.Bold),
                 },
-                new BuildDisplay(game.Version)
+                new BuildDisplay(game.Version, DebugUtils.IsDebugBuild)
                 {
                     Anchor = Anchor.TopCentre,
                     Origin = Anchor.TopCentre,
@@ -76,26 +78,29 @@ namespace osu.Game.Overlays.Settings
             }
         }
 
-        private partial class BuildDisplay : OsuAnimatedButton
+        private class BuildDisplay : OsuAnimatedButton
         {
             private readonly string version;
+            private readonly bool isDebug;
 
             [Resolved]
-            private OsuColour colours { get; set; } = null!;
+            private OsuColour colours { get; set; }
 
-            public BuildDisplay(string version)
+            public BuildDisplay(string version, bool isDebug)
             {
                 this.version = version;
+                this.isDebug = isDebug;
 
                 Content.RelativeSizeAxes = Axes.Y;
                 Content.AutoSizeAxes = AutoSizeAxes = Axes.X;
                 Height = 20;
             }
 
-            [BackgroundDependencyLoader]
-            private void load(ChangelogOverlay? changelog)
+            [BackgroundDependencyLoader(true)]
+            private void load(ChangelogOverlay changelog)
             {
-                Action = () => changelog?.ShowBuild(OsuGameBase.CLIENT_STREAM_NAME, version);
+                if (!isDebug)
+                    Action = () => changelog?.ShowBuild(OsuGameBase.CLIENT_STREAM_NAME, version);
 
                 Add(new OsuSpriteText
                 {
@@ -105,7 +110,7 @@ namespace osu.Game.Overlays.Settings
                     Anchor = Anchor.Centre,
                     Origin = Anchor.Centre,
                     Padding = new MarginPadding(5),
-                    Colour = DebugUtils.IsDebugBuild ? colours.Red : Color4.White,
+                    Colour = isDebug ? colours.Red : Color4.White,
                 });
             }
         }

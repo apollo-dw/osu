@@ -3,14 +3,11 @@
 
 #nullable disable
 
-using System.Diagnostics;
 using System.Threading;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Logging;
-using osu.Framework.Platform;
-using osu.Framework.Screens;
 using osu.Framework.Threading;
 using osu.Framework.Utils;
 using osu.Game.Beatmaps;
@@ -22,12 +19,12 @@ using osu.Game.Skinning;
 
 namespace osu.Game.Screens.Backgrounds
 {
-    public partial class BackgroundScreenDefault : BackgroundScreen
+    public class BackgroundScreenDefault : BackgroundScreen
     {
         private Background background;
 
         private int currentDisplay;
-        private const int background_count = 8;
+        private const int background_count = 7;
         private IBindable<APIUser> user;
         private Bindable<Skin> skin;
         private Bindable<BackgroundSource> source;
@@ -36,9 +33,6 @@ namespace osu.Game.Screens.Backgrounds
 
         [Resolved]
         private IBindable<WorkingBeatmap> beatmap { get; set; }
-
-        [Resolved]
-        private GameHost gameHost { get; set; }
 
         protected virtual bool AllowStoryboardBackground => true;
 
@@ -56,6 +50,10 @@ namespace osu.Game.Screens.Backgrounds
             introSequence = config.GetBindable<IntroSequence>(OsuSetting.IntroSequence);
 
             AddInternal(seasonalBackgroundLoader);
+
+            // Load first background asynchronously as part of BDL load.
+            currentDisplay = RNG.Next(0, background_count);
+            Next();
         }
 
         protected override void LoadComplete()
@@ -69,39 +67,8 @@ namespace osu.Game.Screens.Backgrounds
             introSequence.ValueChanged += _ => Scheduler.AddOnce(next);
             seasonalBackgroundLoader.SeasonalBackgroundChanged += () => Scheduler.AddOnce(next);
 
-            currentDisplay = RNG.Next(0, background_count);
-            Next();
-
             // helper function required for AddOnce usage.
             void next() => Next();
-        }
-
-        private ScheduledDelegate storyboardUnloadDelegate;
-
-        public override void OnSuspending(ScreenTransitionEvent e)
-        {
-            var backgroundScreenStack = Parent as BackgroundScreenStack;
-            Debug.Assert(backgroundScreenStack != null);
-
-            if (background is BeatmapBackgroundWithStoryboard storyboardBackground)
-                storyboardUnloadDelegate = gameHost.UpdateThread.Scheduler.AddDelayed(storyboardBackground.UnloadStoryboard, TRANSITION_LENGTH);
-
-            base.OnSuspending(e);
-        }
-
-        public override void OnResuming(ScreenTransitionEvent e)
-        {
-            if (background is BeatmapBackgroundWithStoryboard storyboardBackground)
-            {
-                if (storyboardUnloadDelegate?.Completed == false)
-                    storyboardUnloadDelegate.Cancel();
-                else
-                    storyboardBackground.LoadStoryboard();
-
-                storyboardUnloadDelegate = null;
-            }
-
-            base.OnResuming(e);
         }
 
         private ScheduledDelegate nextTask;
@@ -119,7 +86,7 @@ namespace osu.Game.Screens.Backgrounds
             if (nextBackground == background)
                 return false;
 
-            Logger.Log(@"🌅 Global background change queued");
+            Logger.Log("🌅 Background change queued");
 
             cancellationTokenSource?.Cancel();
             cancellationTokenSource = new CancellationTokenSource();
@@ -127,16 +94,15 @@ namespace osu.Game.Screens.Backgrounds
             nextTask?.Cancel();
             nextTask = Scheduler.AddDelayed(() =>
             {
-                Logger.Log(@"🌅 Global background loading");
                 LoadComponentAsync(nextBackground, displayNext, cancellationTokenSource.Token);
-            }, 500);
+            }, 100);
 
             return true;
         }
 
         private void displayNext(Background newBackground)
         {
-            background?.FadeOut(800, Easing.OutQuint);
+            background?.FadeOut(800, Easing.InOutSine);
             background?.Expire();
 
             AddInternal(background = newBackground);

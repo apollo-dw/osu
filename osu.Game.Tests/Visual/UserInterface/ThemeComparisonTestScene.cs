@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System;
 using System.Linq;
@@ -12,41 +14,33 @@ using osu.Game.Overlays;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public abstract partial class ThemeComparisonTestScene : OsuGridTestScene
+    public abstract class ThemeComparisonTestScene : OsuGridTestScene
     {
-        private readonly bool showWithoutColourProvider;
-
-        protected ThemeComparisonTestScene(bool showWithoutColourProvider = true)
-            : base(1, showWithoutColourProvider ? 2 : 1)
+        protected ThemeComparisonTestScene()
+            : base(1, 2)
         {
-            this.showWithoutColourProvider = showWithoutColourProvider;
         }
 
         [BackgroundDependencyLoader]
         private void load(OsuColour colours)
         {
-            if (showWithoutColourProvider)
+            Cell(0, 0).AddRange(new[]
             {
-                Cell(0, 0).AddRange(new[]
+                new Box
                 {
-                    new Box
-                    {
-                        RelativeSizeAxes = Axes.Both,
-                        Colour = colours.GreySeaFoam
-                    },
-                    CreateContent()
-                });
-            }
+                    RelativeSizeAxes = Axes.Both,
+                    Colour = colours.GreySeaFoam
+                },
+                CreateContent()
+            });
         }
 
         protected void CreateThemedContent(OverlayColourScheme colourScheme)
         {
             var colourProvider = new OverlayColourProvider(colourScheme);
 
-            int col = showWithoutColourProvider ? 1 : 0;
-
-            Cell(0, col).Clear();
-            Cell(0, col).Add(new DependencyProvidingContainer
+            Cell(0, 1).Clear();
+            Cell(0, 1).Add(new DependencyProvidingContainer
             {
                 RelativeSizeAxes = Axes.Both,
                 CachedDependencies = new (Type, object)[]

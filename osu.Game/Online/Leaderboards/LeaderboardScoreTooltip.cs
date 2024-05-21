@@ -20,7 +20,7 @@ using osu.Game.Configuration;
 
 namespace osu.Game.Online.Leaderboards
 {
-    public partial class LeaderboardScoreTooltip : VisibilityContainer, ITooltip<ScoreInfo>
+    public class LeaderboardScoreTooltip : VisibilityContainer, ITooltip<ScoreInfo>
     {
         private OsuSpriteText timestampLabel = null!;
         private FillFlowContainer<HitResultCell> topScoreStatistics = null!;
@@ -118,7 +118,7 @@ namespace osu.Game.Online.Leaderboards
             topScoreStatistics.Clear();
             bottomScoreStatistics.Clear();
 
-            foreach (var mod in score.Mods.AsOrdered())
+            foreach (var mod in score.Mods)
             {
                 modStatistics.Add(new ModCell(mod));
             }
@@ -136,8 +136,9 @@ namespace osu.Game.Online.Leaderboards
         {
             if (displayedScore != null)
             {
-                timestampLabel.Text = LocalisableString.Format("Played on {0}",
-                    displayedScore.Date.ToLocalTime().ToLocalisableString(prefer24HourTime.Value ? @"d MMMM yyyy HH:mm" : @"d MMMM yyyy h:mm tt"));
+                timestampLabel.Text = prefer24HourTime.Value
+                    ? $"Played on {displayedScore.Date.ToLocalTime():d MMMM yyyy HH:mm}"
+                    : $"Played on {displayedScore.Date.ToLocalTime():d MMMM yyyy h:mm tt}";
             }
         }
 
@@ -146,7 +147,7 @@ namespace osu.Game.Online.Leaderboards
 
         public void Move(Vector2 pos) => Position = pos;
 
-        private partial class HitResultCell : CompositeDrawable
+        private class HitResultCell : CompositeDrawable
         {
             private readonly LocalisableString displayName;
             private readonly HitResult result;
@@ -188,7 +189,7 @@ namespace osu.Game.Online.Leaderboards
             }
         }
 
-        private partial class ModCell : CompositeDrawable
+        private class ModCell : CompositeDrawable
         {
             private readonly Mod mod;
 
@@ -210,7 +211,7 @@ namespace osu.Game.Online.Leaderboards
                     Spacing = new Vector2(2f, 0f),
                     Children = new Drawable[]
                     {
-                        new ModIcon(mod, showTooltip: false, showExtendedInformation: false).With(icon =>
+                        new ModIcon(mod, showTooltip: false).With(icon =>
                         {
                             icon.Origin = Anchor.CentreLeft;
                             icon.Anchor = Anchor.CentreLeft;

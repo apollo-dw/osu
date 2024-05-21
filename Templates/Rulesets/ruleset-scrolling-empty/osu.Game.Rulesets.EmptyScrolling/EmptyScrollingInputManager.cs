@@ -7,7 +7,7 @@ using osu.Game.Rulesets.UI;
 
 namespace osu.Game.Rulesets.EmptyScrolling
 {
-    public partial class EmptyScrollingInputManager : RulesetInputManager<EmptyScrollingAction>
+    public class EmptyScrollingInputManager : RulesetInputManager<EmptyScrollingAction>
     {
         public EmptyScrollingInputManager(RulesetInfo ruleset)
             : base(ruleset, 0, SimultaneousBindingMode.Unique)

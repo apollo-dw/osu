@@ -21,7 +21,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.EmptyFreeform
 {
-    public partial class EmptyFreeformRuleset : Ruleset
+    public class EmptyFreeformRuleset : Ruleset
     {
         public override string Description => "a very emptyfreeformruleset ruleset";
 
@@ -56,7 +56,7 @@ namespace osu.Game.Rulesets.EmptyFreeform
 
         public override Drawable CreateIcon() => new Icon(ShortName[0]);
 
-        public partial class Icon : CompositeDrawable
+        public class Icon : CompositeDrawable
         {
             public Icon(char c)
             {

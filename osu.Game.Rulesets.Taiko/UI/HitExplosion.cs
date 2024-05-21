@@ -1,7 +1,10 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
+using JetBrains.Annotations;
 using osuTK;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -10,7 +13,6 @@ using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.Taiko.Objects;
-using osu.Game.Rulesets.Taiko.Skinning.Default;
 using osu.Game.Skinning;
 
 namespace osu.Game.Rulesets.Taiko.UI
@@ -18,7 +20,7 @@ namespace osu.Game.Rulesets.Taiko.UI
     /// <summary>
     /// A circle explodes from the hit target to indicate a hitobject has been hit.
     /// </summary>
-    internal partial class HitExplosion : PoolableDrawable
+    internal class HitExplosion : PoolableDrawable
     {
         public override bool RemoveWhenNotAlive => true;
         public override bool RemoveCompletedTransforms => false;
@@ -27,9 +29,10 @@ namespace osu.Game.Rulesets.Taiko.UI
 
         private double? secondHitTime;
 
-        public DrawableHitObject? JudgedObject;
+        [CanBeNull]
+        public DrawableHitObject JudgedObject;
 
-        private SkinnableDrawable skinnable = null!;
+        private SkinnableDrawable skinnable;
 
         /// <summary>
         /// This constructor only exists to meet the <c>new()</c> type constraint of <see cref="DrawablePool{T}"/>.
@@ -55,11 +58,11 @@ namespace osu.Game.Rulesets.Taiko.UI
         [BackgroundDependencyLoader]
         private void load()
         {
-            InternalChild = skinnable = new SkinnableDrawable(new TaikoSkinComponentLookup(getComponentName(result)), _ => new DefaultHitExplosion(result));
+            InternalChild = skinnable = new SkinnableDrawable(new TaikoSkinComponent(getComponentName(result)), _ => new DefaultHitExplosion(result));
             skinnable.OnSkinChanged += runAnimation;
         }
 
-        public void Apply(DrawableHitObject? drawableHitObject)
+        public void Apply([CanBeNull] DrawableHitObject drawableHitObject)
         {
             JudgedObject = drawableHitObject;
             secondHitTime = null;
@@ -90,6 +93,7 @@ namespace osu.Game.Rulesets.Taiko.UI
             {
                 using (BeginAbsoluteSequence(secondHitTime.Value))
                 {
+                    this.ResizeTo(new Vector2(TaikoStrongableHitObject.DEFAULT_STRONG_SIZE), 50);
                     (skinnable.Drawable as IAnimatableHitExplosion)?.AnimateSecondHit();
                 }
             }

@@ -10,13 +10,12 @@ using osu.Framework.Graphics.Shapes;
 using osu.Game.Beatmaps;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Overlays.BeatmapSet.Buttons;
-using osu.Game.Rulesets;
 using osu.Game.Screens.Select.Details;
 using osuTK;
 
 namespace osu.Game.Overlays.BeatmapSet
 {
-    public partial class Details : FillFlowContainer
+    public class Details : FillFlowContainer
     {
         protected readonly UserRatings Ratings;
 
@@ -34,10 +33,10 @@ namespace osu.Game.Overlays.BeatmapSet
             {
                 if (value == beatmapSet) return;
 
-                basic.BeatmapSet = preview.BeatmapSet = beatmapSet = value;
+                beatmapSet = value;
 
-                if (IsLoaded)
-                    updateDisplay();
+                basic.BeatmapSet = preview.BeatmapSet = BeatmapSet;
+                updateDisplay();
             }
         }
 
@@ -51,10 +50,13 @@ namespace osu.Game.Overlays.BeatmapSet
                 if (value == beatmapInfo) return;
 
                 basic.BeatmapInfo = advanced.BeatmapInfo = beatmapInfo = value;
-
-                if (IsLoaded)
-                    updateDisplay();
             }
+        }
+
+        private void updateDisplay()
+        {
+            Ratings.Ratings = BeatmapSet?.Ratings;
+            ratingBox.Alpha = BeatmapSet?.Status > 0 ? 1 : 0;
         }
 
         public Details()
@@ -99,23 +101,13 @@ namespace osu.Game.Overlays.BeatmapSet
             };
         }
 
-        [Resolved]
-        private RulesetStore rulesets { get; set; }
-
-        protected override void LoadComplete()
+        [BackgroundDependencyLoader]
+        private void load()
         {
-            base.LoadComplete();
             updateDisplay();
         }
 
-        private void updateDisplay()
-        {
-            Ratings.Ratings = BeatmapSet?.Ratings;
-            ratingBox.Alpha = BeatmapSet?.Status > 0 ? 1 : 0;
-            advanced.Ruleset.Value = rulesets.GetRuleset(beatmapInfo?.Ruleset.OnlineID ?? 0);
-        }
-
-        private partial class DetailBox : Container
+        private class DetailBox : Container
         {
             private readonly Container content;
             private readonly Box background;

@@ -12,7 +12,7 @@ using osuTK.Input;
 
 namespace osu.Game.Screens.Utility.SampleComponents
 {
-    public partial class LatencyCursorContainer : CursorContainer
+    public class LatencyCursorContainer : CursorContainer
     {
         protected override Drawable CreateCursor() => new LatencyCursor();
 
@@ -32,7 +32,7 @@ namespace osu.Game.Screens.Utility.SampleComponents
             return false;
         }
 
-        private partial class LatencyCursor : LatencySampleComponent
+        private class LatencyCursor : LatencySampleComponent
         {
             public LatencyCursor()
             {

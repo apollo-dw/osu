@@ -3,13 +3,11 @@
 
 #nullable disable
 
-using System;
 using NUnit.Framework;
 using osu.Framework.Graphics;
 using osu.Framework.Testing;
 using osu.Game.Beatmaps;
 using osu.Game.Beatmaps.ControlPoints;
-using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Scoring;
@@ -18,7 +16,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Gameplay
 {
     [HeadlessTest]
-    public partial class TestSceneDrawableHitObject : OsuTestScene
+    public class TestSceneDrawableHitObject : OsuTestScene
     {
         [Test]
         public void TestEntryLifetime()
@@ -81,9 +79,7 @@ namespace osu.Game.Tests.Gameplay
         {
             TestLifetimeEntry entry = null;
             AddStep("Create entry", () => entry = new TestLifetimeEntry(new HitObject()) { LifetimeStart = 1 });
-            assertJudged(() => entry, false);
             AddStep("ApplyDefaults", () => entry.HitObject.ApplyDefaults(new ControlPointInfo(), new BeatmapDifficulty()));
-            assertJudged(() => entry, false);
             AddAssert("Lifetime is updated", () => entry.LifetimeStart == -TestLifetimeEntry.INITIAL_LIFETIME_OFFSET);
 
             TestDrawableHitObject dho = null;
@@ -94,7 +90,6 @@ namespace osu.Game.Tests.Gameplay
             });
             AddStep("ApplyDefaults", () => entry.HitObject.ApplyDefaults(new ControlPointInfo(), new BeatmapDifficulty()));
             AddAssert("Lifetime is correct", () => dho.LifetimeStart == TestDrawableHitObject.LIFETIME_ON_APPLY && entry.LifetimeStart == TestDrawableHitObject.LIFETIME_ON_APPLY);
-            assertJudged(() => entry, false);
         }
 
         [Test]
@@ -142,60 +137,7 @@ namespace osu.Game.Tests.Gameplay
             AddAssert("DHO state is correct", () => dho.State.Value == ArmedState.Miss);
         }
 
-        [Test]
-        public void TestJudgedStateThroughLifetime()
-        {
-            TestDrawableHitObject dho = null;
-            HitObjectLifetimeEntry lifetimeEntry = null;
-
-            AddStep("Create lifetime entry", () => lifetimeEntry = new HitObjectLifetimeEntry(new HitObject { StartTime = Time.Current }));
-
-            assertJudged(() => lifetimeEntry, false);
-
-            AddStep("Create DHO and apply entry", () =>
-            {
-                Child = dho = new TestDrawableHitObject();
-                dho.Apply(lifetimeEntry);
-            });
-
-            assertJudged(() => lifetimeEntry, false);
-
-            AddStep("Apply result", () => dho.MissForcefully());
-
-            assertJudged(() => lifetimeEntry, true);
-        }
-
-        [Test]
-        public void TestResultSetBeforeLoadComplete()
-        {
-            TestDrawableHitObject dho = null;
-            HitObjectLifetimeEntry lifetimeEntry = null;
-            AddStep("Create lifetime entry", () =>
-            {
-                var hitObject = new HitObject { StartTime = Time.Current };
-                lifetimeEntry = new HitObjectLifetimeEntry(hitObject)
-                {
-                    Result = new JudgementResult(hitObject, hitObject.Judgement)
-                    {
-                        Type = HitResult.Great
-                    }
-                };
-            });
-            assertJudged(() => lifetimeEntry, true);
-            AddStep("Create DHO and apply entry", () =>
-            {
-                dho = new TestDrawableHitObject();
-                dho.Apply(lifetimeEntry);
-                Child = dho;
-            });
-            assertJudged(() => lifetimeEntry, true);
-            AddAssert("DHO state is correct", () => dho.State.Value, () => Is.EqualTo(ArmedState.Hit));
-        }
-
-        private void assertJudged(Func<HitObjectLifetimeEntry> entry, bool val) =>
-            AddAssert(val ? "Is judged" : "Not judged", () => entry().Judged, () => Is.EqualTo(val));
-
-        private partial class TestDrawableHitObject : DrawableHitObject
+        private class TestDrawableHitObject : DrawableHitObject
         {
             public const double INITIAL_LIFETIME_OFFSET = 100;
             public const double LIFETIME_ON_APPLY = 222;
@@ -216,7 +158,7 @@ namespace osu.Game.Tests.Gameplay
                     LifetimeStart = LIFETIME_ON_APPLY;
             }
 
-            public void MissForcefully() => ApplyResult(HitResult.Miss);
+            public void MissForcefully() => ApplyResult(r => r.Type = HitResult.Miss);
 
             protected override void UpdateHitStateTransforms(ArmedState state)
             {

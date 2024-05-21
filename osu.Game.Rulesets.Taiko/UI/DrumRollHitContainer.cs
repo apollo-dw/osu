@@ -1,12 +1,14 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Game.Rulesets.Taiko.Objects.Drawables;
 using osu.Game.Rulesets.UI.Scrolling;
 
 namespace osu.Game.Rulesets.Taiko.UI
 {
-    internal partial class DrumRollHitContainer : ScrollingHitObjectContainer
+    internal class DrumRollHitContainer : ScrollingHitObjectContainer
     {
         // TODO: this usage is buggy.
         // Because `LifetimeStart` is set based on scrolling, lifetime is not same as the time when the object is created.

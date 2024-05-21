@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using Markdig.Extensions.Yaml;
 using osu.Framework.Allocation;
@@ -10,37 +12,30 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Localisation;
 using osu.Game.Graphics;
 using osu.Game.Resources.Localisation.Web;
-using osuTK;
 
 namespace osu.Game.Overlays.Wiki.Markdown
 {
-    public partial class WikiNoticeContainer : FillFlowContainer
+    public class WikiNoticeContainer : FillFlowContainer
     {
         private readonly bool isOutdated;
         private readonly bool needsCleanup;
-        private readonly bool isStub;
 
         public WikiNoticeContainer(YamlFrontMatterBlock yamlFrontMatterBlock)
         {
             RelativeSizeAxes = Axes.X;
             AutoSizeAxes = Axes.Y;
             Direction = FillDirection.Vertical;
-            Spacing = new Vector2(10);
 
             foreach (object line in yamlFrontMatterBlock.Lines)
             {
                 switch (line.ToString())
                 {
-                    case @"outdated: true":
+                    case "outdated: true":
                         isOutdated = true;
                         break;
 
-                    case @"needs_cleanup: true":
+                    case "needs_cleanup: true":
                         needsCleanup = true;
-                        break;
-
-                    case @"stub: true":
-                        isStub = true;
                         break;
                 }
             }
@@ -65,20 +60,12 @@ namespace osu.Game.Overlays.Wiki.Markdown
                     Text = WikiStrings.ShowNeedsCleanupOrRewrite,
                 });
             }
-
-            if (isStub)
-            {
-                Add(new NoticeBox
-                {
-                    Text = WikiStrings.ShowStub,
-                });
-            }
         }
 
-        private partial class NoticeBox : Container
+        private class NoticeBox : Container
         {
             [Resolved]
-            private IMarkdownTextFlowComponent parentFlowComponent { get; set; } = null!;
+            private IMarkdownTextFlowComponent parentFlowComponent { get; set; }
 
             public LocalisableString Text { get; set; }
 

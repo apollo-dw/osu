@@ -12,7 +12,7 @@ using osu.Game.Storyboards;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {
-    public partial class TestScenePlayerReferenceLeaking : TestSceneAllRulesetPlayers
+    public class TestScenePlayerReferenceLeaking : TestSceneAllRulesetPlayers
     {
         private readonly WeakList<IWorkingBeatmap> workingWeakReferences = new WeakList<IWorkingBeatmap>();
 

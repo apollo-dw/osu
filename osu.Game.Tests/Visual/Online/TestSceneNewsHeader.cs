@@ -11,7 +11,7 @@ using osu.Framework.Allocation;
 
 namespace osu.Game.Tests.Visual.Online
 {
-    public partial class TestSceneNewsHeader : OsuTestScene
+    public class TestSceneNewsHeader : OsuTestScene
     {
         [Cached]
         private readonly OverlayColourProvider colourProvider = new OverlayColourProvider(OverlayColourScheme.Purple);
@@ -47,7 +47,7 @@ namespace osu.Game.Tests.Visual.Online
             AddAssert("1 tab total", () => header.TabCount == 1);
         }
 
-        private partial class TestHeader : NewsHeader
+        private class TestHeader : NewsHeader
         {
             public int TabCount => TabControl.Items.Count;
         }

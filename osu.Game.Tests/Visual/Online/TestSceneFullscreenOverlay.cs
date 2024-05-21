@@ -12,7 +12,7 @@ using osuTK.Graphics;
 namespace osu.Game.Tests.Visual.Online
 {
     [TestFixture]
-    public partial class TestSceneFullscreenOverlay : OsuTestScene
+    public class TestSceneFullscreenOverlay : OsuTestScene
     {
         private FullscreenOverlay<OverlayHeader> overlay;
 
@@ -40,7 +40,7 @@ namespace osu.Game.Tests.Visual.Online
             AddAssert("fire count 3", () => fireCount == 3);
         }
 
-        private partial class TestFullscreenOverlay : FullscreenOverlay<OverlayHeader>
+        private class TestFullscreenOverlay : FullscreenOverlay<OverlayHeader>
         {
             public TestFullscreenOverlay()
                 : base(OverlayColourScheme.Pink)
@@ -57,11 +57,11 @@ namespace osu.Game.Tests.Visual.Online
 
             protected override OverlayHeader CreateHeader() => new TestHeader();
 
-            internal partial class TestHeader : OverlayHeader
+            internal class TestHeader : OverlayHeader
             {
                 protected override OverlayTitle CreateTitle() => new TestTitle();
 
-                internal partial class TestTitle : OverlayTitle
+                internal class TestTitle : OverlayTitle
                 {
                 }
             }

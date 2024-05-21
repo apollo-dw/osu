@@ -11,7 +11,7 @@ using osu.Game.Overlays.Settings;
 
 namespace osu.Android
 {
-    public partial class AndroidJoystickSettings : SettingsSubsection
+    public class AndroidJoystickSettings : SettingsSubsection
     {
         protected override LocalisableString Header => JoystickSettingsStrings.JoystickGamepad;
 

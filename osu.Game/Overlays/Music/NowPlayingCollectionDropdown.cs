@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osuTK;
 using osuTK.Graphics;
 using osu.Framework.Allocation;
@@ -15,7 +17,7 @@ namespace osu.Game.Overlays.Music
     /// <summary>
     /// A <see cref="CollectionDropdown"/> for use in the <see cref="NowPlayingOverlay"/>.
     /// </summary>
-    public partial class NowPlayingCollectionDropdown : CollectionDropdown
+    public class NowPlayingCollectionDropdown : CollectionDropdown
     {
         protected override bool ShowManageCollectionsItem => false;
 
@@ -23,7 +25,7 @@ namespace osu.Game.Overlays.Music
 
         protected override CollectionDropdownMenu CreateCollectionMenu() => new CollectionsMenu();
 
-        private partial class CollectionsMenu : CollectionDropdownMenu
+        private class CollectionsMenu : CollectionDropdownMenu
         {
             public CollectionsMenu()
             {
@@ -40,7 +42,7 @@ namespace osu.Game.Overlays.Music
             }
         }
 
-        private partial class CollectionsHeader : CollectionDropdownHeader
+        private class CollectionsHeader : CollectionDropdownHeader
         {
             [BackgroundDependencyLoader]
             private void load(OsuColour colours)

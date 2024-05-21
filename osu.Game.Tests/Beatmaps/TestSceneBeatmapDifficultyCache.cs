@@ -22,7 +22,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Beatmaps
 {
     [HeadlessTest]
-    public partial class TestSceneBeatmapDifficultyCache : OsuTestScene
+    public class TestSceneBeatmapDifficultyCache : OsuTestScene
     {
         public const double BASE_STARS = 5.55;
 
@@ -162,7 +162,7 @@ namespace osu.Game.Tests.Beatmaps
             Assert.AreEqual(expectedBracket, actualBracket);
         }
 
-        private partial class TestBeatmapDifficultyCache : BeatmapDifficultyCache
+        private class TestBeatmapDifficultyCache : BeatmapDifficultyCache
         {
             public Func<DifficultyCacheLookup, StarDifficulty> ComputeDifficulty { get; set; }
 

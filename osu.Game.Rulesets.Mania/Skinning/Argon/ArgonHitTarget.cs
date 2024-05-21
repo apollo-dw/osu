@@ -11,7 +11,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Mania.Skinning.Argon
 {
-    public partial class ArgonHitTarget : CompositeDrawable
+    public class ArgonHitTarget : CompositeDrawable
     {
         private readonly IBindable<ScrollingDirection> direction = new Bindable<ScrollingDirection>();
 
@@ -19,7 +19,7 @@ namespace osu.Game.Rulesets.Mania.Skinning.Argon
         private void load(IScrollingInfo scrollingInfo)
         {
             RelativeSizeAxes = Axes.X;
-            Height = ArgonNotePiece.NOTE_HEIGHT * ArgonNotePiece.NOTE_ACCENT_RATIO;
+            Height = ArgonNotePiece.NOTE_HEIGHT;
 
             Masking = true;
             CornerRadius = ArgonNotePiece.CORNER_RADIUS;

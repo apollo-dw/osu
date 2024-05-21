@@ -11,7 +11,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneSwitchButton : OsuManualInputManagerTestScene
+    public class TestSceneSwitchButton : OsuManualInputManagerTestScene
     {
         private SwitchButton switchButton;
 

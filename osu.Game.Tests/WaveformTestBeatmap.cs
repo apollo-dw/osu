@@ -51,7 +51,7 @@ namespace osu.Game.Tests
 
         protected override IBeatmap GetBeatmap() => beatmap;
 
-        public override Texture GetBackground() => null;
+        protected override Texture GetBackground() => null;
 
         protected override Waveform GetWaveform() => new Waveform(trackStore.GetStream(firstAudioFile));
 

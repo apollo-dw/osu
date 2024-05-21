@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Linq;
 using NUnit.Framework;
@@ -12,7 +14,7 @@ using osu.Game.Screens.Play;
 
 namespace osu.Game.Tests.Visual.Mods
 {
-    public partial class TestSceneModFailCondition : ModTestScene
+    public class TestSceneModFailCondition : ModTestScene
     {
         private bool restartRequested;
 

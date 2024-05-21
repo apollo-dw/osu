@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Bindables;
 using osu.Framework.Graphics.UserInterface;
@@ -7,7 +9,7 @@ using osu.Framework.Input.Events;
 
 namespace osu.Game.Screens.OnlinePlay.Components
 {
-    public abstract partial class DisableableTabControl<T> : TabControl<T>
+    public abstract class DisableableTabControl<T> : TabControl<T>
     {
         public readonly BindableBool Enabled = new BindableBool(true);
 
@@ -18,7 +20,7 @@ namespace osu.Game.Screens.OnlinePlay.Components
             base.AddTabItem(tab, addToDropdown);
         }
 
-        protected abstract partial class DisableableTabItem : TabItem<T>
+        protected abstract class DisableableTabItem : TabItem<T>
         {
             protected DisableableTabItem(T value)
                 : base(value)

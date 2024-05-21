@@ -13,7 +13,7 @@ using osu.Game.Graphics;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneSizePreservingSpriteText : OsuGridTestScene
+    public class TestSceneSizePreservingSpriteText : OsuGridTestScene
     {
         private readonly List<Container> parentContainers = new List<Container>();
         private readonly List<UprightAspectMaintainingContainer> childContainers = new List<UprightAspectMaintainingContainer>();

@@ -18,7 +18,7 @@ using osu.Game.Rulesets;
 namespace osu.Game.Tests.Database
 {
     [TestFixture]
-    public abstract partial class RealmTest
+    public abstract class RealmTest
     {
         protected void RunTestWithRealm([InstantHandle] Action<RealmAccess, OsuStorage> testAction, [CallerMemberName] string caller = "")
         {
@@ -35,7 +35,6 @@ namespace osu.Game.Tests.Database
                         Logger.Log($"Running test using realm file {testStorage.GetFullPath(realm.Filename)}");
                         testAction(realm, testStorage);
 
-                        // ReSharper disable once DisposeOnUsingVariable
                         realm.Dispose();
 
                         Logger.Log($"Final database size: {getFileSize(testStorage, realm)}");
@@ -59,7 +58,6 @@ namespace osu.Game.Tests.Database
                         Logger.Log($"Running test using realm file {testStorage.GetFullPath(realm.Filename)}");
                         await testAction(realm, testStorage);
 
-                        // ReSharper disable once DisposeOnUsingVariable
                         realm.Dispose();
 
                         Logger.Log($"Final database size: {getFileSize(testStorage, realm)}");
@@ -109,7 +107,7 @@ namespace osu.Game.Tests.Database
         protected static RulesetInfo CreateRuleset() =>
             new RulesetInfo("osu", "osu!", string.Empty, 0) { Available = true };
 
-        private partial class RealmTestGame : Framework.Game
+        private class RealmTestGame : Framework.Game
         {
             public RealmTestGame([InstantHandle] Func<Task> work)
             {

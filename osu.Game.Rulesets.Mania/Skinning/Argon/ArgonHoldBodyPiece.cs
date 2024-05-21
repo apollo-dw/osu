@@ -17,12 +17,13 @@ namespace osu.Game.Rulesets.Mania.Skinning.Argon
     /// <summary>
     /// Represents length-wise portion of a hold note.
     /// </summary>
-    public partial class ArgonHoldBodyPiece : CompositeDrawable, IHoldNoteBody
+    public class ArgonHoldBodyPiece : CompositeDrawable, IHoldNoteBody
     {
         protected readonly Bindable<Color4> AccentColour = new Bindable<Color4>();
+        protected readonly IBindable<bool> IsHitting = new Bindable<bool>();
 
         private Drawable background = null!;
-        private ArgonHoldNoteHittingLayer hittingLayer = null!;
+        private Box foreground = null!;
 
         public ArgonHoldBodyPiece()
         {
@@ -31,6 +32,7 @@ namespace osu.Game.Rulesets.Mania.Skinning.Argon
             // Without this, the width of the body will be slightly larger than the head/tail.
             Masking = true;
             CornerRadius = ArgonNotePiece.CORNER_RADIUS;
+            Blending = BlendingParameters.Additive;
         }
 
         [BackgroundDependencyLoader(true)]
@@ -39,7 +41,12 @@ namespace osu.Game.Rulesets.Mania.Skinning.Argon
             InternalChildren = new[]
             {
                 background = new Box { RelativeSizeAxes = Axes.Both },
-                hittingLayer = new ArgonHoldNoteHittingLayer()
+                foreground = new Box
+                {
+                    RelativeSizeAxes = Axes.Both,
+                    Blending = BlendingParameters.Additive,
+                    Alpha = 0,
+                },
             };
 
             if (drawableObject != null)
@@ -47,19 +54,44 @@ namespace osu.Game.Rulesets.Mania.Skinning.Argon
                 var holdNote = (DrawableHoldNote)drawableObject;
 
                 AccentColour.BindTo(holdNote.AccentColour);
-                hittingLayer.AccentColour.BindTo(holdNote.AccentColour);
-                ((IBindable<bool>)hittingLayer.IsHitting).BindTo(holdNote.IsHitting);
+                IsHitting.BindTo(holdNote.IsHitting);
             }
 
             AccentColour.BindValueChanged(colour =>
             {
-                background.Colour = colour.NewValue.Darken(0.6f);
+                background.Colour = colour.NewValue.Darken(1.2f);
+                foreground.Colour = colour.NewValue.Opacity(0.2f);
             }, true);
+
+            IsHitting.BindValueChanged(hitting =>
+            {
+                const float animation_length = 50;
+
+                foreground.ClearTransforms();
+
+                if (hitting.NewValue)
+                {
+                    // wait for the next sync point
+                    double synchronisedOffset = animation_length * 2 - Time.Current % (animation_length * 2);
+
+                    using (foreground.BeginDelayedSequence(synchronisedOffset))
+                    {
+                        foreground.FadeTo(1, animation_length).Then()
+                                  .FadeTo(0.5f, animation_length)
+                                  .Loop();
+                    }
+                }
+                else
+                {
+                    foreground.FadeOut(animation_length);
+                }
+            });
         }
 
         public void Recycle()
         {
-            hittingLayer.Recycle();
+            foreground.ClearTransforms();
+            foreground.Alpha = 0;
         }
     }
 }

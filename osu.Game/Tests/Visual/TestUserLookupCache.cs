@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Threading;
 using System.Threading.Tasks;
 using osu.Game.Database;
@@ -8,7 +10,7 @@ using osu.Game.Online.API.Requests.Responses;
 
 namespace osu.Game.Tests.Visual
 {
-    public partial class TestUserLookupCache : UserLookupCache
+    public class TestUserLookupCache : UserLookupCache
     {
         /// <summary>
         /// A special user ID which <see cref="ComputeValueAsync"/> would return a <see langword="null"/> <see cref="APIUser"/> for.
@@ -16,12 +18,12 @@ namespace osu.Game.Tests.Visual
         /// </summary>
         public const int UNRESOLVED_USER_ID = -1;
 
-        protected override Task<APIUser?> ComputeValueAsync(int lookup, CancellationToken token = default)
+        protected override Task<APIUser> ComputeValueAsync(int lookup, CancellationToken token = default)
         {
             if (lookup == UNRESOLVED_USER_ID)
-                return Task.FromResult<APIUser?>(null);
+                return Task.FromResult((APIUser)null);
 
-            return Task.FromResult<APIUser?>(new APIUser
+            return Task.FromResult(new APIUser
             {
                 Id = lookup,
                 Username = $"User {lookup}"

@@ -15,7 +15,7 @@ using osuTK;
 
 namespace osu.Game.Beatmaps.Drawables.Cards.Buttons
 {
-    public partial class DownloadButton : BeatmapCardIconButton
+    public class DownloadButton : BeatmapCardIconButton
     {
         public Bindable<DownloadState> State { get; } = new Bindable<DownloadState>();
 

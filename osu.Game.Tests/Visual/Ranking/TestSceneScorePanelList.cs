@@ -19,7 +19,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Ranking
 {
-    public partial class TestSceneScorePanelList : OsuManualInputManagerTestScene
+    public class TestSceneScorePanelList : OsuManualInputManagerTestScene
     {
         private ScorePanelList list;
 

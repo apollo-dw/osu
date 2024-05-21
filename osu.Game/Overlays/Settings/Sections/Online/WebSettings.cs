@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Localisation;
@@ -9,7 +11,7 @@ using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.Settings.Sections.Online
 {
-    public partial class WebSettings : SettingsSubsection
+    public class WebSettings : SettingsSubsection
     {
         protected override LocalisableString Header => OnlineSettingsStrings.WebHeader;
 
@@ -31,9 +33,9 @@ namespace osu.Game.Overlays.Settings.Sections.Online
                 },
                 new SettingsCheckbox
                 {
-                    LabelText = OnlineSettingsStrings.AutomaticallyDownloadMissingBeatmaps,
-                    Keywords = new[] { "spectator", "replay" },
-                    Current = config.GetBindable<bool>(OsuSetting.AutomaticallyDownloadMissingBeatmaps),
+                    LabelText = OnlineSettingsStrings.AutomaticallyDownloadWhenSpectating,
+                    Keywords = new[] { "spectator" },
+                    Current = config.GetBindable<bool>(OsuSetting.AutomaticallyDownloadWhenSpectating),
                 },
                 new SettingsCheckbox
                 {

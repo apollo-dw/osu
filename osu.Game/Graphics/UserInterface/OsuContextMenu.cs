@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osuTK.Graphics;
 using osu.Framework.Allocation;
 using osu.Framework.Extensions.Color4Extensions;
@@ -10,12 +12,12 @@ using osu.Framework.Graphics.UserInterface;
 
 namespace osu.Game.Graphics.UserInterface
 {
-    public partial class OsuContextMenu : OsuMenu
+    public class OsuContextMenu : OsuMenu
     {
         private const int fade_duration = 250;
 
         [Resolved]
-        private OsuContextMenuSamples samples { get; set; } = null!;
+        private OsuContextMenuSamples samples { get; set; }
 
         // todo: this shouldn't be required after https://github.com/ppy/osu-framework/issues/4519 is fixed.
         private bool wasOpened;

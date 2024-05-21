@@ -1,7 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.Color4Extensions;
@@ -19,13 +20,11 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays
 {
-    public partial class AccountCreationOverlay : OsuFocusedOverlayContainer
+    public class AccountCreationOverlay : OsuFocusedOverlayContainer
     {
         private const float transition_time = 400;
 
-        private ScreenWelcome welcomeScreen = null!;
-
-        private ScheduledDelegate? scheduledHide;
+        private ScreenWelcome welcomeScreen;
 
         public AccountCreationOverlay()
         {
@@ -91,6 +90,7 @@ namespace osu.Game.Overlays
 
         protected override void PopIn()
         {
+            base.PopIn();
             this.FadeIn(transition_time, Easing.OutQuint);
 
             if (welcomeScreen.GetChildScreen() != null)
@@ -108,6 +108,8 @@ namespace osu.Game.Overlays
             this.FadeOut(100);
         }
 
+        private ScheduledDelegate scheduledHide;
+
         private void apiStateChanged(ValueChangedEvent<APIState> state)
         {
             switch (state.NewValue)
@@ -117,16 +119,12 @@ namespace osu.Game.Overlays
                     break;
 
                 case APIState.Connecting:
-                case APIState.RequiresSecondFactorAuth:
                     break;
 
                 case APIState.Online:
                     scheduledHide?.Cancel();
                     scheduledHide = Schedule(Hide);
                     break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
         }
     }

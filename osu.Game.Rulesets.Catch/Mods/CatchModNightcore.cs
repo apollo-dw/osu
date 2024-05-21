@@ -8,5 +8,6 @@ namespace osu.Game.Rulesets.Catch.Mods
 {
     public class CatchModNightcore : ModNightcore<CatchHitObject>
     {
+        public override double ScoreMultiplier => UsesDefaultConfiguration ? 1.06 : 1;
     }
 }

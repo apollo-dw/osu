@@ -1,7 +1,8 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.Color4Extensions;
@@ -22,7 +23,7 @@ namespace osu.Game.Beatmaps.Drawables
     /// <summary>
     /// A pill that displays the star rating of a beatmap.
     /// </summary>
-    public partial class StarRatingDisplay : CompositeDrawable, IHasCurrentValue<StarDifficulty>
+    public class StarRatingDisplay : CompositeDrawable, IHasCurrentValue<StarDifficulty>
     {
         private readonly bool animated;
         private readonly Box background;
@@ -39,8 +40,6 @@ namespace osu.Game.Beatmaps.Drawables
 
         private readonly Bindable<double> displayedStars = new BindableDouble();
 
-        private readonly Container textContainer;
-
         /// <summary>
         /// The currently displayed stars of this display wrapped in a bindable.
         /// This bindable gets transformed on change rather than instantaneous, if animation is enabled.
@@ -48,10 +47,10 @@ namespace osu.Game.Beatmaps.Drawables
         public IBindable<double> DisplayedStars => displayedStars;
 
         [Resolved]
-        private OsuColour colours { get; set; } = null!;
+        private OsuColour colours { get; set; }
 
-        [Resolved]
-        private OverlayColourProvider? colourProvider { get; set; }
+        [Resolved(canBeNull: true)]
+        private OverlayColourProvider colourProvider { get; set; }
 
         /// <summary>
         /// Creates a new <see cref="StarRatingDisplay"/> using an already computed <see cref="StarDifficulty"/>.
@@ -119,19 +118,15 @@ namespace osu.Game.Beatmaps.Drawables
                                     Size = new Vector2(8f),
                                 },
                                 Empty(),
-                                textContainer = new Container
+                                starsText = new OsuSpriteText
                                 {
-                                    AutoSizeAxes = Axes.Y,
-                                    Child = starsText = new OsuSpriteText
-                                    {
-                                        Anchor = Anchor.Centre,
-                                        Origin = Anchor.Centre,
-                                        Margin = new MarginPadding { Bottom = 1.5f },
-                                        // todo: this should be size: 12f, but to match up with the design, it needs to be 14.4f
-                                        // see https://github.com/ppy/osu-framework/issues/3271.
-                                        Font = OsuFont.Torus.With(size: 14.4f, weight: FontWeight.Bold),
-                                        Shadow = false,
-                                    },
+                                    Anchor = Anchor.Centre,
+                                    Origin = Anchor.Centre,
+                                    Margin = new MarginPadding { Bottom = 1.5f },
+                                    // todo: this should be size: 12f, but to match up with the design, it needs to be 14.4f
+                                    // see https://github.com/ppy/osu-framework/issues/3271.
+                                    Font = OsuFont.Torus.With(size: 14.4f, weight: FontWeight.Bold),
+                                    Shadow = false,
                                 },
                             }
                         }
@@ -162,11 +157,6 @@ namespace osu.Game.Beatmaps.Drawables
 
                 starIcon.Colour = s.NewValue >= 6.5 ? colours.Orange1 : colourProvider?.Background5 ?? Color4Extensions.FromHex("303d47");
                 starsText.Colour = s.NewValue >= 6.5 ? colours.Orange1 : colourProvider?.Background5 ?? Color4.Black.Opacity(0.75f);
-
-                // In order to avoid autosize throwing the width of these displays all over the place,
-                // let's lock in some sane defaults for the text width based on how many digits we're
-                // displaying.
-                textContainer.Width = 24 + Math.Max(starsText.Text.ToString().Length - 4, 0) * 6;
             }, true);
         }
     }

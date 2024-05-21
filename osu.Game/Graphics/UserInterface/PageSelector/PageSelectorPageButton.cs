@@ -10,7 +10,7 @@ using osu.Game.Graphics.Sprites;
 
 namespace osu.Game.Graphics.UserInterface.PageSelector
 {
-    public partial class PageSelectorPageButton : PageSelectorButton
+    public class PageSelectorPageButton : PageSelectorButton
     {
         private readonly BindableBool selected = new BindableBool();
 

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using System.Diagnostics;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -11,7 +10,7 @@ using osu.Game.Rulesets.Osu.Objects.Drawables;
 
 namespace osu.Game.Rulesets.Osu.Skinning
 {
-    public abstract partial class FollowCircle : CompositeDrawable
+    public abstract class FollowCircle : CompositeDrawable
     {
         [Resolved]
         protected DrawableHitObject? ParentObject { get; private set; }
@@ -27,17 +26,13 @@ namespace osu.Game.Rulesets.Osu.Skinning
             ((DrawableSlider?)ParentObject)?.Tracking.BindValueChanged(tracking =>
             {
                 Debug.Assert(ParentObject != null);
-
                 if (ParentObject.Judged)
                     return;
 
-                using (BeginAbsoluteSequence(Math.Max(Time.Current, ParentObject.HitObject?.StartTime ?? 0)))
-                {
-                    if (tracking.NewValue)
-                        OnSliderPress();
-                    else
-                        OnSliderRelease();
-                }
+                if (tracking.NewValue)
+                    OnSliderPress();
+                else
+                    OnSliderRelease();
             }, true);
         }
 

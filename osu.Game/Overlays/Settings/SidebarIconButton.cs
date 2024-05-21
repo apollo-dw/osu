@@ -15,7 +15,7 @@ using osu.Game.Graphics.Containers;
 
 namespace osu.Game.Overlays.Settings
 {
-    public partial class SidebarIconButton : SidebarButton
+    public class SidebarIconButton : SidebarButton
     {
         private const float selection_indicator_height_active = 18;
         private const float selection_indicator_height_inactive = 4;
@@ -60,28 +60,26 @@ namespace osu.Game.Overlays.Settings
             RelativeSizeAxes = Axes.X;
             Height = 46;
 
-            Padding = new MarginPadding(5);
-
             AddRange(new Drawable[]
             {
                 textIconContent = new Container
                 {
-                    RelativeSizeAxes = Axes.Both,
+                    Width = SettingsSidebar.DEFAULT_WIDTH,
+                    RelativeSizeAxes = Axes.Y,
                     Colour = OsuColour.Gray(0.6f),
                     Children = new Drawable[]
                     {
-                        iconContainer = new ConstrainedIconContainer
-                        {
-                            Anchor = Anchor.CentreLeft,
-                            Origin = Anchor.CentreLeft,
-                            Size = new Vector2(20),
-                            Margin = new MarginPadding { Left = 25 }
-                        },
                         headerText = new OsuSpriteText
                         {
-                            Position = new Vector2(60, 0),
+                            Position = new Vector2(SettingsSidebar.DEFAULT_WIDTH + 10, 0),
                             Anchor = Anchor.CentreLeft,
                             Origin = Anchor.CentreLeft,
+                        },
+                        iconContainer = new ConstrainedIconContainer
+                        {
+                            Anchor = Anchor.Centre,
+                            Origin = Anchor.Centre,
+                            Size = new Vector2(20),
                         },
                     }
                 },
@@ -115,8 +113,6 @@ namespace osu.Game.Overlays.Settings
 
         protected override void UpdateState()
         {
-            base.UpdateState();
-
             if (Selected)
             {
                 textIconContent.FadeColour(ColourProvider.Content1, FADE_DURATION, Easing.OutQuint);

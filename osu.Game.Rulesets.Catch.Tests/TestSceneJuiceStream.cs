@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -12,7 +14,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Catch.Tests
 {
-    public partial class TestSceneJuiceStream : TestSceneCatchPlayer
+    public class TestSceneJuiceStream : TestSceneCatchPlayer
     {
         [Test]
         public void TestJuiceStreamEndingCombo()
@@ -32,7 +34,7 @@ namespace osu.Game.Rulesets.Catch.Tests
                 new JuiceStream
                 {
                     X = CatchPlayfield.CENTER_X,
-                    Path = new SliderPath(PathType.LINEAR, new[]
+                    Path = new SliderPath(PathType.Linear, new[]
                     {
                         Vector2.Zero,
                         new Vector2(0, 100)

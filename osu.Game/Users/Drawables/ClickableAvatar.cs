@@ -1,53 +1,68 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Linq;
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Cursor;
 using osu.Framework.Input.Events;
+using osu.Framework.Localisation;
 using osu.Game.Graphics.Containers;
-using osu.Game.Graphics.Cursor;
-using osu.Game.Localisation;
-using osu.Game.Online.API;
 using osu.Game.Online.API.Requests.Responses;
-using osuTK;
 
 namespace osu.Game.Users.Drawables
 {
-    public partial class ClickableAvatar : OsuClickableContainer, IHasCustomTooltip<APIUser?>
+    public class ClickableAvatar : Container
     {
-        public ITooltip<APIUser?> GetCustomTooltip() => showCardOnHover ? new UserCardTooltip() : new NoCardTooltip();
+        private const string default_tooltip_text = "view profile";
 
-        public APIUser? TooltipContent { get; }
+        /// <summary>
+        /// Whether to open the user's profile when clicked.
+        /// </summary>
+        public bool OpenOnClick
+        {
+            set => clickableArea.Enabled.Value = clickableArea.Action != null && value;
+        }
 
-        private readonly APIUser? user;
+        /// <summary>
+        /// By default, the tooltip will show "view profile" as avatars are usually displayed next to a username.
+        /// Setting this to <c>true</c> exposes the username via tooltip for special cases where this is not true.
+        /// </summary>
+        public bool ShowUsernameTooltip
+        {
+            set => clickableArea.TooltipText = value ? (user?.Username ?? string.Empty) : default_tooltip_text;
+        }
 
-        private readonly bool showCardOnHover;
+        private readonly APIUser user;
 
-        [Resolved]
-        private OsuGame? game { get; set; }
+        [Resolved(CanBeNull = true)]
+        private OsuGame game { get; set; }
+
+        private readonly ClickableArea clickableArea;
 
         /// <summary>
         /// A clickable avatar for the specified user, with UI sounds included.
+        /// If <see cref="OpenOnClick"/> is <c>true</c>, clicking will open the user's profile.
         /// </summary>
         /// <param name="user">The user. A null value will get a placeholder avatar.</param>
-        /// <param name="showCardOnHover">If set to true, the <see cref="UserGridPanel"/> will be shown for the tooltip</param>
-        public ClickableAvatar(APIUser? user = null, bool showCardOnHover = false)
+        public ClickableAvatar(APIUser user = null)
         {
+            this.user = user;
+
+            Add(clickableArea = new ClickableArea
+            {
+                RelativeSizeAxes = Axes.Both,
+            });
+
             if (user?.Id != APIUser.SYSTEM_USER_ID)
-                Action = openProfile;
-
-            this.showCardOnHover = showCardOnHover;
-
-            TooltipContent = this.user = user ?? new GuestUser();
+                clickableArea.Action = openProfile;
         }
 
         [BackgroundDependencyLoader]
         private void load()
         {
-            LoadComponentAsync(new DrawableAvatar(user), Add);
+            LoadComponentAsync(new DrawableAvatar(user), clickableArea.Add);
         }
 
         private void openProfile()
@@ -56,71 +71,22 @@ namespace osu.Game.Users.Drawables
                 game?.ShowUser(user);
         }
 
-        protected override bool OnClick(ClickEvent e)
+        private class ClickableArea : OsuClickableContainer
         {
-            if (!Enabled.Value)
-                return false;
+            private LocalisableString tooltip = default_tooltip_text;
 
-            return base.OnClick(e);
-        }
-
-        public partial class UserCardTooltip : VisibilityContainer, ITooltip<APIUser?>
-        {
-            public UserCardTooltip()
+            public override LocalisableString TooltipText
             {
-                AutoSizeAxes = Axes.Both;
+                get => Enabled.Value ? tooltip : default;
+                set => tooltip = value;
             }
 
-            protected override void PopIn() => this.FadeIn(150, Easing.OutQuint);
-            protected override void PopOut() => this.Delay(150).FadeOut(500, Easing.OutQuint);
-
-            public void Move(Vector2 pos) => Position = pos;
-
-            private APIUser? user;
-
-            public void SetContent(APIUser? content)
+            protected override bool OnClick(ClickEvent e)
             {
-                if (content == user && Children.Any())
-                    return;
+                if (!Enabled.Value)
+                    return false;
 
-                user = content;
-
-                if (user != null)
-                {
-                    LoadComponentAsync(new UserGridPanel(user)
-                    {
-                        Width = 300,
-                    }, panel => Child = panel);
-                }
-                else
-                {
-                    var tooltip = new OsuTooltipContainer.OsuTooltip();
-                    tooltip.SetContent(ContextMenuStrings.ViewProfile);
-                    tooltip.Show();
-
-                    Child = tooltip;
-                }
-            }
-        }
-
-        public partial class NoCardTooltip : VisibilityContainer, ITooltip<APIUser?>
-        {
-            private readonly OsuTooltipContainer.OsuTooltip tooltip;
-
-            public NoCardTooltip()
-            {
-                tooltip = new OsuTooltipContainer.OsuTooltip();
-                tooltip.SetContent(ContextMenuStrings.ViewProfile);
-                Child = tooltip;
-            }
-
-            protected override void PopIn() => tooltip.Show();
-            protected override void PopOut() => tooltip.Hide();
-
-            public void Move(Vector2 pos) => Position = pos;
-
-            public void SetContent(APIUser? content)
-            {
+                return base.OnClick(e);
             }
         }
     }

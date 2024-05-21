@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Linq;
 using osu.Framework.Allocation;
@@ -18,7 +20,7 @@ using osuTK;
 
 namespace osu.Game.Tournament.Screens.Editors
 {
-    public partial class SeedingEditorScreen : TournamentEditorScreen<SeedingEditorScreen.SeedingResultRow, SeedingResult>
+    public class SeedingEditorScreen : TournamentEditorScreen<SeedingEditorScreen.SeedingResultRow, SeedingResult>
     {
         private readonly TournamentTeam team;
 
@@ -30,7 +32,7 @@ namespace osu.Game.Tournament.Screens.Editors
             this.team = team;
         }
 
-        public partial class SeedingResultRow : CompositeDrawable, IModelBacked<SeedingResult>
+        public class SeedingResultRow : CompositeDrawable, IModelBacked<SeedingResult>
         {
             public SeedingResult Model { get; }
 
@@ -104,7 +106,7 @@ namespace osu.Game.Tournament.Screens.Editors
                 AutoSizeAxes = Axes.Y;
             }
 
-            public partial class SeedingBeatmapEditor : CompositeDrawable
+            public class SeedingBeatmapEditor : CompositeDrawable
             {
                 private readonly SeedingResult round;
                 private readonly FillFlowContainer flow;
@@ -132,13 +134,13 @@ namespace osu.Game.Tournament.Screens.Editors
                     flow.Add(new SeedingBeatmapRow(round, user));
                 }
 
-                public partial class SeedingBeatmapRow : CompositeDrawable
+                public class SeedingBeatmapRow : CompositeDrawable
                 {
                     private readonly SeedingResult result;
                     public SeedingBeatmap Model { get; }
 
                     [Resolved]
-                    protected IAPIProvider API { get; private set; } = null!;
+                    protected IAPIProvider API { get; private set; }
 
                     private readonly Bindable<int?> beatmapId = new Bindable<int?>();
 
@@ -237,17 +239,17 @@ namespace osu.Game.Tournament.Screens.Editors
 
                             var req = new GetBeatmapRequest(new APIBeatmap { OnlineID = Model.ID });
 
-                            req.Success += res => Schedule(() =>
+                            req.Success += res =>
                             {
                                 Model.Beatmap = new TournamentBeatmap(res);
                                 updatePanel();
-                            });
+                            };
 
-                            req.Failure += _ => Schedule(() =>
+                            req.Failure += _ =>
                             {
                                 Model.Beatmap = null;
                                 updatePanel();
-                            });
+                            };
 
                             API.Queue(req);
                         }, true);

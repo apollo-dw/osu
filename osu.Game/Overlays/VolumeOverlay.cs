@@ -23,7 +23,7 @@ using osuTK.Input;
 
 namespace osu.Game.Overlays
 {
-    public partial class VolumeOverlay : VisibilityContainer
+    public class VolumeOverlay : VisibilityContainer
     {
         private const float offset = 10;
 

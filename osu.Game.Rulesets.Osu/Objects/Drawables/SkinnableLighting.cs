@@ -10,7 +10,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Objects.Drawables
 {
-    internal partial class SkinnableLighting : SkinnableSprite
+    public class SkinnableLighting : SkinnableSprite
     {
         private DrawableHitObject targetObject;
         private JudgementResult targetResult;

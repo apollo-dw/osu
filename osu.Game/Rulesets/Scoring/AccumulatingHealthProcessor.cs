@@ -1,7 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using osu.Game.Rulesets.Judgements;
+#nullable disable
 
 namespace osu.Game.Rulesets.Scoring
 {
@@ -9,9 +9,9 @@ namespace osu.Game.Rulesets.Scoring
     /// A <see cref="HealthProcessor"/> that accumulates health and causes a fail if the final health
     /// is less than a value required to pass the beatmap.
     /// </summary>
-    public partial class AccumulatingHealthProcessor : HealthProcessor
+    public class AccumulatingHealthProcessor : HealthProcessor
     {
-        protected override bool CheckDefaultFailCondition(JudgementResult _) => JudgedHits == MaxHits && Health.Value < requiredHealth;
+        protected override bool DefaultFailCondition => JudgedHits == MaxHits && Health.Value < requiredHealth;
 
         private readonly double requiredHealth;
 

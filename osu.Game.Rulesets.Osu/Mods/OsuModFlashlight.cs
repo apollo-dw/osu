@@ -17,7 +17,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Mods
 {
-    public partial class OsuModFlashlight : ModFlashlight<OsuHitObject>, IApplicableToDrawableHitObject
+    public class OsuModFlashlight : ModFlashlight<OsuHitObject>, IApplicableToDrawableHitObject
     {
         public override double ScoreMultiplier => UsesDefaultConfiguration ? 1.12 : 1;
         public override Type[] IncompatibleMods => base.IncompatibleMods.Append(typeof(OsuModBlinds)).ToArray();
@@ -50,10 +50,10 @@ namespace osu.Game.Rulesets.Osu.Mods
         public void ApplyToDrawableHitObject(DrawableHitObject drawable)
         {
             if (drawable is DrawableSlider s)
-                s.OnUpdate += _ => flashlight.OnSliderTrackingChange(s);
+                s.Tracking.ValueChanged += flashlight.OnSliderTrackingChange;
         }
 
-        private partial class OsuFlashlight : Flashlight, IRequireHighFrequencyMousePosition
+        private class OsuFlashlight : Flashlight, IRequireHighFrequencyMousePosition
         {
             private readonly double followDelay;
 
@@ -66,10 +66,10 @@ namespace osu.Game.Rulesets.Osu.Mods
                 FlashlightSmoothness = 1.4f;
             }
 
-            public void OnSliderTrackingChange(DrawableSlider e)
+            public void OnSliderTrackingChange(ValueChangedEvent<bool> e)
             {
-                // If a slider is in a tracking state, a further dim should be applied to the (remaining) visible portion of the playfield.
-                FlashlightDim = Time.Current >= e.HitObject.StartTime && e.Tracking.Value ? 0.8f : 0.0f;
+                // If a slider is in a tracking state, a further dim should be applied to the (remaining) visible portion of the playfield over a brief duration.
+                this.TransformTo(nameof(FlashlightDim), e.NewValue ? 0.8f : 0.0f, 50);
             }
 
             protected override bool OnMouseMove(MouseMoveEvent e)

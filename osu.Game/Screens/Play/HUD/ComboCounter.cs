@@ -7,9 +7,14 @@ using osu.Game.Skinning;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public abstract partial class ComboCounter : RollingCounter<int>, ISerialisableDrawable
+    public abstract class ComboCounter : RollingCounter<int>, ISkinnableDrawable
     {
         public bool UsesFixedAnchor { get; set; }
+
+        protected ComboCounter()
+        {
+            Current.Value = DisplayedCount = 0;
+        }
 
         protected override double GetProportionalDuration(int currentValue, int newValue)
         {

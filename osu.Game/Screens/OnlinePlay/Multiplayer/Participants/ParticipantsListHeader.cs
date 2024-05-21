@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Game.Online.Multiplayer;
@@ -8,10 +10,10 @@ using osu.Game.Screens.OnlinePlay.Components;
 
 namespace osu.Game.Screens.OnlinePlay.Multiplayer.Participants
 {
-    public partial class ParticipantsListHeader : OverlinedHeader
+    public class ParticipantsListHeader : OverlinedHeader
     {
         [Resolved]
-        private MultiplayerClient client { get; set; } = null!;
+        private MultiplayerClient client { get; set; }
 
         public ParticipantsListHeader()
             : base(RankingsStrings.SpotlightParticipants)

@@ -2,20 +2,15 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
-using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Primitives;
 using osu.Framework.Graphics.Rendering;
 using osu.Framework.Graphics.Rendering.Vertices;
 using osu.Framework.Graphics.Shaders;
-using osu.Framework.Graphics.Shaders.Types;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Localisation;
-using osu.Framework.Utils;
 using osu.Game.Configuration;
 using osu.Game.Graphics;
 using osu.Game.Graphics.OpenGL.Vertices;
@@ -36,7 +31,6 @@ namespace osu.Game.Rulesets.Mods
         public override IconUsage? Icon => OsuIcon.ModFlashlight;
         public override ModType Type => ModType.DifficultyIncrease;
         public override LocalisableString Description => "Restricted view area.";
-        public override bool Ranked => UsesDefaultConfiguration;
 
         [SettingSource("Flashlight size", "Multiplier applied to the default flashlight size.")]
         public abstract BindableFloat SizeMultiplier { get; }
@@ -51,7 +45,7 @@ namespace osu.Game.Rulesets.Mods
         public abstract float DefaultFlashlightSize { get; }
     }
 
-    public abstract partial class ModFlashlight<T> : ModFlashlight, IApplicableToDrawableRuleset<T>, IApplicableToScoreProcessor
+    public abstract class ModFlashlight<T> : ModFlashlight, IApplicableToDrawableRuleset<T>, IApplicableToScoreProcessor
         where T : HitObject
     {
         public const double FLASHLIGHT_FADE_DURATION = 800;
@@ -60,6 +54,9 @@ namespace osu.Game.Rulesets.Mods
         public void ApplyToScoreProcessor(ScoreProcessor scoreProcessor)
         {
             Combo.BindTo(scoreProcessor.Combo);
+
+            // Default value of ScoreProcessor's Rank in Flashlight Mod should be SS+
+            scoreProcessor.Rank.Value = ScoreRank.XH;
         }
 
         public ScoreRank AdjustRank(ScoreRank rank, double accuracy)
@@ -83,24 +80,14 @@ namespace osu.Game.Rulesets.Mods
 
             flashlight.RelativeSizeAxes = Axes.Both;
             flashlight.Colour = Color4.Black;
-            // Flashlight mods should always draw above any other mod adding overlays.
-            flashlight.Depth = float.MinValue;
 
             flashlight.Combo.BindTo(Combo);
-            flashlight.GetPlayfieldScale = () => drawableRuleset.Playfield.Scale;
-
-            drawableRuleset.Overlays.Add(new Container
-            {
-                RelativeSizeAxes = Axes.Both,
-                // workaround for 1px gaps on the edges of the playfield which would sometimes show with "gameplay" screen scaling active.
-                Padding = new MarginPadding(-1),
-                Child = flashlight,
-            });
+            drawableRuleset.KeyBindingInputManager.Add(flashlight);
         }
 
         protected abstract Flashlight CreateFlashlight();
 
-        public abstract partial class Flashlight : Drawable
+        public abstract class Flashlight : Drawable
         {
             public readonly BindableInt Combo = new BindableInt();
 
@@ -109,8 +96,6 @@ namespace osu.Game.Rulesets.Mods
             protected override DrawNode CreateDrawNode() => new FlashlightDrawNode(this);
 
             public override bool RemoveCompletedTransforms => false;
-
-            internal Func<Vector2>? GetPlayfieldScale;
 
             private readonly float defaultFlashlightSize;
             private readonly float sizeMultiplier;
@@ -151,18 +136,9 @@ namespace osu.Game.Rulesets.Mods
 
             protected abstract string FragmentShader { get; }
 
-            public float GetSize()
+            protected float GetSize()
             {
                 float size = defaultFlashlightSize * sizeMultiplier;
-
-                if (GetPlayfieldScale != null)
-                {
-                    Vector2 playfieldScale = GetPlayfieldScale();
-
-                    Debug.Assert(Precision.AlmostEquals(Math.Abs(playfieldScale.X), Math.Abs(playfieldScale.Y)),
-                        @"Playfield has non-proportional scaling. Flashlight implementations should be revisited with regard to balance.");
-                    size *= Math.Abs(playfieldScale.X);
-                }
 
                 if (isBreakTime.Value)
                     size *= 2.5f;
@@ -269,9 +245,7 @@ namespace osu.Game.Rulesets.Mods
                     flashlightSmoothness = Source.flashlightSmoothness;
                 }
 
-                private IUniformBuffer<FlashlightParameters>? flashlightParametersBuffer;
-
-                protected override void Draw(IRenderer renderer)
+                public override void Draw(IRenderer renderer)
                 {
                     base.Draw(renderer);
 
@@ -285,17 +259,12 @@ namespace osu.Game.Rulesets.Mods
                         });
                     }
 
-                    flashlightParametersBuffer ??= renderer.CreateUniformBuffer<FlashlightParameters>();
-                    flashlightParametersBuffer.Data = flashlightParametersBuffer.Data with
-                    {
-                        Position = flashlightPosition,
-                        Size = flashlightSize,
-                        Dim = flashlightDim,
-                        Smoothness = flashlightSmoothness
-                    };
-
                     shader.Bind();
-                    shader.BindUniformBlock(@"m_FlashlightParameters", flashlightParametersBuffer);
+
+                    shader.GetUniform<Vector2>("flashlightPos").UpdateValue(ref flashlightPosition);
+                    shader.GetUniform<Vector2>("flashlightSize").UpdateValue(ref flashlightSize);
+                    shader.GetUniform<float>("flashlightDim").UpdateValue(ref flashlightDim);
+                    shader.GetUniform<float>("flashlightSmoothness").UpdateValue(ref flashlightSmoothness);
 
                     renderer.DrawQuad(renderer.WhitePixel, screenSpaceDrawQuad, DrawColourInfo.Colour, vertexAction: addAction);
 
@@ -306,17 +275,6 @@ namespace osu.Game.Rulesets.Mods
                 {
                     base.Dispose(isDisposing);
                     quadBatch?.Dispose();
-                    flashlightParametersBuffer?.Dispose();
-                }
-
-                [StructLayout(LayoutKind.Sequential, Pack = 1)]
-                private record struct FlashlightParameters
-                {
-                    public UniformVector2 Position;
-                    public UniformVector2 Size;
-                    public UniformFloat Dim;
-                    public UniformFloat Smoothness;
-                    private readonly UniformPadding8 pad1;
                 }
             }
         }

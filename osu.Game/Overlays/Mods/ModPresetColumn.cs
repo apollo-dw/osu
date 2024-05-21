@@ -18,15 +18,13 @@ using Realms;
 
 namespace osu.Game.Overlays.Mods
 {
-    public partial class ModPresetColumn : ModSelectColumn
+    public class ModPresetColumn : ModSelectColumn
     {
         [Resolved]
         private RealmAccess realm { get; set; } = null!;
 
         [Resolved]
         private IBindable<RulesetInfo> ruleset { get; set; } = null!;
-
-        private const float contracted_width = WIDTH - 120;
 
         [BackgroundDependencyLoader]
         private void load(OsuColour colours)
@@ -44,8 +42,6 @@ namespace osu.Game.Overlays.Mods
             base.LoadComplete();
 
             ruleset.BindValueChanged(_ => rulesetChanged(), true);
-
-            Width = contracted_width;
         }
 
         private IDisposable? presetSubscription;
@@ -65,15 +61,11 @@ namespace osu.Game.Overlays.Mods
         private Task? latestLoadTask;
         internal bool ItemsLoaded => latestLoadTask?.IsCompleted == true;
 
-        private void asyncLoadPanels(IRealmCollection<ModPreset> presets, ChangeSet? changes)
+        private void asyncLoadPanels(IRealmCollection<ModPreset> presets, ChangeSet changes, Exception error)
         {
             cancellationTokenSource?.Cancel();
 
-            bool hasPresets = presets.Any();
-
-            this.ResizeWidthTo(hasPresets ? WIDTH : contracted_width, 200, Easing.OutQuint);
-
-            if (!hasPresets)
+            if (!presets.Any())
             {
                 removeAndDisposePresetPanels();
                 return;

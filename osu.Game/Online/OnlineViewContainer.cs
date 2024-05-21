@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -18,7 +17,7 @@ namespace osu.Game.Online
     /// A <see cref="Container"/> for displaying online content which require a local user to be logged in.
     /// Shows its children only when the local user is logged in and supports displaying a placeholder if not.
     /// </summary>
-    public partial class OnlineViewContainer : Container
+    public class OnlineViewContainer : Container
     {
         protected LoadingSpinner LoadingSpinner { get; private set; }
 
@@ -80,14 +79,10 @@ namespace osu.Game.Online
 
                 case APIState.Failing:
                 case APIState.Connecting:
-                case APIState.RequiresSecondFactorAuth:
                     PopContentOut(Content);
                     LoadingSpinner.Show();
                     placeholder.FadeOut(transform_duration / 2, Easing.OutQuint);
                     break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
         });
 

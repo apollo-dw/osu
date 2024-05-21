@@ -22,7 +22,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Taiko.Objects.Drawables
 {
-    public partial class DrawableDrumRoll : DrawableTaikoStrongableHitObject<DrumRoll, DrumRoll.StrongNestedHit>
+    public class DrawableDrumRoll : DrawableTaikoStrongableHitObject<DrumRoll, DrumRoll.StrongNestedHit>
     {
         /// <summary>
         /// Number of rolling hits required to reach the dark/final colour.
@@ -115,7 +115,7 @@ namespace osu.Game.Rulesets.Taiko.Objects.Drawables
             return base.CreateNestedHitObject(hitObject);
         }
 
-        protected override SkinnableDrawable CreateMainPiece() => new SkinnableDrawable(new TaikoSkinComponentLookup(TaikoSkinComponents.DrumRollBody),
+        protected override SkinnableDrawable CreateMainPiece() => new SkinnableDrawable(new TaikoSkinComponent(TaikoSkinComponents.DrumRollBody),
             _ => new ElongatedCirclePiece());
 
         public override bool OnPressed(KeyBindingPressEvent<TaikoAction> e) => false;
@@ -143,7 +143,7 @@ namespace osu.Game.Rulesets.Taiko.Objects.Drawables
             if (timeOffset < 0)
                 return;
 
-            ApplyMaxResult();
+            ApplyResult(r => r.Type = r.Judgement.MaxResult);
         }
 
         protected override void UpdateHitStateTransforms(ArmedState state)
@@ -173,7 +173,7 @@ namespace osu.Game.Rulesets.Taiko.Objects.Drawables
             (MainPiece.Drawable as IHasAccentColour)?.FadeAccent(newColour, fadeDuration);
         }
 
-        public partial class StrongNestedHit : DrawableStrongNestedHit
+        public class StrongNestedHit : DrawableStrongNestedHit
         {
             public new DrawableDrumRoll ParentHitObject => (DrawableDrumRoll)base.ParentHitObject;
 
@@ -192,11 +192,15 @@ namespace osu.Game.Rulesets.Taiko.Objects.Drawables
                 if (!ParentHitObject.Judged)
                     return;
 
-                ApplyResult(static (r, hitObject) =>
-                {
-                    var drumRoll = (StrongNestedHit)hitObject;
-                    r.Type = drumRoll.ParentHitObject!.IsHit ? r.Judgement.MaxResult : r.Judgement.MinResult;
-                });
+                ApplyResult(r => r.Type = ParentHitObject.IsHit ? r.Judgement.MaxResult : r.Judgement.MinResult);
+            }
+
+            public override void OnKilled()
+            {
+                base.OnKilled();
+
+                if (Time.Current > ParentHitObject.HitObject.GetEndTime() && !Judged)
+                    ApplyResult(r => r.Type = r.Judgement.MinResult);
             }
 
             public override bool OnPressed(KeyBindingPressEvent<TaikoAction> e) => false;

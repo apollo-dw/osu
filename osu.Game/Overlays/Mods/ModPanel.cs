@@ -1,12 +1,9 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Collections.Generic;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
-using osu.Framework.Graphics.Containers;
-using osu.Framework.Localisation;
 using osu.Game.Graphics;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.UI;
@@ -14,10 +11,11 @@ using osuTK;
 
 namespace osu.Game.Overlays.Mods
 {
-    public partial class ModPanel : ModSelectPanel, IFilterable
+    public class ModPanel : ModSelectPanel
     {
         public Mod Mod => modState.Mod;
         public override BindableBool Active => modState.Active;
+        public BindableBool Filtered => modState.Filtered;
 
         protected override float IdleSwitchWidth => 54;
         protected override float ExpandedSwitchWidth => 70;
@@ -56,8 +54,7 @@ namespace osu.Game.Overlays.Mods
         {
             base.LoadComplete();
 
-            modState.ValidForSelection.BindValueChanged(_ => updateFilterState());
-            modState.MatchingTextFilter.BindValueChanged(_ => updateFilterState(), true);
+            Filtered.BindValueChanged(_ => updateFilterState(), true);
         }
 
         protected override void Select()
@@ -74,25 +71,9 @@ namespace osu.Game.Overlays.Mods
 
         #region Filtering support
 
-        /// <seealso cref="ModState.Visible"/>
-        public bool Visible => modState.Visible;
-
-        public override IEnumerable<LocalisableString> FilterTerms => new LocalisableString[]
-        {
-            Mod.Name,
-            Mod.Name.Replace(" ", string.Empty),
-            Mod.Acronym,
-        };
-
-        public override bool MatchingFilter
-        {
-            get => modState.MatchingTextFilter.Value;
-            set => modState.MatchingTextFilter.Value = value;
-        }
-
         private void updateFilterState()
         {
-            this.FadeTo(Visible ? 1 : 0);
+            this.FadeTo(Filtered.Value ? 0 : 1);
         }
 
         #endregion

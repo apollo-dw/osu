@@ -1,12 +1,13 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Osu.Objects.Drawables;
-using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.UI;
 
 namespace osu.Game.Rulesets.Osu.UI
@@ -21,14 +22,11 @@ namespace osu.Game.Rulesets.Osu.UI
     /// </summary>
     public class StartTimeOrderedHitPolicy : IHitPolicy
     {
-        public IHitObjectContainer? HitObjectContainer { get; set; }
+        public IHitObjectContainer HitObjectContainer { get; set; }
 
-        public ClickAction CheckHittable(DrawableHitObject hitObject, double time, HitResult _)
+        public bool IsHittable(DrawableHitObject hitObject, double time)
         {
-            if (HitObjectContainer == null)
-                throw new InvalidOperationException($"{nameof(HitObjectContainer)} should be set before {nameof(CheckHittable)} is called.");
-
-            DrawableHitObject? blockingObject = null;
+            DrawableHitObject blockingObject = null;
 
             foreach (var obj in enumerateHitObjectsUpTo(hitObject.HitObject.StartTime))
             {
@@ -38,25 +36,22 @@ namespace osu.Game.Rulesets.Osu.UI
 
             // If there is no previous hitobject, allow the hit.
             if (blockingObject == null)
-                return ClickAction.Hit;
+                return true;
 
             // A hit is allowed if:
             // 1. The last blocking hitobject has been judged.
             // 2. The current time is after the last hitobject's start time.
             // Hits at exactly the same time as the blocking hitobject are allowed for maps that contain simultaneous hitobjects (e.g. /b/372245).
-            return (blockingObject.Judged || time >= blockingObject.HitObject.StartTime) ? ClickAction.Hit : ClickAction.Shake;
+            return blockingObject.Judged || time >= blockingObject.HitObject.StartTime;
         }
 
         public void HandleHit(DrawableHitObject hitObject)
         {
-            if (HitObjectContainer == null)
-                throw new InvalidOperationException($"{nameof(HitObjectContainer)} should be set before {nameof(HandleHit)} is called.");
-
             // Hitobjects which themselves don't block future hitobjects don't cause misses (e.g. slider ticks, spinners).
             if (!hitObjectCanBlockFutureHits(hitObject))
                 return;
 
-            if (CheckHittable(hitObject, hitObject.HitObject.StartTime + hitObject.Result.TimeOffset, hitObject.Result.Type) != ClickAction.Hit)
+            if (!IsHittable(hitObject, hitObject.HitObject.StartTime + hitObject.Result.TimeOffset))
                 throw new InvalidOperationException($"A {hitObject} was hit before it became hittable!");
 
             // Miss all hitobjects prior to the hit one.
@@ -79,7 +74,7 @@ namespace osu.Game.Rulesets.Osu.UI
 
         private IEnumerable<DrawableHitObject> enumerateHitObjectsUpTo(double targetTime)
         {
-            foreach (var obj in HitObjectContainer!.AliveObjects)
+            foreach (var obj in HitObjectContainer.AliveObjects)
             {
                 if (obj.HitObject.StartTime >= targetTime)
                     yield break;

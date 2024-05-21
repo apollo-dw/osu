@@ -20,7 +20,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Select.Carousel
 {
-    public partial class UpdateBeatmapSetButton : OsuAnimatedButton
+    public class UpdateBeatmapSetButton : OsuAnimatedButton
     {
         private readonly BeatmapSetInfo beatmapSetInfo;
         private SpriteIcon icon = null!;

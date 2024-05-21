@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Shapes;
@@ -12,12 +14,12 @@ using osuTK;
 
 namespace osu.Game.Screens.Ranking
 {
-    public partial class RetryButton : OsuAnimatedButton
+    public class RetryButton : OsuAnimatedButton
     {
         private readonly Box background;
 
-        [Resolved]
-        private Player? player { get; set; }
+        [Resolved(canBeNull: true)]
+        private Player player { get; set; }
 
         public RetryButton()
         {

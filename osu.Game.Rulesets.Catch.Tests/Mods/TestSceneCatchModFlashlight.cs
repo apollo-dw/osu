@@ -7,7 +7,7 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Catch.Tests.Mods
 {
-    public partial class TestSceneCatchModFlashlight : ModTestScene
+    public class TestSceneCatchModFlashlight : ModTestScene
     {
         protected override Ruleset CreatePlayerRuleset() => new CatchRuleset();
 

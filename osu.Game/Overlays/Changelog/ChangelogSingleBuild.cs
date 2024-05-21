@@ -4,10 +4,10 @@
 #nullable disable
 
 using System;
+using System.Linq;
 using System.Threading;
 using osu.Framework.Allocation;
 using osu.Framework.Extensions.Color4Extensions;
-using osu.Framework.Extensions.LocalisationExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
@@ -24,7 +24,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.Changelog
 {
-    public partial class ChangelogSingleBuild : ChangelogContent
+    public class ChangelogSingleBuild : ChangelogContent
     {
         private APIChangelogBuild build;
 
@@ -91,7 +91,7 @@ namespace osu.Game.Overlays.Changelog
             }
         }
 
-        public partial class ChangelogBuildWithNavigation : ChangelogBuild
+        public class ChangelogBuildWithNavigation : ChangelogBuild
         {
             public ChangelogBuildWithNavigation(APIChangelogBuild build)
                 : base(build)
@@ -104,29 +104,27 @@ namespace osu.Game.Overlays.Changelog
             {
                 var fill = base.CreateHeader();
 
-                var nestedFill = (FillFlowContainer)fill.Child;
-
-                var buildDisplay = (OsuHoverContainer)nestedFill.Child;
-
-                buildDisplay.Scale = new Vector2(1.25f);
-                buildDisplay.Action = null;
-
-                fill.Add(date = new OsuSpriteText
+                foreach (var existing in fill.Children.OfType<OsuHoverContainer>())
                 {
-                    Anchor = Anchor.TopCentre,
-                    Origin = Anchor.TopCentre,
-                    Text = Build.CreatedAt.Date.ToLocalisableString("dd MMMM yyyy"),
-                    Font = OsuFont.GetFont(weight: FontWeight.Regular, size: 14),
-                    Margin = new MarginPadding { Top = 5 },
-                    Scale = new Vector2(1.25f),
-                });
+                    existing.Scale = new Vector2(1.25f);
+                    existing.Action = null;
 
-                nestedFill.Insert(-1, new NavigationIconButton(Build.Versions?.Previous)
+                    existing.Add(date = new OsuSpriteText
+                    {
+                        Text = Build.CreatedAt.Date.ToString("dd MMMM yyyy"),
+                        Font = OsuFont.GetFont(weight: FontWeight.Regular, size: 14),
+                        Anchor = Anchor.BottomCentre,
+                        Origin = Anchor.TopCentre,
+                        Margin = new MarginPadding { Top = 5 },
+                    });
+                }
+
+                fill.Insert(-1, new NavigationIconButton(Build.Versions?.Previous)
                 {
                     Icon = FontAwesome.Solid.ChevronLeft,
                     SelectBuild = b => SelectBuild(b)
                 });
-                nestedFill.Insert(1, new NavigationIconButton(Build.Versions?.Next)
+                fill.Insert(1, new NavigationIconButton(Build.Versions?.Next)
                 {
                     Icon = FontAwesome.Solid.ChevronRight,
                     SelectBuild = b => SelectBuild(b)
@@ -142,7 +140,7 @@ namespace osu.Game.Overlays.Changelog
             }
         }
 
-        private partial class NavigationIconButton : IconButton
+        private class NavigationIconButton : IconButton
         {
             public Action<APIChangelogBuild> SelectBuild;
 

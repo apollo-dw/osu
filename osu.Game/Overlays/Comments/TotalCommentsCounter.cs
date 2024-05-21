@@ -15,7 +15,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Comments
 {
-    public partial class TotalCommentsCounter : CompositeDrawable
+    public class TotalCommentsCounter : CompositeDrawable
     {
         public readonly BindableInt Current = new BindableInt();
 
@@ -32,7 +32,7 @@ namespace osu.Game.Overlays.Comments
                 Origin = Anchor.CentreLeft,
                 AutoSizeAxes = Axes.Both,
                 Direction = FillDirection.Horizontal,
-                Margin = new MarginPadding { Left = WaveOverlayContainer.HORIZONTAL_PADDING },
+                Margin = new MarginPadding { Left = 50 },
                 Spacing = new Vector2(5, 0),
                 Children = new Drawable[]
                 {

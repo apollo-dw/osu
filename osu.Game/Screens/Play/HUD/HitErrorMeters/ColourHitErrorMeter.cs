@@ -3,59 +3,50 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Pooling;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Localisation;
 using osu.Game.Configuration;
-using osu.Game.Localisation.HUD;
 using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Scoring;
 using osuTK;
+using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.HUD.HitErrorMeters
 {
-    [Cached]
-    public partial class ColourHitErrorMeter : HitErrorMeter
+    public class ColourHitErrorMeter : HitErrorMeter
     {
         private const int animation_duration = 200;
         private const int drawable_judgement_size = 8;
 
-        [SettingSource(typeof(ColourHitErrorMeterStrings), nameof(ColourHitErrorMeterStrings.JudgementCount), nameof(ColourHitErrorMeterStrings.JudgementCountDescription))]
+        [SettingSource("Judgement count", "The number of displayed judgements")]
         public BindableNumber<int> JudgementCount { get; } = new BindableNumber<int>(20)
         {
             MinValue = 1,
             MaxValue = 50,
         };
 
-        [SettingSource(typeof(ColourHitErrorMeterStrings), nameof(ColourHitErrorMeterStrings.JudgementSpacing), nameof(ColourHitErrorMeterStrings.JudgementSpacingDescription))]
+        [SettingSource("Judgement spacing", "The space between each displayed judgement")]
         public BindableNumber<float> JudgementSpacing { get; } = new BindableNumber<float>(2)
         {
             MinValue = 0,
             MaxValue = 10,
         };
 
-        [SettingSource(typeof(ColourHitErrorMeterStrings), nameof(ColourHitErrorMeterStrings.JudgementShape), nameof(ColourHitErrorMeterStrings.JudgementShapeDescription))]
+        [SettingSource("Judgement shape", "The shape of each displayed judgement")]
         public Bindable<ShapeStyle> JudgementShape { get; } = new Bindable<ShapeStyle>();
 
-        private readonly DrawablePool<HitErrorShape> judgementShapePool;
         private readonly JudgementFlow judgementsFlow;
 
         public ColourHitErrorMeter()
         {
             AutoSizeAxes = Axes.Both;
-            InternalChildren = new Drawable[]
+            InternalChild = judgementsFlow = new JudgementFlow
             {
-                judgementShapePool = new DrawablePool<HitErrorShape>(50),
-                judgementsFlow = new JudgementFlow
-                {
-                    JudgementShape = { BindTarget = JudgementShape },
-                    JudgementSpacing = { BindTarget = JudgementSpacing },
-                    JudgementCount = { BindTarget = JudgementCount }
-                }
+                JudgementShape = { BindTarget = JudgementShape },
+                JudgementSpacing = { BindTarget = JudgementSpacing },
+                JudgementCount = { BindTarget = JudgementCount }
             };
         }
 
@@ -64,19 +55,12 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
             if (!judgement.Type.IsScorable() || judgement.Type.IsBonus())
                 return;
 
-            judgementsFlow.Push(judgementShapePool.Get(shape => shape.Colour = GetColourForHitResult(judgement.Type)));
+            judgementsFlow.Push(GetColourForHitResult(judgement.Type));
         }
 
-        public override void Clear()
-        {
-            foreach (var j in judgementsFlow)
-            {
-                j.ClearTransforms();
-                j.Expire();
-            }
-        }
+        public override void Clear() => judgementsFlow.Clear();
 
-        private partial class JudgementFlow : FillFlowContainer<HitErrorShape>
+        private class JudgementFlow : FillFlowContainer<HitErrorShape>
         {
             public override IEnumerable<Drawable> FlowingChildren => base.FlowingChildren.Reverse();
 
@@ -98,7 +82,7 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
             {
                 base.LoadComplete();
 
-                JudgementCount.BindValueChanged(_ =>
+                JudgementCount.BindValueChanged(count =>
                 {
                     removeExtraJudgements();
                     updateMetrics();
@@ -107,9 +91,13 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
                 JudgementSpacing.BindValueChanged(_ => updateMetrics(), true);
             }
 
-            public void Push(HitErrorShape shape)
+            public void Push(Color4 colour)
             {
-                Add(shape);
+                Add(new HitErrorShape(colour, drawable_judgement_size)
+                {
+                    Shape = { BindTarget = JudgementShape },
+                });
+
                 removeExtraJudgements();
             }
 
@@ -128,32 +116,32 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
             }
         }
 
-        public partial class HitErrorShape : PoolableDrawable
+        public class HitErrorShape : Container
         {
             public bool IsRemoved { get; private set; }
 
             public readonly Bindable<ShapeStyle> Shape = new Bindable<ShapeStyle>();
 
-            [Resolved]
-            private ColourHitErrorMeter hitErrorMeter { get; set; } = null!;
+            private readonly Color4 colour;
 
             private Container content = null!;
 
-            public HitErrorShape()
+            public HitErrorShape(Color4 colour, int size)
             {
-                Size = new Vector2(drawable_judgement_size);
+                this.colour = colour;
+                Size = new Vector2(size);
             }
 
             protected override void LoadComplete()
             {
                 base.LoadComplete();
 
-                InternalChild = content = new Container
+                Child = content = new Container
                 {
                     RelativeSizeAxes = Axes.Both,
+                    Colour = colour
                 };
 
-                Shape.BindTo(hitErrorMeter.JudgementShape);
                 Shape.BindValueChanged(shape =>
                 {
                     switch (shape.NewValue)
@@ -167,41 +155,23 @@ namespace osu.Game.Screens.Play.HUD.HitErrorMeters
                             break;
                     }
                 }, true);
-            }
 
-            protected override void PrepareForUse()
-            {
-                base.PrepareForUse();
-
-                this.FadeInFromZero(animation_duration, Easing.OutQuint)
-                    // On pool re-use, start flow animation from (0,0).
-                    .MoveTo(Vector2.Zero);
-
-                content.MoveToY(-DrawSize.Y)
-                       .MoveToY(0, animation_duration, Easing.OutQuint);
-            }
-
-            protected override void FreeAfterUse()
-            {
-                base.FreeAfterUse();
-                IsRemoved = false;
+                content.FadeInFromZero(animation_duration, Easing.OutQuint);
+                content.MoveToY(-DrawSize.Y);
+                content.MoveToY(0, animation_duration, Easing.OutQuint);
             }
 
             public void Remove()
             {
                 IsRemoved = true;
 
-                this.FadeOut(animation_duration, Easing.OutQuint)
-                    .Expire();
+                this.FadeOut(animation_duration, Easing.OutQuint).Expire();
             }
         }
 
         public enum ShapeStyle
         {
-            [LocalisableDescription(typeof(ColourHitErrorMeterStrings), nameof(ColourHitErrorMeterStrings.ShapeStyleCircle))]
             Circle,
-
-            [LocalisableDescription(typeof(ColourHitErrorMeterStrings), nameof(ColourHitErrorMeterStrings.ShapeStyleSquare))]
             Square
         }
     }

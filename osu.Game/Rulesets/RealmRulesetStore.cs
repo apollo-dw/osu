@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using osu.Framework.Extensions.ObjectExtensions;
-using osu.Framework.Logging;
 using osu.Framework.Platform;
 using osu.Game.Beatmaps;
 using osu.Game.Database;
@@ -16,20 +13,17 @@ namespace osu.Game.Rulesets
 {
     public class RealmRulesetStore : RulesetStore
     {
-        private readonly RealmAccess realmAccess;
         public override IEnumerable<RulesetInfo> AvailableRulesets => availableRulesets;
 
         private readonly List<RulesetInfo> availableRulesets = new List<RulesetInfo>();
 
-        public RealmRulesetStore(RealmAccess realmAccess, Storage? storage = null)
+        public RealmRulesetStore(RealmAccess realm, Storage? storage = null)
             : base(storage)
         {
-            this.realmAccess = realmAccess;
-            prepareDetachedRulesets();
-            informUserAboutBrokenRulesets();
+            prepareDetachedRulesets(realm);
         }
 
-        private void prepareDetachedRulesets()
+        private void prepareDetachedRulesets(RealmAccess realmAccess)
         {
             realmAccess.Write(realm =>
             {
@@ -113,7 +107,7 @@ namespace osu.Game.Rulesets
                     }
                 }
 
-                availableRulesets.AddRange(detachedRulesets.Order());
+                availableRulesets.AddRange(detachedRulesets.OrderBy(r => r));
             });
         }
 
@@ -148,49 +142,6 @@ namespace osu.Game.Rulesets
             var converter = instance.CreateBeatmapConverter(beatmap);
 
             instance.CreateBeatmapProcessor(converter.Convert());
-        }
-
-        private void informUserAboutBrokenRulesets()
-        {
-            if (RulesetStorage == null)
-                return;
-
-            foreach (string brokenRulesetDll in RulesetStorage.GetFiles(@".", @"*.dll.broken"))
-            {
-                Logger.Log($"Ruleset '{Path.GetFileNameWithoutExtension(brokenRulesetDll)}' has been disabled due to causing a crash.\n\n"
-                           + "Please update the ruleset or report the issue to the developers of the ruleset if no updates are available.", level: LogLevel.Important);
-            }
-        }
-
-        internal void TryDisableCustomRulesetsCausing(Exception exception)
-        {
-            try
-            {
-                var stackTrace = new StackTrace(exception);
-
-                foreach (var frame in stackTrace.GetFrames())
-                {
-                    var declaringAssembly = frame.GetMethod()?.DeclaringType?.Assembly;
-                    if (declaringAssembly == null)
-                        continue;
-
-                    if (UserRulesetAssemblies.Contains(declaringAssembly))
-                    {
-                        string sourceLocation = declaringAssembly.Location;
-                        string destinationLocation = Path.ChangeExtension(sourceLocation, @".dll.broken");
-
-                        if (File.Exists(sourceLocation))
-                        {
-                            Logger.Log($"Unhandled exception traced back to custom ruleset {Path.GetFileNameWithoutExtension(sourceLocation)}. Marking as broken.");
-                            File.Move(sourceLocation, destinationLocation);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"Attempt to trace back crash to custom ruleset failed: {ex}");
-            }
         }
     }
 }

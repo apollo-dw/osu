@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.IO;
 using System.Threading;
@@ -12,7 +14,7 @@ using osu.Game.Overlays.Settings.Sections.Maintenance;
 
 namespace osu.Game.Tests.Visual.Settings
 {
-    public partial class TestSceneMigrationScreens : ScreenTestScene
+    public class TestSceneMigrationScreens : ScreenTestScene
     {
         [Cached(typeof(INotificationOverlay))]
         private readonly NotificationOverlay notifications;
@@ -41,7 +43,7 @@ namespace osu.Game.Tests.Visual.Settings
             AddStep("Push screen", () => Stack.Push(new TestMigrationSelectScreen(false)));
         }
 
-        private partial class TestMigrationSelectScreen : MigrationSelectScreen
+        private class TestMigrationSelectScreen : MigrationSelectScreen
         {
             private readonly bool deleteSuccess;
 
@@ -52,7 +54,7 @@ namespace osu.Game.Tests.Visual.Settings
 
             protected override void BeginMigration(DirectoryInfo target) => this.Push(new TestMigrationRunScreen(deleteSuccess));
 
-            private partial class TestMigrationRunScreen : MigrationRunScreen
+            private class TestMigrationRunScreen : MigrationRunScreen
             {
                 private readonly bool success;
 

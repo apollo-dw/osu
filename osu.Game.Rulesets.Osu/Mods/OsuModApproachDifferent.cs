@@ -21,7 +21,7 @@ namespace osu.Game.Rulesets.Osu.Mods
         public override double ScoreMultiplier => 1;
         public override IconUsage? Icon { get; } = FontAwesome.Regular.Circle;
 
-        public override Type[] IncompatibleMods => new[] { typeof(IHidesApproachCircles), typeof(OsuModFreezeFrame) };
+        public override Type[] IncompatibleMods => new[] { typeof(IHidesApproachCircles) };
 
         [SettingSource("Initial size", "Change the initial size of the approach circle, relative to hit circles.", 0)]
         public BindableFloat Scale { get; } = new BindableFloat(4)

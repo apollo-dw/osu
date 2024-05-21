@@ -16,7 +16,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public abstract partial class GameplayLeaderboard : CompositeDrawable
+    public abstract class GameplayLeaderboard : CompositeDrawable
     {
         private readonly Cached sorting = new Cached();
 
@@ -128,7 +128,7 @@ namespace osu.Game.Screens.Play.HUD
             if (!scroll.IsScrolledToEnd()) fadeBottom -= panel_height;
 
             // logic is mostly shared with Leaderboard, copied here for simplicity.
-            foreach (var c in Flow)
+            foreach (var c in Flow.Children)
             {
                 float topY = c.ToSpaceOfOtherDrawable(Vector2.Zero, Flow).Y;
                 float bottomY = topY + panel_height;
@@ -171,15 +171,13 @@ namespace osu.Game.Screens.Play.HUD
             for (int i = 0; i < Flow.Count; i++)
             {
                 Flow.SetLayoutPosition(orderedByScore[i], i);
-                orderedByScore[i].ScorePosition = CheckValidScorePosition(orderedByScore[i], i + 1) ? i + 1 : null;
+                orderedByScore[i].ScorePosition = i + 1;
             }
 
             sorting.Validate();
         }
 
-        protected virtual bool CheckValidScorePosition(GameplayLeaderboardScore score, int position) => true;
-
-        private partial class InputDisabledScrollContainer : OsuScrollContainer
+        private class InputDisabledScrollContainer : OsuScrollContainer
         {
             public InputDisabledScrollContainer()
             {

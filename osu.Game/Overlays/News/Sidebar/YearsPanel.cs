@@ -17,7 +17,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.News.Sidebar
 {
-    public partial class YearsPanel : CompositeDrawable
+    public class YearsPanel : CompositeDrawable
     {
         private readonly Bindable<APINewsSidebar> metadata = new Bindable<APINewsSidebar>();
 
@@ -79,7 +79,7 @@ namespace osu.Game.Overlays.News.Sidebar
             Show();
         }
 
-        public partial class YearButton : OsuHoverContainer
+        public class YearButton : OsuHoverContainer
         {
             public int Year { get; }
 

@@ -2,17 +2,16 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using osu.Framework.Localisation;
 using osu.Game.Overlays.Dialog;
 
 namespace osu.Game.Overlays.Settings.Sections.Maintenance
 {
-    public partial class MassDeleteConfirmationDialog : DangerousActionDialog
+    public class MassDeleteConfirmationDialog : DeleteConfirmationDialog
     {
-        public MassDeleteConfirmationDialog(Action deleteAction, LocalisableString deleteContent)
+        public MassDeleteConfirmationDialog(Action deleteAction)
         {
-            BodyText = deleteContent;
-            DangerousAction = deleteAction;
+            BodyText = "Everything?";
+            DeleteAction = deleteAction;
         }
     }
 }

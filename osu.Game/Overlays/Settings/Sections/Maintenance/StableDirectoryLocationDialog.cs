@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Threading.Tasks;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics.Sprites;
@@ -10,10 +12,10 @@ using osu.Game.Screens;
 
 namespace osu.Game.Overlays.Settings.Sections.Maintenance
 {
-    public partial class StableDirectoryLocationDialog : PopupDialog
+    public class StableDirectoryLocationDialog : PopupDialog
     {
         [Resolved]
-        private IPerformFromScreenRunner performer { get; set; } = null!;
+        private IPerformFromScreenRunner performer { get; set; }
 
         public StableDirectoryLocationDialog(TaskCompletionSource<string> taskCompletionSource)
         {

@@ -15,7 +15,7 @@ using osu.Game.Screens.OnlinePlay.Components;
 
 namespace osu.Game.Screens.OnlinePlay.Multiplayer
 {
-    public partial class MultiplayerRoomManager : RoomManager
+    public class MultiplayerRoomManager : RoomManager
     {
         [Resolved]
         private MultiplayerClient multiplayerClient { get; set; }

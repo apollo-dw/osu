@@ -17,7 +17,7 @@ using osuTK.Graphics;
 namespace osu.Game.Tests.Visual.UserInterface
 {
     [TestFixture]
-    public partial class TestSceneScalingContainer : OsuTestScene
+    public class TestSceneScalingContainer : OsuTestScene
     {
         private OsuConfigManager osuConfigManager { get; set; }
 

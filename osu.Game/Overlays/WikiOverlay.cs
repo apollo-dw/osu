@@ -17,13 +17,11 @@ using osu.Game.Overlays.Wiki;
 
 namespace osu.Game.Overlays
 {
-    public partial class WikiOverlay : OnlineOverlay<WikiHeader>
+    public class WikiOverlay : OnlineOverlay<WikiHeader>
     {
-        public const string INDEX_PATH = @"Main_page";
+        private const string index_path = @"main_page";
 
-        public string CurrentPath => path.Value;
-
-        private readonly Bindable<string> path = new Bindable<string>(INDEX_PATH);
+        private readonly Bindable<string> path = new Bindable<string>(index_path);
 
         private readonly Bindable<APIWikiPage> wikiData = new Bindable<APIWikiPage>();
 
@@ -43,7 +41,7 @@ namespace osu.Game.Overlays
         {
         }
 
-        public void ShowPage(string pagePath = INDEX_PATH)
+        public void ShowPage(string pagePath = index_path)
         {
             path.Value = pagePath.Trim('/');
             Show();
@@ -107,9 +105,6 @@ namespace osu.Game.Overlays
             if (e.NewValue == wikiData.Value?.Path)
                 return;
 
-            if (e.NewValue == "error")
-                return;
-
             cancellationToken?.Cancel();
             request?.Cancel();
 
@@ -123,11 +118,7 @@ namespace osu.Game.Overlays
             Loading.Show();
 
             request.Success += response => Schedule(() => onSuccess(response));
-            request.Failure += ex =>
-            {
-                if (ex is not OperationCanceledException)
-                    Schedule(onFail, request.Path);
-            };
+            request.Failure += _ => Schedule(onFail);
 
             api.PerformAsync(request);
         }
@@ -137,7 +128,7 @@ namespace osu.Game.Overlays
             wikiData.Value = response;
             path.Value = response.Path;
 
-            if (response.Layout.Equals(INDEX_PATH, StringComparison.OrdinalIgnoreCase))
+            if (response.Layout == index_path)
             {
                 LoadDisplay(new WikiMainPage
                 {
@@ -145,7 +136,7 @@ namespace osu.Game.Overlays
                     Padding = new MarginPadding
                     {
                         Vertical = 20,
-                        Horizontal = HORIZONTAL_PADDING,
+                        Horizontal = 50,
                     },
                 });
             }
@@ -155,13 +146,10 @@ namespace osu.Game.Overlays
             }
         }
 
-        private void onFail(string originalPath)
+        private void onFail()
         {
-            wikiData.Value = null;
-            path.Value = "error";
-
             LoadDisplay(articlePage = new WikiArticlePage($@"{api.WebsiteRootUrl}/wiki/",
-                $"Something went wrong when trying to fetch page \"{originalPath}\".\n\n[Return to the main page]({INDEX_PATH})."));
+                $"Something went wrong when trying to fetch page \"{path.Value}\".\n\n[Return to the main page](Main_Page)."));
         }
 
         private void showParentPage()

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Runtime.CompilerServices;
 using osu.Framework;
@@ -27,7 +29,7 @@ namespace osu.Game.Tests
                                         [CallerMemberName] string callingMethodName = @"")
             : base($"{callingMethodName}-{Guid.NewGuid()}", new HostOptions
             {
-                IPCPort = bindIPC ? OsuGame.IPC_PORT : null,
+                BindIPC = bindIPC,
             }, bypassCleanup: bypassCleanupOnDispose, realtime: realtime)
         {
             this.bypassCleanupOnSetup = bypassCleanupOnSetup;

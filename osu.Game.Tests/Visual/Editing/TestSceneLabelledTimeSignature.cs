@@ -13,7 +13,7 @@ using osu.Game.Screens.Edit.Timing;
 
 namespace osu.Game.Tests.Visual.Editing
 {
-    public partial class TestSceneLabelledTimeSignature : OsuManualInputManagerTestScene
+    public class TestSceneLabelledTimeSignature : OsuManualInputManagerTestScene
     {
         private LabelledTimeSignature timeSignature;
 

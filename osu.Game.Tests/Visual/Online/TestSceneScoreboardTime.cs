@@ -14,7 +14,7 @@ using osu.Game.Overlays.BeatmapSet.Scores;
 
 namespace osu.Game.Tests.Visual.Online
 {
-    public partial class TestSceneScoreboardTime : OsuTestScene
+    public class TestSceneScoreboardTime : OsuTestScene
     {
         private StopwatchClock stopwatch;
 

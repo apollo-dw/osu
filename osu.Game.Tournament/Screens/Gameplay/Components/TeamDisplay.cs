@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -10,11 +12,11 @@ using osuTK;
 
 namespace osu.Game.Tournament.Screens.Gameplay.Components
 {
-    public partial class TeamDisplay : DrawableTournamentTeam
+    public class TeamDisplay : DrawableTournamentTeam
     {
         private readonly TeamScore score;
 
-        private readonly TournamentSpriteTextWithBackground teamNameText;
+        private readonly TournamentSpriteTextWithBackground teamText;
 
         private readonly Bindable<string> teamName = new Bindable<string>("???");
 
@@ -35,7 +37,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
             }
         }
 
-        public TeamDisplay(TournamentTeam? team, TeamColour colour, Bindable<int?> currentTeamScore, int pointsToWin)
+        public TeamDisplay(TournamentTeam team, TeamColour colour, Bindable<int?> currentTeamScore, int pointsToWin)
             : base(team)
         {
             AutoSizeAxes = Axes.Both;
@@ -95,13 +97,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
                                             }
                                         }
                                     },
-                                    teamNameText = new TournamentSpriteTextWithBackground
-                                    {
-                                        Scale = new Vector2(0.5f),
-                                        Origin = anchor,
-                                        Anchor = anchor,
-                                    },
-                                    new DrawableTeamSeed(Team)
+                                    teamText = new TournamentSpriteTextWithBackground
                                     {
                                         Scale = new Vector2(0.5f),
                                         Origin = anchor,
@@ -125,7 +121,7 @@ namespace osu.Game.Tournament.Screens.Gameplay.Components
             if (Team != null)
                 teamName.BindTo(Team.FullName);
 
-            teamName.BindValueChanged(name => teamNameText.Text.Text = name.NewValue, true);
+            teamName.BindValueChanged(name => teamText.Text.Text = name.NewValue, true);
         }
 
         private void updateDisplay()

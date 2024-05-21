@@ -14,7 +14,7 @@ using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.Settings.Sections.Audio
 {
-    public partial class AudioDevicesSettings : SettingsSubsection
+    public class AudioDevicesSettings : SettingsSubsection
     {
         protected override LocalisableString Header => AudioSettingsStrings.AudioDevicesHeader;
 
@@ -59,11 +59,7 @@ namespace osu.Game.Overlays.Settings.Sections.Audio
             // the dropdown. BASS does not give us a simple mechanism to select
             // specific audio devices in such a case anyways. Such
             // functionality would require involved OS-specific code.
-            dropdown.Items = deviceItems
-                             // Dropdown doesn't like null items. Somehow we are seeing some arrive here (see https://github.com/ppy/osu/issues/21271)
-                             .Where(i => i != null)
-                             .Distinct()
-                             .ToList();
+            dropdown.Items = deviceItems.Distinct().ToList();
         }
 
         protected override void Dispose(bool isDisposing)
@@ -77,11 +73,11 @@ namespace osu.Game.Overlays.Settings.Sections.Audio
             }
         }
 
-        private partial class AudioDeviceSettingsDropdown : SettingsDropdown<string>
+        private class AudioDeviceSettingsDropdown : SettingsDropdown<string>
         {
             protected override OsuDropdown<string> CreateDropdown() => new AudioDeviceDropdownControl();
 
-            private partial class AudioDeviceDropdownControl : DropdownControl
+            private class AudioDeviceDropdownControl : DropdownControl
             {
                 protected override LocalisableString GenerateItemText(string item)
                     => string.IsNullOrEmpty(item) ? CommonStrings.Default : base.GenerateItemText(item);

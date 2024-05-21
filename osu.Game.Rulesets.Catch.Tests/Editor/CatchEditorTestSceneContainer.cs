@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -14,7 +16,7 @@ using osu.Game.Tests.Visual;
 
 namespace osu.Game.Rulesets.Catch.Tests.Editor
 {
-    public partial class CatchEditorTestSceneContainer : Container
+    public class CatchEditorTestSceneContainer : Container
     {
         [Cached(typeof(Playfield))]
         public readonly ScrollingPlayfield Playfield;
@@ -55,7 +57,7 @@ namespace osu.Game.Rulesets.Catch.Tests.Editor
             };
         }
 
-        private partial class TestCatchPlayfield : CatchEditorPlayfield
+        private class TestCatchPlayfield : CatchEditorPlayfield
         {
             public TestCatchPlayfield()
                 : base(new BeatmapDifficulty { CircleSize = 0 })

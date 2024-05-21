@@ -1,8 +1,9 @@
-// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -19,12 +20,12 @@ namespace osu.Game.Updater
     /// An update manager that shows notifications if a newer release is detected.
     /// Installation is left up to the user.
     /// </summary>
-    public partial class SimpleUpdateManager : UpdateManager
+    public class SimpleUpdateManager : UpdateManager
     {
-        private string version = null!;
+        private string version;
 
         [Resolved]
-        private GameHost host { get; set; } = null!;
+        private GameHost host { get; set; }
 
         [BackgroundDependencyLoader]
         private void load(OsuGameBase game)
@@ -47,16 +48,16 @@ namespace osu.Game.Updater
                 version = version.Split('-').First();
                 string latestTagName = latest.TagName.Split('-').First();
 
-                if (latestTagName != version && tryGetBestUrl(latest, out string? url))
+                if (latestTagName != version)
                 {
                     Notifications.Post(new SimpleNotification
                     {
                         Text = $"A newer release of osu! has been found ({version} → {latestTagName}).\n\n"
                                + "Click here to download the new version, which can be installed over the top of your existing installation",
-                        Icon = FontAwesome.Solid.Download,
+                        Icon = FontAwesome.Solid.Upload,
                         Activated = () =>
                         {
-                            host.OpenUrlExternally(url);
+                            host.OpenUrlExternally(getBestUrl(latest));
                             return true;
                         }
                     });
@@ -73,10 +74,9 @@ namespace osu.Game.Updater
             return false;
         }
 
-        private bool tryGetBestUrl(GitHubRelease release, [NotNullWhen(true)] out string? url)
+        private string getBestUrl(GitHubRelease release)
         {
-            url = null;
-            GitHubAsset? bestAsset = null;
+            GitHubAsset bestAsset = null;
 
             switch (RuntimeInfo.OS)
             {
@@ -94,23 +94,17 @@ namespace osu.Game.Updater
                     break;
 
                 case RuntimeInfo.Platform.iOS:
-                    if (release.Assets?.Exists(f => f.Name.EndsWith(".ipa", StringComparison.Ordinal)) == true)
-                        // iOS releases are available via testflight. this link seems to work well enough for now.
-                        // see https://stackoverflow.com/a/32960501
-                        url = "itms-beta://beta.itunes.apple.com/v1/app/1447765923";
-
-                    break;
+                    // iOS releases are available via testflight. this link seems to work well enough for now.
+                    // see https://stackoverflow.com/a/32960501
+                    return "itms-beta://beta.itunes.apple.com/v1/app/1447765923";
 
                 case RuntimeInfo.Platform.Android:
-                    if (release.Assets?.Exists(f => f.Name.EndsWith(".apk", StringComparison.Ordinal)) == true)
-                        // on our testing device using the .apk URL causes the download to magically disappear.
-                        url = release.HtmlUrl;
-
+                    // on our testing device this causes the download to magically disappear.
+                    //bestAsset = release.Assets?.Find(f => f.Name.EndsWith(".apk"));
                     break;
             }
 
-            url ??= bestAsset?.BrowserDownloadUrl;
-            return url != null;
+            return bestAsset?.BrowserDownloadUrl ?? release.HtmlUrl;
         }
     }
 }

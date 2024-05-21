@@ -10,16 +10,16 @@ using osu.Game.Audio;
 namespace osu.Game.Skinning
 {
     /// <summary>
-    /// Provides access to various elements contained by a skin.
+    /// Provides access to skinnable elements.
     /// </summary>
     public interface ISkin
     {
         /// <summary>
         /// Retrieve a <see cref="Drawable"/> component implementation.
         /// </summary>
-        /// <param name="lookup">The requested component.</param>
+        /// <param name="component">The requested component.</param>
         /// <returns>A drawable representation for the requested component, or null if unavailable.</returns>
-        Drawable? GetDrawableComponent(ISkinComponentLookup lookup);
+        Drawable? GetDrawableComponent(ISkinComponent component);
 
         /// <summary>
         /// Retrieve a <see cref="Texture"/>.

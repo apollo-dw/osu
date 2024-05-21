@@ -30,7 +30,7 @@ using osuTK.Input;
 namespace osu.Game.Tests.Visual.Navigation
 {
     [TestFixture]
-    public partial class TestSceneOsuGame : OsuGameTestScene
+    public class TestSceneOsuGame : OsuGameTestScene
     {
         private IReadOnlyList<Type> requiredGameDependencies => new[]
         {

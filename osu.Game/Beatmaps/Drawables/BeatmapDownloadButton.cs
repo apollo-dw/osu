@@ -18,7 +18,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Beatmaps.Drawables
 {
-    public partial class BeatmapDownloadButton : CompositeDrawable
+    public class BeatmapDownloadButton : CompositeDrawable
     {
         protected bool DownloadEnabled => button.Enabled.Value;
 

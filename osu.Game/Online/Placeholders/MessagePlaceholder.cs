@@ -1,13 +1,15 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Localisation;
 
 namespace osu.Game.Online.Placeholders
 {
-    public partial class MessagePlaceholder : Placeholder
+    public class MessagePlaceholder : Placeholder
     {
         private readonly LocalisableString message;
 
@@ -22,6 +24,6 @@ namespace osu.Game.Online.Placeholders
             AddText(this.message = message);
         }
 
-        public override bool Equals(Placeholder? other) => (other as MessagePlaceholder)?.message == message;
+        public override bool Equals(Placeholder other) => (other as MessagePlaceholder)?.message == message;
     }
 }

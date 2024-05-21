@@ -11,14 +11,15 @@ using osu.Framework.Graphics.Textures;
 namespace osu.Game.Beatmaps.Drawables
 {
     [LongRunningLoad]
-    public partial class OnlineBeatmapSetCover : Sprite
+    public class OnlineBeatmapSetCover : Sprite
     {
         private readonly IBeatmapSetOnlineInfo set;
         private readonly BeatmapSetCoverType type;
 
         public OnlineBeatmapSetCover(IBeatmapSetOnlineInfo set, BeatmapSetCoverType type = BeatmapSetCoverType.Cover)
         {
-            ArgumentNullException.ThrowIfNull(set);
+            if (set == null)
+                throw new ArgumentNullException(nameof(set));
 
             this.set = set;
             this.type = type;

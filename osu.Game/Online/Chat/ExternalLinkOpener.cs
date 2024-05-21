@@ -13,13 +13,10 @@ using osu.Game.Overlays.Dialog;
 
 namespace osu.Game.Online.Chat
 {
-    public partial class ExternalLinkOpener : Component
+    public class ExternalLinkOpener : Component
     {
         [Resolved]
         private GameHost host { get; set; } = null!;
-
-        [Resolved]
-        private Clipboard clipboard { get; set; } = null!;
 
         [Resolved(CanBeNull = true)]
         private IDialogOverlay? dialogOverlay { get; set; }
@@ -35,12 +32,12 @@ namespace osu.Game.Online.Chat
         public void OpenUrlExternally(string url, bool bypassWarning = false)
         {
             if (!bypassWarning && externalLinkWarning.Value && dialogOverlay != null)
-                dialogOverlay.Push(new ExternalLinkDialog(url, () => host.OpenUrlExternally(url), () => clipboard.SetText(url)));
+                dialogOverlay.Push(new ExternalLinkDialog(url, () => host.OpenUrlExternally(url), () => host.GetClipboard()?.SetText(url)));
             else
                 host.OpenUrlExternally(url);
         }
 
-        public partial class ExternalLinkDialog : PopupDialog
+        public class ExternalLinkDialog : PopupDialog
         {
             public ExternalLinkDialog(string url, Action openExternalLinkAction, Action copyExternalLinkAction)
             {

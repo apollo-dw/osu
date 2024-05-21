@@ -5,17 +5,16 @@ using System.Collections.Generic;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
-using osu.Framework.Graphics.Containers;
-using osu.Framework.Utils;
 using osu.Game.Configuration;
 using osu.Game.Graphics;
-using osu.Game.Localisation.HUD;
 using osu.Game.Rulesets.Objects;
+using osu.Game.Rulesets.UI;
+using osu.Game.Skinning;
 using osuTK;
 
 namespace osu.Game.Screens.Play.HUD
 {
-    public partial class DefaultSongProgress : SongProgress
+    public class DefaultSongProgress : SongProgress
     {
         private const float bottom_bar_height = 5;
         private const float graph_height = SquareGraph.Column.WIDTH * 6;
@@ -25,65 +24,133 @@ namespace osu.Game.Screens.Play.HUD
 
         private const float transition_duration = 200;
 
-        private readonly DefaultSongProgressBar bar;
-        private readonly DefaultSongProgressGraph graph;
+        private readonly SongProgressBar bar;
+        private readonly SongProgressGraph graph;
         private readonly SongProgressInfo info;
-        private readonly Container content;
 
-        [SettingSource(typeof(SongProgressStrings), nameof(SongProgressStrings.ShowGraph), nameof(SongProgressStrings.ShowGraphDescription))]
+        /// <summary>
+        /// Whether seeking is allowed and the progress bar should be shown.
+        /// </summary>
+        public readonly Bindable<bool> AllowSeeking = new Bindable<bool>();
+
+        [SettingSource("Show difficulty graph", "Whether a graph displaying difficulty throughout the beatmap should be shown")]
         public Bindable<bool> ShowGraph { get; } = new BindableBool(true);
+
+        public override bool HandleNonPositionalInput => AllowSeeking.Value;
+        public override bool HandlePositionalInput => AllowSeeking.Value;
 
         [Resolved]
         private Player? player { get; set; }
 
+        [Resolved]
+        private DrawableRuleset? drawableRuleset { get; set; }
+
+        [Resolved]
+        private OsuConfigManager config { get; set; } = null!;
+
+        [Resolved]
+        private SkinManager skinManager { get; set; } = null!;
+
         public DefaultSongProgress()
         {
             RelativeSizeAxes = Axes.X;
-            AutoSizeAxes = Axes.Y;
             Anchor = Anchor.BottomRight;
             Origin = Anchor.BottomRight;
 
-            Child = content = new Container
+            Children = new Drawable[]
             {
-                RelativeSizeAxes = Axes.X,
-                Children = new Drawable[]
+                info = new SongProgressInfo
                 {
-                    info = new SongProgressInfo
-                    {
-                        Origin = Anchor.BottomLeft,
-                        Anchor = Anchor.BottomLeft,
-                        RelativeSizeAxes = Axes.X,
-                    },
-                    graph = new DefaultSongProgressGraph
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        Origin = Anchor.BottomLeft,
-                        Anchor = Anchor.BottomLeft,
-                        Height = graph_height,
-                        Margin = new MarginPadding { Bottom = bottom_bar_height },
-                    },
-                    bar = new DefaultSongProgressBar(bottom_bar_height, graph_height, handle_size)
-                    {
-                        Anchor = Anchor.BottomLeft,
-                        Origin = Anchor.BottomLeft,
-                        OnSeek = time => player?.Seek(time),
-                    },
-                }
+                    Origin = Anchor.BottomLeft,
+                    Anchor = Anchor.BottomLeft,
+                    RelativeSizeAxes = Axes.X,
+                },
+                graph = new SongProgressGraph
+                {
+                    RelativeSizeAxes = Axes.X,
+                    Origin = Anchor.BottomLeft,
+                    Anchor = Anchor.BottomLeft,
+                    Height = graph_height,
+                    Margin = new MarginPadding { Bottom = bottom_bar_height },
+                },
+                bar = new SongProgressBar(bottom_bar_height, graph_height, handle_size)
+                {
+                    Anchor = Anchor.BottomLeft,
+                    Origin = Anchor.BottomLeft,
+                    OnSeek = time => player?.Seek(time),
+                },
             };
         }
 
-        [BackgroundDependencyLoader]
+        [BackgroundDependencyLoader(true)]
         private void load(OsuColour colours)
         {
+            base.LoadComplete();
+
+            if (drawableRuleset != null)
+            {
+                if (player?.Configuration.AllowUserInteraction == true)
+                    ((IBindable<bool>)AllowSeeking).BindTo(drawableRuleset.HasReplayLoaded);
+            }
+
             graph.FillColour = bar.FillColour = colours.BlueLighter;
         }
 
         protected override void LoadComplete()
         {
-            Interactive.BindValueChanged(_ => updateBarVisibility(), true);
+            AllowSeeking.BindValueChanged(_ => updateBarVisibility(), true);
             ShowGraph.BindValueChanged(_ => updateGraphVisibility(), true);
 
-            base.LoadComplete();
+            migrateSettingFromConfig();
+        }
+
+        /// <summary>
+        /// This setting has been migrated to a per-component level.
+        /// Only take the value from the config if it is in a non-default state (then reset it to default so it only applies once).
+        ///
+        /// Can be removed 20221027.
+        /// </summary>
+        private void migrateSettingFromConfig()
+        {
+            Bindable<bool> configShowGraph = config.GetBindable<bool>(OsuSetting.ShowProgressGraph);
+
+            if (!configShowGraph.IsDefault)
+            {
+                ShowGraph.Value = configShowGraph.Value;
+
+                // This is pretty ugly, but the only way to make this stick...
+                var skinnableTarget = this.FindClosestParent<ISkinnableTarget>();
+
+                if (skinnableTarget != null)
+                {
+                    // If the skin is not mutable, a mutable instance will be created, causing this migration logic to run again on the correct skin.
+                    // Therefore we want to avoid resetting the config value on this invocation.
+                    if (skinManager.EnsureMutableSkin())
+                        return;
+
+                    // If `EnsureMutableSkin` actually changed the skin, default layout may take a frame to apply.
+                    // See `SkinnableTargetComponentsContainer`'s use of ScheduleAfterChildren.
+                    ScheduleAfterChildren(() =>
+                    {
+                        var skin = skinManager.CurrentSkin.Value;
+                        skin.UpdateDrawableTarget(skinnableTarget);
+
+                        skinManager.Save(skin);
+                    });
+
+                    configShowGraph.SetDefault();
+                }
+            }
+        }
+
+        protected override void PopIn()
+        {
+            this.FadeIn(500, Easing.OutQuint);
+        }
+
+        protected override void PopOut()
+        {
+            this.FadeOut(100);
         }
 
         protected override void UpdateObjects(IEnumerable<HitObject> objects)
@@ -98,23 +165,23 @@ namespace osu.Game.Screens.Play.HUD
 
         protected override void UpdateProgress(double progress, bool isIntro)
         {
-            graph.Progress = isIntro ? 0 : (int)(graph.ColumnCount * progress);
+            bar.CurrentTime = GameplayClock.CurrentTime;
+
+            if (isIntro)
+                graph.Progress = 0;
+            else
+                graph.Progress = (int)(graph.ColumnCount * progress);
         }
 
         protected override void Update()
         {
             base.Update();
-
-            // to prevent unnecessary invalidations of the song progress graph due to changes in size, apply tolerance when updating the height.
-            float newHeight = bottom_bar_height + graph_height + handle_size.Y + info.Height - graph.Y;
-
-            if (!Precision.AlmostEquals(Height, newHeight, 5f))
-                content.Height = newHeight;
+            Height = bottom_bar_height + graph_height + handle_size.Y + info.Height - graph.Y;
         }
 
         private void updateBarVisibility()
         {
-            bar.Interactive = Interactive.Value;
+            bar.ShowHandle = AllowSeeking.Value;
 
             updateInfoMargin();
         }
@@ -131,7 +198,7 @@ namespace osu.Game.Screens.Play.HUD
 
         private void updateInfoMargin()
         {
-            float finalMargin = bottom_bar_height + (Interactive.Value ? handle_size.Y : 0) + (ShowGraph.Value ? graph_height : 0);
+            float finalMargin = bottom_bar_height + (AllowSeeking.Value ? handle_size.Y : 0) + (ShowGraph.Value ? graph_height : 0);
             info.TransformTo(nameof(info.Margin), new MarginPadding { Bottom = finalMargin }, transition_duration, Easing.In);
         }
     }

@@ -13,18 +13,12 @@ using osu.Framework.Localisation;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
-using osu.Game.Localisation;
 using osuTK;
 
 namespace osu.Game.Overlays.Notifications
 {
-    public partial class NotificationSection : AlwaysUpdateFillFlowContainer<Drawable>
+    public class NotificationSection : AlwaysUpdateFillFlowContainer<Drawable>
     {
-        /// <summary>
-        /// All notifications currently being displayed in this section.
-        /// </summary>
-        public IEnumerable<Notification> Notifications => notifications;
-
         private OsuSpriteText countDrawable = null!;
 
         private FlowContainer<Notification> notifications = null!;
@@ -37,18 +31,17 @@ namespace osu.Game.Overlays.Notifications
             notifications.Insert((int)position, notification);
         }
 
-        /// <summary>
-        /// Enumerable of notification types accepted in this section.
-        /// If <see langword="null"/>, the section accepts any and all notifications.
-        /// </summary>
-        public IEnumerable<Type>? AcceptedNotificationTypes { get; }
+        public IEnumerable<Type> AcceptedNotificationTypes { get; }
+
+        private readonly string clearButtonText;
 
         private readonly LocalisableString titleText;
 
-        public NotificationSection(LocalisableString title, IEnumerable<Type>? acceptedNotificationTypes = null)
+        public NotificationSection(LocalisableString title, IEnumerable<Type> acceptedNotificationTypes, string clearButtonText)
         {
-            AcceptedNotificationTypes = acceptedNotificationTypes?.ToArray();
+            AcceptedNotificationTypes = acceptedNotificationTypes.ToArray();
 
+            this.clearButtonText = clearButtonText.ToUpperInvariant();
             titleText = title;
         }
 
@@ -77,7 +70,7 @@ namespace osu.Game.Overlays.Notifications
                     {
                         new ClearAllButton
                         {
-                            Text = NotificationsStrings.ClearAll.ToUpper(),
+                            Text = clearButtonText,
                             Anchor = Anchor.TopRight,
                             Origin = Anchor.TopRight,
                             Action = clearAll
@@ -117,11 +110,10 @@ namespace osu.Game.Overlays.Notifications
             });
         }
 
-        private void clearAll() => notifications.Children.ForEach(c =>
+        private void clearAll()
         {
-            if (c is not ProgressNotification p || !p.Ongoing)
-                c.Close(true);
-        });
+            notifications.Children.ForEach(c => c.Close(true));
+        }
 
         protected override void Update()
         {
@@ -143,7 +135,7 @@ namespace osu.Game.Overlays.Notifications
             return count;
         }
 
-        private partial class ClearAllButton : OsuClickableContainer
+        private class ClearAllButton : OsuClickableContainer
         {
             private readonly OsuSpriteText text;
 
@@ -170,7 +162,7 @@ namespace osu.Game.Overlays.Notifications
         }
     }
 
-    public partial class AlwaysUpdateFillFlowContainer<T> : FillFlowContainer<T>
+    public class AlwaysUpdateFillFlowContainer<T> : FillFlowContainer<T>
         where T : Drawable
     {
         // this is required to ensure correct layout and scheduling on children.

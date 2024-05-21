@@ -1,29 +1,36 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
+using osu.Framework.Bindables;
 using osu.Framework.Configuration;
 using osu.Framework.Graphics;
 using osu.Framework.Localisation;
 using osu.Game.Configuration;
+using osu.Game.Extensions;
 using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.Settings.Sections.General
 {
-    public partial class LanguageSettings : SettingsSubsection
+    public class LanguageSettings : SettingsSubsection
     {
+        private SettingsDropdown<Language> languageSelection;
+        private Bindable<string> frameworkLocale;
+
         protected override LocalisableString Header => GeneralSettingsStrings.LanguageHeader;
 
         [BackgroundDependencyLoader]
-        private void load(OsuGameBase game, OsuConfigManager config, FrameworkConfigManager frameworkConfig)
+        private void load(FrameworkConfigManager frameworkConfig, OsuConfigManager config)
         {
+            frameworkLocale = frameworkConfig.GetBindable<string>(FrameworkSetting.Locale);
+
             Children = new Drawable[]
             {
-                new SettingsEnumDropdown<Language>
+                languageSelection = new SettingsEnumDropdown<Language>
                 {
                     LabelText = GeneralSettingsStrings.LanguageDropdown,
-                    Current = game.CurrentLanguage,
-                    AlwaysShowSearchBar = true,
                 },
                 new SettingsCheckbox
                 {
@@ -36,6 +43,15 @@ namespace osu.Game.Overlays.Settings.Sections.General
                     Current = config.GetBindable<bool>(OsuSetting.Prefer24HourTime)
                 },
             };
+
+            frameworkLocale.BindValueChanged(locale =>
+            {
+                if (!LanguageExtensions.TryParseCultureCode(locale.NewValue, out var language))
+                    language = Language.en;
+                languageSelection.Current.Value = language;
+            }, true);
+
+            languageSelection.Current.BindValueChanged(val => frameworkLocale.Value = val.NewValue.ToCultureCode());
         }
     }
 }

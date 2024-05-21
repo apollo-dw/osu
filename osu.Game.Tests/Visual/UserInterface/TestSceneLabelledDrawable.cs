@@ -17,7 +17,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneLabelledDrawable : OsuTestScene
+    public class TestSceneLabelledDrawable : OsuTestScene
     {
         [TestCase(false)]
         [TestCase(true)]
@@ -88,7 +88,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             AddAssert($"description {(hasDescription ? "visible" : "hidden")}", () => component.ChildrenOfType<TextFlowContainer>().ElementAt(1).IsPresent == hasDescription);
         }
 
-        private partial class PaddedLabelledDrawable : LabelledDrawable<Drawable>
+        private class PaddedLabelledDrawable : LabelledDrawable<Drawable>
         {
             public PaddedLabelledDrawable()
                 : base(true)
@@ -104,7 +104,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             };
         }
 
-        private partial class NonPaddedLabelledDrawable : LabelledDrawable<Drawable>
+        private class NonPaddedLabelledDrawable : LabelledDrawable<Drawable>
         {
             public NonPaddedLabelledDrawable()
                 : base(false)

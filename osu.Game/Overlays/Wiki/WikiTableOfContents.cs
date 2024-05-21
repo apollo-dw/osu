@@ -13,7 +13,7 @@ using osu.Game.Graphics.Containers;
 
 namespace osu.Game.Overlays.Wiki
 {
-    public partial class WikiTableOfContents : CompositeDrawable
+    public class WikiTableOfContents : CompositeDrawable
     {
         private readonly FillFlowContainer content;
 
@@ -54,7 +54,7 @@ namespace osu.Game.Overlays.Wiki
             content.Add(lastMainTitle = entry.With(d => d.Margin = new MarginPadding { Bottom = 5 }));
         }
 
-        private partial class TableOfContentsEntry : OsuHoverContainer
+        private class TableOfContentsEntry : OsuHoverContainer
         {
             private readonly MarkdownHeading target;
 

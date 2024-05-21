@@ -18,7 +18,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.Dashboard.Home
 {
-    public abstract partial class DashboardBeatmapPanel : OsuClickableContainer
+    public abstract class DashboardBeatmapPanel : OsuClickableContainer
     {
         [Resolved]
         protected OverlayColourProvider ColourProvider { get; private set; }
@@ -100,15 +100,17 @@ namespace osu.Game.Overlays.Dashboard.Home
                                         Direction = FillDirection.Vertical,
                                         Children = new Drawable[]
                                         {
-                                            new TruncatingSpriteText
+                                            new OsuSpriteText
                                             {
                                                 RelativeSizeAxes = Axes.X,
+                                                Truncate = true,
                                                 Font = OsuFont.GetFont(weight: FontWeight.Regular),
                                                 Text = BeatmapSet.Title
                                             },
-                                            new TruncatingSpriteText
+                                            new OsuSpriteText
                                             {
                                                 RelativeSizeAxes = Axes.X,
+                                                Truncate = true,
                                                 Font = OsuFont.GetFont(size: 12, weight: FontWeight.Regular),
                                                 Text = BeatmapSet.Artist
                                             },

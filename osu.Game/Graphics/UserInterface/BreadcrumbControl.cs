@@ -10,12 +10,11 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.UserInterface;
 using System.Linq;
-using JetBrains.Annotations;
 using osu.Framework.Graphics.Sprites;
 
 namespace osu.Game.Graphics.UserInterface
 {
-    public partial class BreadcrumbControl<T> : OsuTabControl<T>
+    public class BreadcrumbControl<T> : OsuTabControl<T>
     {
         private const float padding = 10;
 
@@ -34,7 +33,7 @@ namespace osu.Game.Graphics.UserInterface
 
             Current.ValueChanged += index =>
             {
-                foreach (var t in TabContainer.OfType<BreadcrumbTabItem>())
+                foreach (var t in TabContainer.Children.OfType<BreadcrumbTabItem>())
                 {
                     int tIndex = TabContainer.IndexOf(t);
                     int tabIndex = TabContainer.IndexOf(TabMap[index.NewValue]);
@@ -45,17 +44,16 @@ namespace osu.Game.Graphics.UserInterface
             };
         }
 
-        public partial class BreadcrumbTabItem : OsuTabItem, IStateful<Visibility>
+        public class BreadcrumbTabItem : OsuTabItem, IStateful<Visibility>
         {
             protected virtual float ChevronSize => 10;
 
-            [CanBeNull]
             public event Action<Visibility> StateChanged;
 
             public readonly SpriteIcon Chevron;
 
-            //don't allow clicking between transitions
-            public override bool ReceivePositionalInputAt(Vector2 screenSpacePos) => Alpha == 1f && base.ReceivePositionalInputAt(screenSpacePos);
+            //don't allow clicking between transitions and don't make the chevron clickable
+            public override bool ReceivePositionalInputAt(Vector2 screenSpacePos) => Alpha == 1f && Text.ReceivePositionalInputAt(screenSpacePos);
 
             public override bool HandleNonPositionalInput => State == Visibility.Visible;
             public override bool HandlePositionalInput => State == Visibility.Visible;
@@ -97,7 +95,7 @@ namespace osu.Game.Graphics.UserInterface
             {
                 Text.Font = Text.Font.With(size: 18);
                 Text.Margin = new MarginPadding { Vertical = 8 };
-                Margin = new MarginPadding { Right = padding + ChevronSize };
+                Padding = new MarginPadding { Right = padding + ChevronSize };
                 Add(Chevron = new SpriteIcon
                 {
                     Anchor = Anchor.CentreRight,

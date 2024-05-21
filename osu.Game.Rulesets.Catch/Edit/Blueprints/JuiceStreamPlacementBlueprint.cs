@@ -1,10 +1,11 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Graphics;
 using osu.Framework.Input;
 using osu.Framework.Input.Events;
-using osu.Framework.Utils;
 using osu.Game.Rulesets.Catch.Edit.Blueprints.Components;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Edit;
@@ -13,7 +14,7 @@ using osuTK.Input;
 
 namespace osu.Game.Rulesets.Catch.Edit.Blueprints
 {
-    public partial class JuiceStreamPlacementBlueprint : CatchPlacementBlueprint<JuiceStream>
+    public class JuiceStreamPlacementBlueprint : CatchPlacementBlueprint<JuiceStream>
     {
         private readonly ScrollingPath scrollingPath;
 
@@ -23,9 +24,7 @@ namespace osu.Game.Rulesets.Catch.Edit.Blueprints
 
         private int lastEditablePathId = -1;
 
-        private InputManager inputManager = null!;
-
-        protected override bool IsValidForPlacement => Precision.DefinitelyBigger(HitObject.Duration, 0);
+        private InputManager inputManager;
 
         public JuiceStreamPlacementBlueprint()
         {
@@ -73,7 +72,7 @@ namespace osu.Game.Rulesets.Catch.Edit.Blueprints
                             return true;
 
                         case MouseButton.Right:
-                            EndPlacement(true);
+                            EndPlacement(HitObject.Duration > 0);
                             return true;
                     }
 

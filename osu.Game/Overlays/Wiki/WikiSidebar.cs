@@ -15,7 +15,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Wiki
 {
-    public partial class WikiSidebar : OverlaySidebar
+    public class WikiSidebar : OverlaySidebar
     {
         private WikiTableOfContents tableOfContents;
 

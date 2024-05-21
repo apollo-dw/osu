@@ -25,27 +25,6 @@ namespace osu.Game.Screens.Edit
             BindValueChanged(_ => ensureValidDivisor());
         }
 
-        /// <summary>
-        /// Set a divisor, updating the valid divisor range appropriately.
-        /// </summary>
-        /// <param name="divisor">The intended divisor.</param>
-        /// <param name="preferKnownPresets">Forces changing the valid divisors to a known preset.</param>
-        public void SetArbitraryDivisor(int divisor, bool preferKnownPresets = false)
-        {
-            // If the current valid divisor range doesn't contain the proposed value, attempt to find one which does.
-            if (preferKnownPresets || !ValidDivisors.Value.Presets.Contains(divisor))
-            {
-                if (BeatDivisorPresetCollection.COMMON.Presets.Contains(divisor))
-                    ValidDivisors.Value = BeatDivisorPresetCollection.COMMON;
-                else if (BeatDivisorPresetCollection.TRIPLETS.Presets.Contains(divisor))
-                    ValidDivisors.Value = BeatDivisorPresetCollection.TRIPLETS;
-                else
-                    ValidDivisors.Value = BeatDivisorPresetCollection.Custom(divisor);
-            }
-
-            Value = divisor;
-        }
-
         private void updateBindableProperties()
         {
             ensureValidDivisor();
@@ -60,18 +39,16 @@ namespace osu.Game.Screens.Edit
                 Value = 1;
         }
 
-        public void SelectNext()
+        public void Next()
         {
             var presets = ValidDivisors.Value.Presets;
-            if (presets.Cast<int?>().SkipWhile(preset => preset != Value).ElementAtOrDefault(1) is int newValue)
-                Value = newValue;
+            Value = presets.Cast<int?>().SkipWhile(preset => preset != Value).ElementAtOrDefault(1) ?? presets[0];
         }
 
-        public void SelectPrevious()
+        public void Previous()
         {
             var presets = ValidDivisors.Value.Presets;
-            if (presets.Cast<int?>().TakeWhile(preset => preset != Value).LastOrDefault() is int newValue)
-                Value = newValue;
+            Value = presets.Cast<int?>().TakeWhile(preset => preset != Value).LastOrDefault() ?? presets[^1];
         }
 
         protected override int DefaultPrecision => 1;
@@ -157,15 +134,12 @@ namespace osu.Game.Screens.Edit
         /// </summary>
         /// <param name="index">The 0-based beat index.</param>
         /// <param name="beatDivisor">The beat divisor.</param>
-        /// <param name="validDivisors">The list of valid divisors which can be chosen from. Assumes ordered from low to high. Defaults to <see cref="PREDEFINED_DIVISORS"/> if omitted.</param>
         /// <returns>The applicable divisor.</returns>
-        public static int GetDivisorForBeatIndex(int index, int beatDivisor, int[] validDivisors = null)
+        public static int GetDivisorForBeatIndex(int index, int beatDivisor)
         {
-            validDivisors ??= PREDEFINED_DIVISORS;
-
             int beat = index % beatDivisor;
 
-            foreach (int divisor in validDivisors)
+            foreach (int divisor in PREDEFINED_DIVISORS)
             {
                 if ((beat * divisor) % beatDivisor == 0)
                     return divisor;

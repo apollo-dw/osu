@@ -1,9 +1,13 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
+using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Graphics.Textures;
 using osu.Framework.Localisation;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
@@ -11,12 +15,12 @@ using osuTK;
 
 namespace osu.Game.Overlays
 {
-    public abstract partial class OverlayTitle : CompositeDrawable, INamedOverlayComponent
+    public abstract class OverlayTitle : CompositeDrawable, INamedOverlayComponent
     {
         public const float ICON_SIZE = 30;
 
         private readonly OsuSpriteText titleText;
-        private readonly Container iconContainer;
+        private readonly Container icon;
 
         private LocalisableString title;
 
@@ -28,20 +32,12 @@ namespace osu.Game.Overlays
 
         public LocalisableString Description { get; protected set; }
 
-        private IconUsage icon;
+        private string iconTexture;
 
-        public IconUsage Icon
+        public string IconTexture
         {
-            get => icon;
-            protected set => iconContainer.Child = new SpriteIcon
-            {
-                RelativeSizeAxes = Axes.Both,
-                Anchor = Anchor.Centre,
-                Origin = Anchor.Centre,
-                FillMode = FillMode.Fit,
-
-                Icon = icon = value,
-            };
+            get => iconTexture;
+            protected set => icon.Child = new OverlayTitleIcon(iconTexture = value);
         }
 
         protected OverlayTitle()
@@ -55,7 +51,7 @@ namespace osu.Game.Overlays
                 Direction = FillDirection.Horizontal,
                 Children = new Drawable[]
                 {
-                    iconContainer = new Container
+                    icon = new Container
                     {
                         Anchor = Anchor.Centre,
                         Origin = Anchor.Centre,
@@ -71,6 +67,27 @@ namespace osu.Game.Overlays
                     }
                 }
             };
+        }
+
+        private class OverlayTitleIcon : Sprite
+        {
+            private readonly string textureName;
+
+            public OverlayTitleIcon(string textureName)
+            {
+                this.textureName = textureName;
+
+                RelativeSizeAxes = Axes.Both;
+                Anchor = Anchor.Centre;
+                Origin = Anchor.Centre;
+                FillMode = FillMode.Fit;
+            }
+
+            [BackgroundDependencyLoader]
+            private void load(TextureStore textures)
+            {
+                Texture = textures.Get(textureName);
+            }
         }
     }
 }

@@ -17,10 +17,10 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.BeatmapListing
 {
-    public partial class FilterTabItem<T> : TabItem<T>
+    public class FilterTabItem<T> : TabItem<T>
     {
         [Resolved]
-        protected OverlayColourProvider ColourProvider { get; private set; }
+        private OverlayColourProvider colourProvider { get; set; }
 
         private OsuSpriteText text;
 
@@ -33,6 +33,8 @@ namespace osu.Game.Overlays.BeatmapListing
         private void load()
         {
             AutoSizeAxes = Axes.Both;
+            Anchor = Anchor.BottomLeft;
+            Origin = Anchor.BottomLeft;
             AddRangeInternal(new Drawable[]
             {
                 text = new OsuSpriteText
@@ -50,42 +52,38 @@ namespace osu.Game.Overlays.BeatmapListing
         {
             base.LoadComplete();
 
-            UpdateState();
+            updateState();
             FinishTransforms(true);
         }
 
         protected override bool OnHover(HoverEvent e)
         {
             base.OnHover(e);
-            UpdateState();
+            updateState();
             return true;
         }
 
         protected override void OnHoverLost(HoverLostEvent e)
         {
             base.OnHoverLost(e);
-            UpdateState();
+            updateState();
         }
 
-        protected override void OnActivated() => UpdateState();
+        protected override void OnActivated() => updateState();
 
-        protected override void OnDeactivated() => UpdateState();
+        protected override void OnDeactivated() => updateState();
 
         /// <summary>
         /// Returns the label text to be used for the supplied <paramref name="value"/>.
         /// </summary>
         protected virtual LocalisableString LabelFor(T value) => (value as Enum)?.GetLocalisableDescription() ?? value.ToString();
 
-        protected virtual bool HighlightOnHoverWhenActive => false;
-
-        protected virtual void UpdateState()
+        private void updateState()
         {
-            bool highlightHover = IsHovered && (!Active.Value || HighlightOnHoverWhenActive);
-
-            text.FadeColour(highlightHover ? ColourProvider.Content2 : GetStateColour(), 200, Easing.OutQuint);
-            text.Font = text.Font.With(weight: Active.Value ? FontWeight.Bold : FontWeight.Regular);
+            text.FadeColour(IsHovered ? colourProvider.Light1 : GetStateColour(), 200, Easing.OutQuint);
+            text.Font = text.Font.With(weight: Active.Value ? FontWeight.SemiBold : FontWeight.Regular);
         }
 
-        protected virtual Color4 GetStateColour() => Active.Value ? ColourProvider.Content1 : ColourProvider.Light2;
+        protected virtual Color4 GetStateColour() => Active.Value ? colourProvider.Content1 : colourProvider.Light2;
     }
 }

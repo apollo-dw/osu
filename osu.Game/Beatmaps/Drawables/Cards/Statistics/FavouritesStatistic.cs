@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using Humanizer;
 using osu.Framework.Bindables;
@@ -13,7 +15,7 @@ namespace osu.Game.Beatmaps.Drawables.Cards.Statistics
     /// <summary>
     /// Shows the number of favourites that a beatmap set has received.
     /// </summary>
-    public partial class FavouritesStatistic : BeatmapCardStatistic, IHasCurrentValue<BeatmapSetFavouriteState>
+    public class FavouritesStatistic : BeatmapCardStatistic, IHasCurrentValue<BeatmapSetFavouriteState>
     {
         private readonly BindableWithCurrent<BeatmapSetFavouriteState> current;
 

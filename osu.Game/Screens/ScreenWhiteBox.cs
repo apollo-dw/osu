@@ -20,7 +20,7 @@ using osu.Framework.Graphics.Sprites;
 
 namespace osu.Game.Screens
 {
-    public partial class ScreenWhiteBox : OsuScreen
+    public class ScreenWhiteBox : OsuScreen
     {
         private readonly UnderConstructionMessage message;
 
@@ -95,7 +95,7 @@ namespace osu.Game.Screens
             return new Color4(r, g, b, 255);
         }
 
-        private partial class ChildModeButton : TwoLayerButton
+        private class ChildModeButton : TwoLayerButton
         {
             public ChildModeButton()
             {
@@ -105,7 +105,7 @@ namespace osu.Game.Screens
             }
         }
 
-        public partial class UnderConstructionMessage : CompositeDrawable
+        public class UnderConstructionMessage : CompositeDrawable
         {
             public FillFlowContainer TextContainer { get; }
 

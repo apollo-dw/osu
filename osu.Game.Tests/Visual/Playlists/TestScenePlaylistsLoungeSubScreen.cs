@@ -17,7 +17,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Playlists
 {
-    public partial class TestScenePlaylistsLoungeSubScreen : OnlinePlayTestScene
+    public class TestScenePlaylistsLoungeSubScreen : OnlinePlayTestScene
     {
         protected new TestRoomManager RoomManager => (TestRoomManager)base.RoomManager;
 
@@ -95,7 +95,7 @@ namespace osu.Game.Tests.Visual.Playlists
             loungeScreen.ChildrenOfType<OsuScrollContainer>().First().ScreenSpaceDrawQuad
                         .Contains(room.ScreenSpaceDrawQuad.Centre);
 
-        private partial class TestLoungeSubScreen : PlaylistsLoungeSubScreen
+        private class TestLoungeSubScreen : PlaylistsLoungeSubScreen
         {
             public new Bindable<Room> SelectedRoom => base.SelectedRoom;
         }

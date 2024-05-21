@@ -23,7 +23,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Editing
 {
-    public abstract partial class TimelineTestScene : EditorClockTestScene
+    public abstract class TimelineTestScene : EditorClockTestScene
     {
         protected TimelineArea TimelineArea { get; private set; }
 
@@ -87,7 +87,7 @@ namespace osu.Game.Tests.Visual.Editing
 
         public abstract Drawable CreateTestComponent();
 
-        private partial class AudioVisualiser : CompositeDrawable
+        private class AudioVisualiser : CompositeDrawable
         {
             private readonly Drawable marker;
 
@@ -126,7 +126,7 @@ namespace osu.Game.Tests.Visual.Editing
             }
         }
 
-        private partial class StartStopButton : OsuButton
+        private class StartStopButton : OsuButton
         {
             [Resolved]
             private EditorClock editorClock { get; set; }

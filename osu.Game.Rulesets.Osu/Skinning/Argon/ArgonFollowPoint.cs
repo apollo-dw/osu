@@ -10,7 +10,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Argon
 {
-    public partial class ArgonFollowPoint : CompositeDrawable
+    public class ArgonFollowPoint : CompositeDrawable
     {
         public ArgonFollowPoint()
         {

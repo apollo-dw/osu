@@ -20,7 +20,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Skins
 {
     [HeadlessTest]
-    public partial class TestSceneSkinProvidingContainer : OsuTestScene
+    public class TestSceneSkinProvidingContainer : OsuTestScene
     {
         [Resolved]
         private IRenderer renderer { get; set; }
@@ -59,7 +59,7 @@ namespace osu.Game.Tests.Skins
             });
         }
 
-        private partial class TestSkinProvidingContainer : SkinProvidingContainer
+        private class TestSkinProvidingContainer : SkinProvidingContainer
         {
             private readonly IEnumerable<ISkin> sources;
 
@@ -87,7 +87,7 @@ namespace osu.Game.Tests.Skins
                 this.renderer = renderer;
             }
 
-            public Drawable GetDrawableComponent(ISkinComponentLookup lookup) => throw new System.NotImplementedException();
+            public Drawable GetDrawableComponent(ISkinComponent component) => throw new System.NotImplementedException();
 
             public Texture GetTexture(string componentName, WrapMode wrapModeS, WrapMode wrapModeT)
             {

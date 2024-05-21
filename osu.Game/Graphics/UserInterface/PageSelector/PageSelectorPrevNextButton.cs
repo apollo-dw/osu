@@ -14,7 +14,7 @@ using osuTK;
 
 namespace osu.Game.Graphics.UserInterface.PageSelector
 {
-    public partial class PageSelectorPrevNextButton : PageSelectorButton
+    public class PageSelectorPrevNextButton : PageSelectorButton
     {
         private readonly bool rightAligned;
         private readonly LocalisableString text;

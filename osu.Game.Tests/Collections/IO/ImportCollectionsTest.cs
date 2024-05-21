@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System;
 using System.IO;
@@ -186,7 +188,7 @@ namespace osu.Game.Tests.Collections.IO
             }
 
             // Name matches the automatically chosen name from `CleanRunHeadlessGameHost` above, so we end up using the same storage location.
-            using (HeadlessGameHost host = new TestRunHeadlessGameHost(firstRunName))
+            using (HeadlessGameHost host = new TestRunHeadlessGameHost(firstRunName, null))
             {
                 try
                 {

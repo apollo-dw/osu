@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -13,23 +15,23 @@ using osuTK;
 
 namespace osu.Game.Screens.Edit.Timing
 {
-    internal partial class GroupSection : CompositeDrawable
+    internal class GroupSection : CompositeDrawable
     {
-        private LabelledTextBox textBox = null!;
+        private LabelledTextBox textBox;
 
-        private OsuButton button = null!;
-
-        [Resolved]
-        protected Bindable<ControlPointGroup> SelectedGroup { get; private set; } = null!;
+        private OsuButton button;
 
         [Resolved]
-        protected EditorBeatmap Beatmap { get; private set; } = null!;
+        protected Bindable<ControlPointGroup> SelectedGroup { get; private set; }
 
         [Resolved]
-        private EditorClock clock { get; set; } = null!;
+        protected EditorBeatmap Beatmap { get; private set; }
 
         [Resolved]
-        private IEditorChangeHandler? changeHandler { get; set; }
+        private EditorClock clock { get; set; }
+
+        [Resolved(canBeNull: true)]
+        private IEditorChangeHandler changeHandler { get; set; }
 
         [BackgroundDependencyLoader]
         private void load()

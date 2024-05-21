@@ -10,7 +10,7 @@ using osu.Game.Rulesets.Scoring;
 
 namespace osu.Game.Rulesets.Mania.UI
 {
-    public partial class DrawableManiaJudgement : DrawableJudgement
+    public class DrawableManiaJudgement : DrawableJudgement
     {
         public DrawableManiaJudgement(JudgementResult result, DrawableHitObject judgedObject)
             : base(result, judgedObject)
@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Mania.UI
 
         protected override Drawable CreateDefaultJudgement(HitResult result) => new DefaultManiaJudgementPiece(result);
 
-        private partial class DefaultManiaJudgementPiece : DefaultJudgementPiece
+        private class DefaultManiaJudgementPiece : DefaultJudgementPiece
         {
             public DefaultManiaJudgementPiece(HitResult result)
                 : base(result)

@@ -10,7 +10,7 @@ using osuTK.Input;
 
 namespace osu.Game.Screens.Utility.SampleComponents
 {
-    public partial class LatencyMovableBox : LatencySampleComponent
+    public class LatencyMovableBox : LatencySampleComponent
     {
         private Box box = null!;
 

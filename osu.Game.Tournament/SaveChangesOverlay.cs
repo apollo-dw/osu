@@ -7,16 +7,13 @@ using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Input;
-using osu.Framework.Input.Bindings;
-using osu.Framework.Input.Events;
 using osu.Game.Graphics;
 using osu.Game.Online.Multiplayer;
 using osuTK;
 
 namespace osu.Game.Tournament
 {
-    internal partial class SaveChangesOverlay : CompositeDrawable, IKeyBindingHandler<PlatformAction>
+    internal class SaveChangesOverlay : CompositeDrawable
     {
         [Resolved]
         private TournamentGame tournamentGame { get; set; } = null!;
@@ -28,11 +25,12 @@ namespace osu.Game.Tournament
         {
             RelativeSizeAxes = Axes.Both;
 
-            InternalChild = new CircularContainer
+            InternalChild = new Container
             {
                 Anchor = Anchor.BottomRight,
                 Origin = Anchor.BottomRight,
-                Position = new Vector2(-5),
+                Position = new Vector2(5),
+                CornerRadius = 10,
                 Masking = true,
                 AutoSizeAxes = Axes.Both,
                 Children = new Drawable[]
@@ -45,10 +43,18 @@ namespace osu.Game.Tournament
                     saveChangesButton = new TourneyButton
                     {
                         Text = "Save Changes",
-                        RelativeSizeAxes = Axes.None,
                         Width = 140,
                         Height = 50,
-                        Margin = new MarginPadding(10),
+                        Padding = new MarginPadding
+                        {
+                            Top = 10,
+                            Left = 10,
+                        },
+                        Margin = new MarginPadding
+                        {
+                            Right = 10,
+                            Bottom = 10,
+                        },
                         Action = saveChanges,
                         // Enabled = { Value = false },
                     },
@@ -64,7 +70,7 @@ namespace osu.Game.Tournament
 
         private async Task checkForChanges()
         {
-            string serialisedLadder = await Task.Run(() => tournamentGame.GetSerialisedLadder()).ConfigureAwait(true);
+            string serialisedLadder = await Task.Run(() => tournamentGame.GetSerialisedLadder());
 
             // If a save hasn't been triggered by the user yet, populate the initial value
             lastSerialisedLadder ??= serialisedLadder;
@@ -79,21 +85,6 @@ namespace osu.Game.Tournament
             }
 
             scheduleNextCheck();
-        }
-
-        public bool OnPressed(KeyBindingPressEvent<PlatformAction> e)
-        {
-            if (e.Action == PlatformAction.Save && !e.Repeat)
-            {
-                saveChangesButton.TriggerClick();
-                return true;
-            }
-
-            return false;
-        }
-
-        public void OnReleased(KeyBindingReleaseEvent<PlatformAction> e)
-        {
         }
 
         private void scheduleNextCheck() => Scheduler.AddDelayed(() => checkForChanges().FireAndForget(), 1000);

@@ -34,11 +34,11 @@ namespace osu.Game.IO.Legacy
         {
             if (str == null)
             {
-                Write((byte)ObjType.NullType);
+                Write((byte)ObjType.nullType);
             }
             else
             {
-                Write((byte)ObjType.StringType);
+                Write((byte)ObjType.stringType);
                 base.Write(str);
             }
         }
@@ -125,94 +125,94 @@ namespace osu.Game.IO.Legacy
         {
             if (obj == null)
             {
-                Write((byte)ObjType.NullType);
+                Write((byte)ObjType.nullType);
             }
             else
             {
                 switch (obj)
                 {
                     case bool boolObj:
-                        Write((byte)ObjType.BoolType);
+                        Write((byte)ObjType.boolType);
                         Write(boolObj);
                         break;
 
                     case byte byteObj:
-                        Write((byte)ObjType.ByteType);
+                        Write((byte)ObjType.byteType);
                         Write(byteObj);
                         break;
 
                     case ushort ushortObj:
-                        Write((byte)ObjType.UInt16Type);
+                        Write((byte)ObjType.uint16Type);
                         Write(ushortObj);
                         break;
 
                     case uint uintObj:
-                        Write((byte)ObjType.UInt32Type);
+                        Write((byte)ObjType.uint32Type);
                         Write(uintObj);
                         break;
 
                     case ulong ulongObj:
-                        Write((byte)ObjType.UInt64Type);
+                        Write((byte)ObjType.uint64Type);
                         Write(ulongObj);
                         break;
 
                     case sbyte sbyteObj:
-                        Write((byte)ObjType.SByteType);
+                        Write((byte)ObjType.sbyteType);
                         Write(sbyteObj);
                         break;
 
                     case short shortObj:
-                        Write((byte)ObjType.Int16Type);
+                        Write((byte)ObjType.int16Type);
                         Write(shortObj);
                         break;
 
                     case int intObj:
-                        Write((byte)ObjType.Int32Type);
+                        Write((byte)ObjType.int32Type);
                         Write(intObj);
                         break;
 
                     case long longObj:
-                        Write((byte)ObjType.Int64Type);
+                        Write((byte)ObjType.int64Type);
                         Write(longObj);
                         break;
 
                     case char charObj:
-                        Write((byte)ObjType.CharType);
+                        Write((byte)ObjType.charType);
                         base.Write(charObj);
                         break;
 
                     case string stringObj:
-                        Write((byte)ObjType.StringType);
+                        Write((byte)ObjType.stringType);
                         base.Write(stringObj);
                         break;
 
                     case float floatObj:
-                        Write((byte)ObjType.SingleType);
+                        Write((byte)ObjType.singleType);
                         Write(floatObj);
                         break;
 
                     case double doubleObj:
-                        Write((byte)ObjType.DoubleType);
+                        Write((byte)ObjType.doubleType);
                         Write(doubleObj);
                         break;
 
                     case decimal decimalObj:
-                        Write((byte)ObjType.DecimalType);
+                        Write((byte)ObjType.decimalType);
                         Write(decimalObj);
                         break;
 
                     case DateTime dateTimeObj:
-                        Write((byte)ObjType.DateTimeType);
+                        Write((byte)ObjType.dateTimeType);
                         Write(dateTimeObj);
                         break;
 
                     case byte[] byteArray:
-                        Write((byte)ObjType.ByteArrayType);
+                        Write((byte)ObjType.byteArrayType);
                         base.Write(byteArray);
                         break;
 
                     case char[] charArray:
-                        Write((byte)ObjType.CharArrayType);
+                        Write((byte)ObjType.charArrayType);
                         base.Write(charArray);
                         break;
 

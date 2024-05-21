@@ -11,7 +11,7 @@ using osu.Game.Screens.Play.HUD;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneModFlowDisplay : OsuTestScene
+    public class TestSceneModFlowDisplay : OsuTestScene
     {
         private ModFlowDisplay modFlow;
 

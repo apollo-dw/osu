@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +24,7 @@ using osuTK;
 
 namespace osu.Game.Rulesets.Mania.Tests.Editor
 {
-    public partial class TestSceneManiaBeatSnapGrid : EditorClockTestScene
+    public class TestSceneManiaBeatSnapGrid : EditorClockTestScene
     {
         [Cached(typeof(IScrollingInfo))]
         private ScrollingTestContainer.TestScrollingInfo scrollingInfo = new ScrollingTestContainer.TestScrollingInfo();
@@ -81,14 +83,13 @@ namespace osu.Game.Rulesets.Mania.Tests.Editor
         public ManiaPlayfield Playfield { get; }
     }
 
-    public partial class TestHitObjectComposer : HitObjectComposer
+    public class TestHitObjectComposer : HitObjectComposer
     {
         public override Playfield Playfield { get; }
         public override IEnumerable<DrawableHitObject> HitObjects => Enumerable.Empty<DrawableHitObject>();
         public override bool CursorInPlacementArea => false;
 
         public TestHitObjectComposer(Playfield playfield)
-            : base(new ManiaRuleset())
         {
             Playfield = playfield;
         }

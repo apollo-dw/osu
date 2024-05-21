@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using System.Linq;
 using osu.Framework.Allocation;
@@ -11,28 +13,23 @@ using osu.Game.Graphics;
 using osu.Game.Online.API;
 using osu.Game.Online.API.Requests;
 using osu.Game.Online.API.Requests.Responses;
-using osu.Game.Overlays;
 using osu.Game.Overlays.Settings;
 using osu.Game.Tournament.Components;
 using osu.Game.Tournament.Models;
-using osu.Game.Tournament.Screens.Editors.Components;
 using osuTK;
 
 namespace osu.Game.Tournament.Screens.Editors
 {
-    public partial class RoundEditorScreen : TournamentEditorScreen<RoundEditorScreen.RoundRow, TournamentRound>
+    public class RoundEditorScreen : TournamentEditorScreen<RoundEditorScreen.RoundRow, TournamentRound>
     {
         protected override BindableList<TournamentRound> Storage => LadderInfo.Rounds;
 
-        public partial class RoundRow : CompositeDrawable, IModelBacked<TournamentRound>
+        public class RoundRow : CompositeDrawable, IModelBacked<TournamentRound>
         {
             public TournamentRound Model { get; }
 
             [Resolved]
-            private LadderInfo ladderInfo { get; set; } = null!;
-
-            [Resolved]
-            private IDialogOverlay? dialogOverlay { get; set; }
+            private LadderInfo ladderInfo { get; set; }
 
             public RoundRow(TournamentRound round)
             {
@@ -83,12 +80,6 @@ namespace osu.Game.Tournament.Screens.Editors
                             },
                             new SettingsSlider<int>
                             {
-                                LabelText = "# of Bans",
-                                Width = 0.33f,
-                                Current = Model.BanCount
-                            },
-                            new SettingsSlider<int>
-                            {
                                 LabelText = "Best of",
                                 Width = 0.33f,
                                 Current = Model.BestOf
@@ -110,11 +101,11 @@ namespace osu.Game.Tournament.Screens.Editors
                         RelativeSizeAxes = Axes.None,
                         Width = 150,
                         Text = "Delete Round",
-                        Action = () => dialogOverlay?.Push(new DeleteRoundDialog(Model, () =>
+                        Action = () =>
                         {
                             Expire();
                             ladderInfo.Rounds.Remove(Model);
-                        }))
+                        },
                     }
                 };
 
@@ -122,7 +113,7 @@ namespace osu.Game.Tournament.Screens.Editors
                 AutoSizeAxes = Axes.Y;
             }
 
-            public partial class RoundBeatmapEditor : CompositeDrawable
+            public class RoundBeatmapEditor : CompositeDrawable
             {
                 private readonly TournamentRound round;
                 private readonly FillFlowContainer flow;
@@ -145,19 +136,17 @@ namespace osu.Game.Tournament.Screens.Editors
 
                 public void CreateNew()
                 {
-                    var b = new RoundBeatmap();
-
-                    round.Beatmaps.Add(b);
-
-                    flow.Add(new RoundBeatmapRow(round, b));
+                    var user = new RoundBeatmap();
+                    round.Beatmaps.Add(user);
+                    flow.Add(new RoundBeatmapRow(round, user));
                 }
 
-                public partial class RoundBeatmapRow : CompositeDrawable
+                public class RoundBeatmapRow : CompositeDrawable
                 {
                     public RoundBeatmap Model { get; }
 
                     [Resolved]
-                    protected IAPIProvider API { get; private set; } = null!;
+                    protected IAPIProvider API { get; private set; }
 
                     private readonly Bindable<int?> beatmapId = new Bindable<int?>();
 
@@ -267,7 +256,7 @@ namespace osu.Game.Tournament.Screens.Editors
                         mods.BindValueChanged(modString => Model.Mods = modString.NewValue);
                     }
 
-                    private void updatePanel() => Schedule(() =>
+                    private void updatePanel()
                     {
                         drawableContainer.Clear();
 
@@ -280,7 +269,7 @@ namespace osu.Game.Tournament.Screens.Editors
                                 Width = 300
                             };
                         }
-                    });
+                    }
                 }
             }
         }

@@ -15,7 +15,7 @@ namespace osu.Game.Skinning
     /// <summary>
     /// A container which overrides existing skin options with beatmap-local values.
     /// </summary>
-    public partial class BeatmapSkinProvidingContainer : SkinProvidingContainer
+    public class BeatmapSkinProvidingContainer : SkinProvidingContainer
     {
         private Bindable<bool> beatmapSkins;
         private Bindable<bool> beatmapColours;
@@ -43,7 +43,7 @@ namespace osu.Game.Skinning
             }
         }
 
-        protected override bool AllowDrawableLookup(ISkinComponentLookup lookup)
+        protected override bool AllowDrawableLookup(ISkinComponent component)
         {
             if (beatmapSkins == null)
                 throw new InvalidOperationException($"{nameof(BeatmapSkinProvidingContainer)} needs to be loaded before being consumed.");

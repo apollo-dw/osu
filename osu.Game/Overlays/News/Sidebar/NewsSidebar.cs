@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace osu.Game.Overlays.News.Sidebar
 {
-    public partial class NewsSidebar : OverlaySidebar
+    public class NewsSidebar : OverlaySidebar
     {
         [Cached]
         public readonly Bindable<APINewsSidebar> Metadata = new Bindable<APINewsSidebar>();

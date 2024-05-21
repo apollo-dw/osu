@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -14,7 +16,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.Toolbar
 {
-    public partial class ToolbarNotificationButton : ToolbarOverlayToggleButton
+    public class ToolbarNotificationButton : ToolbarOverlayToggleButton
     {
         protected override Anchor TooltipAnchor => Anchor.TopRight;
 
@@ -41,7 +43,8 @@ namespace osu.Game.Overlays.Toolbar
         {
             StateContainer = notificationOverlay as NotificationOverlay;
 
-            NotificationCount.BindTo(notificationOverlay.UnreadCount);
+            if (notificationOverlay != null)
+                NotificationCount.BindTo(notificationOverlay.UnreadCount);
 
             NotificationCount.ValueChanged += count =>
             {
@@ -55,7 +58,7 @@ namespace osu.Game.Overlays.Toolbar
             };
         }
 
-        private partial class CountCircle : CompositeDrawable
+        private class CountCircle : CompositeDrawable
         {
             private readonly OsuSpriteText countText;
             private readonly Circle circle;

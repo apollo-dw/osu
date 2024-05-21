@@ -19,7 +19,7 @@ using osuTK.Graphics;
 namespace osu.Game.Tests.Visual.Menus
 {
     [TestFixture]
-    public partial class TestSceneLoader : ScreenTestScene
+    public class TestSceneLoader : ScreenTestScene
     {
         private TestLoader loader;
 
@@ -68,7 +68,7 @@ namespace osu.Game.Tests.Visual.Menus
             AddUntilStep("not current", () => !loader.IsCurrentScreen());
         }
 
-        private partial class TestLoader : Loader
+        private class TestLoader : Loader
         {
             public readonly ManualResetEventSlim AllowLoad = new ManualResetEventSlim();
 
@@ -80,7 +80,7 @@ namespace osu.Game.Tests.Visual.Menus
             protected override OsuScreen CreateLoadableScreen() => screen = new TestScreen();
             protected override ShaderPrecompiler CreateShaderPrecompiler() => new TestShaderPrecompiler(AllowLoad);
 
-            private partial class TestShaderPrecompiler : ShaderPrecompiler
+            private class TestShaderPrecompiler : ShaderPrecompiler
             {
                 private readonly ManualResetEventSlim allowLoad;
 
@@ -92,7 +92,7 @@ namespace osu.Game.Tests.Visual.Menus
                 protected override bool AllLoaded => allowLoad.IsSet;
             }
 
-            private partial class TestScreen : OsuScreen
+            private class TestScreen : OsuScreen
             {
                 public TestScreen()
                 {

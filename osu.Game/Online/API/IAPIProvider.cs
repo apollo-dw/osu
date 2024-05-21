@@ -4,10 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using osu.Framework.Bindables;
-using osu.Game.Localisation;
 using osu.Game.Online.API.Requests.Responses;
-using osu.Game.Online.Chat;
-using osu.Game.Online.Notifications.WebSocket;
 using osu.Game.Users;
 
 namespace osu.Game.Online.API
@@ -28,16 +25,6 @@ namespace osu.Game.Online.API
         /// The current user's activity.
         /// </summary>
         IBindable<UserActivity> Activity { get; }
-
-        /// <summary>
-        /// The current user's online statistics.
-        /// </summary>
-        IBindable<UserStatistics?> Statistics { get; }
-
-        /// <summary>
-        /// The language supplied by this provider to API requests.
-        /// </summary>
-        Language Language { get; }
 
         /// <summary>
         /// Retrieve the OAuth access token.
@@ -113,20 +100,9 @@ namespace osu.Game.Online.API
         void Login(string username, string password);
 
         /// <summary>
-        /// Provide a second-factor authentication code for authentication.
-        /// </summary>
-        /// <param name="code">The 2FA code.</param>
-        void AuthenticateSecondFactor(string code);
-
-        /// <summary>
         /// Log out the current user.
         /// </summary>
         void Logout();
-
-        /// <summary>
-        /// Sets Statistics bindable.
-        /// </summary>
-        void UpdateStatistics(UserStatistics newStatistics);
 
         /// <summary>
         /// Constructs a new <see cref="IHubClientConnector"/>. May be null if not supported.
@@ -135,16 +111,6 @@ namespace osu.Game.Online.API
         /// <param name="endpoint">The endpoint to the hub.</param>
         /// <param name="preferMessagePack">Whether to use MessagePack for serialisation if available on this platform.</param>
         IHubClientConnector? GetHubConnector(string clientName, string endpoint, bool preferMessagePack = true);
-
-        /// <summary>
-        /// Accesses the <see cref="INotificationsClient"/> used to receive asynchronous notifications from web.
-        /// </summary>
-        INotificationsClient NotificationsClient { get; }
-
-        /// <summary>
-        /// Creates a <see cref="IChatClient"/> instance to use in order to chat.
-        /// </summary>
-        IChatClient GetChatClient();
 
         /// <summary>
         /// Create a new user account. This is a blocking operation.

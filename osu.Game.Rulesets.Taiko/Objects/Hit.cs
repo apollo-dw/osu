@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.Color4Extensions;
@@ -61,7 +63,7 @@ namespace osu.Game.Rulesets.Taiko.Objects
             if (isRimType != rimSamples.Any())
             {
                 if (isRimType)
-                    Samples.Add(CreateHitSampleInfo(HitSampleInfo.HIT_CLAP));
+                    Samples.Add(new HitSampleInfo(HitSampleInfo.HIT_CLAP));
                 else
                 {
                     foreach (var sample in rimSamples)
@@ -70,18 +72,10 @@ namespace osu.Game.Rulesets.Taiko.Objects
             }
         }
 
-        protected override StrongNestedHitObject CreateStrongNestedHit(double startTime) => new StrongNestedHit(this)
-        {
-            StartTime = startTime,
-            Samples = Samples
-        };
+        protected override StrongNestedHitObject CreateStrongNestedHit(double startTime) => new StrongNestedHit { StartTime = startTime };
 
         public class StrongNestedHit : StrongNestedHitObject
         {
-            public StrongNestedHit(TaikoHitObject parent)
-                : base(parent)
-            {
-            }
         }
     }
 }

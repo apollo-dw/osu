@@ -1,8 +1,9 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
-using osu.Framework.Extensions.LocalisationExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Screens;
@@ -11,11 +12,10 @@ using osu.Game.Graphics.Sprites;
 using osu.Game.Overlays.Settings;
 using osu.Game.Screens.Menu;
 using osuTK;
-using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.AccountCreation
 {
-    public partial class ScreenWelcome : AccountCreationScreen
+    public class ScreenWelcome : AccountCreationScreen
     {
         [BackgroundDependencyLoader]
         private void load()
@@ -46,18 +46,18 @@ namespace osu.Game.Overlays.AccountCreation
                         Anchor = Anchor.TopCentre,
                         Origin = Anchor.TopCentre,
                         Font = OsuFont.GetFont(size: 24, weight: FontWeight.Light),
-                        Text = AccountCreationStrings.NewPlayerRegistration.ToTitle(),
+                        Text = "New Player Registration",
                     },
                     new OsuSpriteText
                     {
                         Anchor = Anchor.TopCentre,
                         Origin = Anchor.TopCentre,
                         Font = OsuFont.GetFont(size: 12),
-                        Text = AccountCreationStrings.LetsGetYouStarted.ToLower(),
+                        Text = "let's get you started",
                     },
                     new SettingsButton
                     {
-                        Text = AccountCreationStrings.LetsCreateAnAccount,
+                        Text = "Let's create an account!",
                         Margin = new MarginPadding { Vertical = 120 },
                         Action = () => this.Push(new ScreenWarning())
                     }

@@ -12,7 +12,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Editing
 {
-    public partial class TestSceneSelectionBlueprintDeselection : EditorTestScene
+    public class TestSceneSelectionBlueprintDeselection : EditorTestScene
     {
         protected override Ruleset CreateEditorRuleset() => new OsuRuleset();
 

@@ -9,7 +9,7 @@ using osu.Game.Scoring;
 
 namespace osu.Game.Online.Leaderboards
 {
-    public partial class UpdateableRank : ModelBackedDrawable<ScoreRank?>
+    public class UpdateableRank : ModelBackedDrawable<ScoreRank?>
     {
         public ScoreRank? Rank
         {

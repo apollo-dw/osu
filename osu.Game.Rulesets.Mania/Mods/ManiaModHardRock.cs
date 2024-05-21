@@ -8,6 +8,5 @@ namespace osu.Game.Rulesets.Mania.Mods
     public class ManiaModHardRock : ModHardRock
     {
         public override double ScoreMultiplier => 1;
-        public override bool Ranked => false;
     }
 }

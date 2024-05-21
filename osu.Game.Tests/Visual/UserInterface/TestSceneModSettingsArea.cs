@@ -16,7 +16,7 @@ using osu.Game.Rulesets.Osu.Mods;
 namespace osu.Game.Tests.Visual.UserInterface
 {
     [TestFixture]
-    public partial class TestSceneModSettingsArea : OsuTestScene
+    public class TestSceneModSettingsArea : OsuTestScene
     {
         [Cached]
         private OverlayColourProvider colourProvider = new OverlayColourProvider(OverlayColourScheme.Green);

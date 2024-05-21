@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -18,10 +20,10 @@ namespace osu.Game.Tests.Editing.Checks
     [TestFixture]
     public class CheckFewHitsoundsTest
     {
-        private CheckFewHitsounds check = null!;
+        private CheckFewHitsounds check;
 
-        private List<HitSampleInfo> notHitsounded = null!;
-        private List<HitSampleInfo> hitsounded = null!;
+        private List<HitSampleInfo> notHitsounded;
+        private List<HitSampleInfo> hitsounded;
 
         [SetUp]
         public void Setup()

@@ -12,35 +12,34 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input.Events;
-using osu.Game.Audio;
-using osu.Game.Graphics;
+using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Rulesets.Objects;
-using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Screens.Edit.Timing;
 using osuTK;
-using osuTK.Graphics;
 
 namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 {
-    public partial class SamplePointPiece : HitObjectPointPiece, IHasPopover
+    public class SamplePointPiece : HitObjectPointPiece, IHasPopover
     {
         public readonly HitObject HitObject;
 
-        private readonly BindableList<HitSampleInfo> samplesBindable;
+        private readonly Bindable<string> bank;
+        private readonly BindableNumber<int> volume;
 
         public SamplePointPiece(HitObject hitObject)
+            : base(hitObject.SampleControlPoint)
         {
             HitObject = hitObject;
-            samplesBindable = hitObject.SamplesBindable.GetBoundCopy();
+            volume = hitObject.SampleControlPoint.SampleVolumeBindable.GetBoundCopy();
+            bank = hitObject.SampleControlPoint.SampleBankBindable.GetBoundCopy();
         }
-
-        protected override Color4 GetRepresentingColour(OsuColour colours) => colours.Pink;
 
         [BackgroundDependencyLoader]
         private void load()
         {
-            samplesBindable.BindCollectionChanged((_, _) => updateText(), true);
+            volume.BindValueChanged(_ => updateText());
+            bank.BindValueChanged(_ => updateText(), true);
         }
 
         protected override bool OnClick(ClickEvent e)
@@ -51,22 +50,12 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 
         private void updateText()
         {
-            Label.Text = $"{GetBankValue(samplesBindable)} {GetVolumeValue(samplesBindable)}";
-        }
-
-        public static string? GetBankValue(IEnumerable<HitSampleInfo> samples)
-        {
-            return samples.FirstOrDefault()?.Bank;
-        }
-
-        public static int GetVolumeValue(ICollection<HitSampleInfo> samples)
-        {
-            return samples.Count == 0 ? 0 : samples.Max(o => o.Volume);
+            Label.Text = $"{bank.Value} {volume.Value}";
         }
 
         public Popover GetPopover() => new SampleEditPopover(HitObject);
 
-        public partial class SampleEditPopover : OsuPopover
+        public class SampleEditPopover : OsuPopover
         {
             private readonly HitObject hitObject;
 
@@ -100,11 +89,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                             {
                                 Label = "Bank Name",
                             },
-                            volume = new IndeterminateSliderWithTextBoxInput<int>("Volume", new BindableInt(100)
-                            {
-                                MinValue = DrawableHitObject.MINIMUM_SAMPLE_VOLUME,
-                                MaxValue = 100,
-                            })
+                            volume = new IndeterminateSliderWithTextBoxInput<int>("Volume", new SampleControlPoint().SampleVolumeBindable)
                         }
                     }
                 };
@@ -115,14 +100,14 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                 // if the piece belongs to a currently selected object, assume that the user wants to change all selected objects.
                 // if the piece belongs to an unselected object, operate on that object alone, independently of the selection.
                 var relevantObjects = (beatmap.SelectedHitObjects.Contains(hitObject) ? beatmap.SelectedHitObjects : hitObject.Yield()).ToArray();
-                var relevantSamples = relevantObjects.Select(h => h.Samples).ToArray();
+                var relevantControlPoints = relevantObjects.Select(h => h.SampleControlPoint).ToArray();
 
                 // even if there are multiple objects selected, we can still display sample volume or bank if they all have the same value.
-                string? commonBank = getCommonBank(relevantSamples);
+                string? commonBank = getCommonBank(relevantControlPoints);
                 if (!string.IsNullOrEmpty(commonBank))
                     bank.Current.Value = commonBank;
 
-                int? commonVolume = getCommonVolume(relevantSamples);
+                int? commonVolume = getCommonVolume(relevantControlPoints);
                 if (commonVolume != null)
                     volume.Current.Value = commonVolume.Value;
 
@@ -132,9 +117,9 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                     updateBankFor(relevantObjects, val.NewValue);
                     updateBankPlaceholderText(relevantObjects);
                 });
-                // on commit, ensure that the value is correct by sourcing it from the objects' samples again.
+                // on commit, ensure that the value is correct by sourcing it from the objects' control points again.
                 // this ensures that committing empty text causes a revert to the previous value.
-                bank.OnCommit += (_, _) => bank.Current.Value = getCommonBank(relevantSamples);
+                bank.OnCommit += (_, _) => bank.Current.Value = getCommonBank(relevantControlPoints);
 
                 volume.Current.BindValueChanged(val => updateVolumeFor(relevantObjects, val.NewValue));
             }
@@ -145,8 +130,8 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
                 ScheduleAfterChildren(() => GetContainingInputManager().ChangeFocus(volume));
             }
 
-            private static string? getCommonBank(IList<HitSampleInfo>[] relevantSamples) => relevantSamples.Select(GetBankValue).Distinct().Count() == 1 ? GetBankValue(relevantSamples.First()) : null;
-            private static int? getCommonVolume(IList<HitSampleInfo>[] relevantSamples) => relevantSamples.Select(GetVolumeValue).Distinct().Count() == 1 ? GetVolumeValue(relevantSamples.First()) : null;
+            private static string? getCommonBank(SampleControlPoint[] relevantControlPoints) => relevantControlPoints.Select(point => point.SampleBank).Distinct().Count() == 1 ? relevantControlPoints.First().SampleBank : null;
+            private static int? getCommonVolume(SampleControlPoint[] relevantControlPoints) => relevantControlPoints.Select(point => point.SampleVolume).Distinct().Count() == 1 ? relevantControlPoints.First().SampleVolume : null;
 
             private void updateBankFor(IEnumerable<HitObject> objects, string? newBank)
             {
@@ -157,11 +142,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 
                 foreach (var h in objects)
                 {
-                    for (int i = 0; i < h.Samples.Count; i++)
-                    {
-                        h.Samples[i] = h.Samples[i].With(newBank: newBank);
-                    }
-
+                    h.SampleControlPoint.SampleBank = newBank;
                     beatmap.Update(h);
                 }
 
@@ -170,7 +151,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 
             private void updateBankPlaceholderText(IEnumerable<HitObject> objects)
             {
-                string? commonBank = getCommonBank(objects.Select(h => h.Samples).ToArray());
+                string? commonBank = getCommonBank(objects.Select(h => h.SampleControlPoint).ToArray());
                 bank.PlaceholderText = string.IsNullOrEmpty(commonBank) ? "(multiple)" : string.Empty;
             }
 
@@ -183,11 +164,7 @@ namespace osu.Game.Screens.Edit.Compose.Components.Timeline
 
                 foreach (var h in objects)
                 {
-                    for (int i = 0; i < h.Samples.Count; i++)
-                    {
-                        h.Samples[i] = h.Samples[i].With(newVolume: newVolume.Value);
-                    }
-
+                    h.SampleControlPoint.SampleVolume = newVolume.Value;
                     beatmap.Update(h);
                 }
 

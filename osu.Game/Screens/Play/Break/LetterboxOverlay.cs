@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Colour;
 using osu.Framework.Graphics.Containers;
@@ -9,7 +11,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.Play.Break
 {
-    public partial class LetterboxOverlay : CompositeDrawable
+    public class LetterboxOverlay : CompositeDrawable
     {
         private const int height = 350;
 
@@ -20,21 +22,29 @@ namespace osu.Game.Screens.Play.Break
             RelativeSizeAxes = Axes.Both;
             InternalChildren = new Drawable[]
             {
-                new Box
+                new Container
                 {
                     Anchor = Anchor.TopLeft,
                     Origin = Anchor.TopLeft,
                     RelativeSizeAxes = Axes.X,
                     Height = height,
-                    Colour = ColourInfo.GradientVertical(Color4.Black, transparent_black),
+                    Child = new Box
+                    {
+                        RelativeSizeAxes = Axes.Both,
+                        Colour = ColourInfo.GradientVertical(Color4.Black, transparent_black),
+                    }
                 },
-                new Box
+                new Container
                 {
                     Anchor = Anchor.BottomLeft,
                     Origin = Anchor.BottomLeft,
                     RelativeSizeAxes = Axes.X,
                     Height = height,
-                    Colour = ColourInfo.GradientVertical(transparent_black, Color4.Black),
+                    Child = new Box
+                    {
+                        RelativeSizeAxes = Axes.Both,
+                        Colour = ColourInfo.GradientVertical(transparent_black, Color4.Black),
+                    }
                 }
             };
         }

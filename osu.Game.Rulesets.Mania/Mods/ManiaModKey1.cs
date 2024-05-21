@@ -11,6 +11,5 @@ namespace osu.Game.Rulesets.Mania.Mods
         public override string Name => "One Key";
         public override string Acronym => "1K";
         public override LocalisableString Description => @"Play with one key.";
-        public override bool Ranked => false;
     }
 }

@@ -14,7 +14,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public partial class TestSceneMultiplayerTeamResults : ScreenTestScene
+    public class TestSceneMultiplayerTeamResults : ScreenTestScene
     {
         [Test]
         public void TestScaling()

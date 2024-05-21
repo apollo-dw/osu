@@ -29,7 +29,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Screens.OnlinePlay.Lounge.Components
 {
-    public partial class DrawableRoom : CompositeDrawable
+    public class DrawableRoom : CompositeDrawable
     {
         protected const float CORNER_RADIUS = 10;
         private const float height = 100;
@@ -103,129 +103,118 @@ namespace osu.Game.Screens.OnlinePlay.Lounge.Components
                             CornerRadius = CORNER_RADIUS,
                             Children = new Drawable[]
                             {
-                                new Box
-                                {
-                                    RelativeSizeAxes = Axes.Both,
-                                    Colour = colours.Background5,
-                                    Width = 0.2f,
-                                },
-                                new Box
-                                {
-                                    Anchor = Anchor.TopRight,
-                                    Origin = Anchor.TopRight,
-                                    RelativeSizeAxes = Axes.Both,
-                                    Colour = ColourInfo.GradientHorizontal(colours.Background5, colours.Background5.Opacity(0.3f)),
-                                    Width = 0.8f,
-                                },
                                 new GridContainer
                                 {
                                     RelativeSizeAxes = Axes.Both,
                                     ColumnDimensions = new[]
                                     {
-                                        new Dimension(),
-                                        new Dimension(GridSizeMode.AutoSize),
+                                        new Dimension(GridSizeMode.Relative, 0.2f)
                                     },
                                     Content = new[]
                                     {
                                         new Drawable[]
                                         {
-                                            new Container
+                                            new Box
                                             {
-                                                Name = @"Left details",
                                                 RelativeSizeAxes = Axes.Both,
-                                                Padding = new MarginPadding
-                                                {
-                                                    Left = 20,
-                                                    Right = DrawableRoomParticipantsList.SHEAR_WIDTH,
-                                                    Vertical = 5
-                                                },
-                                                Children = new Drawable[]
-                                                {
-                                                    new FillFlowContainer
-                                                    {
-                                                        RelativeSizeAxes = Axes.X,
-                                                        AutoSizeAxes = Axes.Y,
-                                                        Direction = FillDirection.Vertical,
-                                                        Children = new Drawable[]
-                                                        {
-                                                            new FillFlowContainer
-                                                            {
-                                                                AutoSizeAxes = Axes.Both,
-                                                                Direction = FillDirection.Horizontal,
-                                                                Spacing = new Vector2(5),
-                                                                Children = new Drawable[]
-                                                                {
-                                                                    new RoomStatusPill
-                                                                    {
-                                                                        Anchor = Anchor.CentreLeft,
-                                                                        Origin = Anchor.CentreLeft
-                                                                    },
-                                                                    specialCategoryPill = new RoomSpecialCategoryPill
-                                                                    {
-                                                                        Anchor = Anchor.CentreLeft,
-                                                                        Origin = Anchor.CentreLeft
-                                                                    },
-                                                                    endDateInfo = new EndDateInfo
-                                                                    {
-                                                                        Anchor = Anchor.CentreLeft,
-                                                                        Origin = Anchor.CentreLeft,
-                                                                    },
-                                                                }
-                                                            },
-                                                            new FillFlowContainer
-                                                            {
-                                                                RelativeSizeAxes = Axes.X,
-                                                                AutoSizeAxes = Axes.Y,
-                                                                Padding = new MarginPadding { Top = 3 },
-                                                                Direction = FillDirection.Vertical,
-                                                                Children = new Drawable[]
-                                                                {
-                                                                    new TruncatingSpriteText
-                                                                    {
-                                                                        RelativeSizeAxes = Axes.X,
-                                                                        Font = OsuFont.GetFont(size: 28),
-                                                                        Current = { BindTarget = Room.Name }
-                                                                    },
-                                                                    new RoomStatusText()
-                                                                }
-                                                            }
-                                                        },
-                                                    },
-                                                    new FillFlowContainer
-                                                    {
-                                                        Anchor = Anchor.BottomLeft,
-                                                        Origin = Anchor.BottomLeft,
-                                                        AutoSizeAxes = Axes.Both,
-                                                        Direction = FillDirection.Horizontal,
-                                                        Spacing = new Vector2(5),
-                                                        ChildrenEnumerable = CreateBottomDetails()
-                                                    }
-                                                }
+                                                Colour = colours.Background5,
                                             },
-                                            new FillFlowContainer
+                                            new Box
                                             {
-                                                Name = "Right content",
-                                                Anchor = Anchor.CentreRight,
-                                                Origin = Anchor.CentreRight,
-                                                AutoSizeAxes = Axes.X,
-                                                RelativeSizeAxes = Axes.Y,
-                                                Spacing = new Vector2(5),
-                                                Padding = new MarginPadding
+                                                RelativeSizeAxes = Axes.Both,
+                                                Colour = ColourInfo.GradientHorizontal(colours.Background5, colours.Background5.Opacity(0.3f))
+                                            },
+                                        }
+                                    }
+                                },
+                                new Container
+                                {
+                                    Name = @"Left details",
+                                    RelativeSizeAxes = Axes.Both,
+                                    Padding = new MarginPadding
+                                    {
+                                        Left = 20,
+                                        Vertical = 5
+                                    },
+                                    Children = new Drawable[]
+                                    {
+                                        new FillFlowContainer
+                                        {
+                                            RelativeSizeAxes = Axes.X,
+                                            AutoSizeAxes = Axes.Y,
+                                            Direction = FillDirection.Vertical,
+                                            Children = new Drawable[]
+                                            {
+                                                new FillFlowContainer
                                                 {
-                                                    Right = 10,
-                                                    Vertical = 20,
-                                                },
-                                                Children = new Drawable[]
-                                                {
-                                                    ButtonsContainer,
-                                                    drawableRoomParticipantsList = new DrawableRoomParticipantsList
+                                                    AutoSizeAxes = Axes.Both,
+                                                    Direction = FillDirection.Horizontal,
+                                                    Spacing = new Vector2(5),
+                                                    Children = new Drawable[]
                                                     {
-                                                        Anchor = Anchor.CentreRight,
-                                                        Origin = Anchor.CentreRight,
-                                                        NumberOfCircles = NumberOfAvatars
+                                                        new RoomStatusPill
+                                                        {
+                                                            Anchor = Anchor.CentreLeft,
+                                                            Origin = Anchor.CentreLeft
+                                                        },
+                                                        specialCategoryPill = new RoomSpecialCategoryPill
+                                                        {
+                                                            Anchor = Anchor.CentreLeft,
+                                                            Origin = Anchor.CentreLeft
+                                                        },
+                                                        endDateInfo = new EndDateInfo
+                                                        {
+                                                            Anchor = Anchor.CentreLeft,
+                                                            Origin = Anchor.CentreLeft,
+                                                        },
+                                                    }
+                                                },
+                                                new FillFlowContainer
+                                                {
+                                                    RelativeSizeAxes = Axes.X,
+                                                    AutoSizeAxes = Axes.Y,
+                                                    Padding = new MarginPadding { Top = 3 },
+                                                    Direction = FillDirection.Vertical,
+                                                    Children = new Drawable[]
+                                                    {
+                                                        new RoomNameText(),
+                                                        new RoomStatusText()
                                                     }
                                                 }
                                             },
+                                        },
+                                        new FillFlowContainer
+                                        {
+                                            Anchor = Anchor.BottomLeft,
+                                            Origin = Anchor.BottomLeft,
+                                            AutoSizeAxes = Axes.Both,
+                                            Direction = FillDirection.Horizontal,
+                                            Spacing = new Vector2(5),
+                                            ChildrenEnumerable = CreateBottomDetails()
+                                        }
+                                    }
+                                },
+                                new FillFlowContainer
+                                {
+                                    Name = "Right content",
+                                    Anchor = Anchor.CentreRight,
+                                    Origin = Anchor.CentreRight,
+                                    AutoSizeAxes = Axes.X,
+                                    RelativeSizeAxes = Axes.Y,
+                                    Spacing = new Vector2(5),
+                                    Padding = new MarginPadding
+                                    {
+                                        Right = 10,
+                                        Vertical = 20,
+                                    },
+                                    Children = new Drawable[]
+                                    {
+                                        ButtonsContainer,
+                                        drawableRoomParticipantsList = new DrawableRoomParticipantsList
+                                        {
+                                            Anchor = Anchor.CentreRight,
+                                            Origin = Anchor.CentreRight,
+                                            NumberOfCircles = NumberOfAvatars
                                         }
                                     }
                                 },
@@ -322,7 +311,24 @@ namespace osu.Game.Screens.OnlinePlay.Lounge.Components
             return pills;
         }
 
-        private partial class RoomStatusText : OnlinePlayComposite
+        private class RoomNameText : OsuSpriteText
+        {
+            [Resolved(typeof(Room), nameof(Online.Rooms.Room.Name))]
+            private Bindable<string> name { get; set; }
+
+            public RoomNameText()
+            {
+                Font = OsuFont.GetFont(size: 28);
+            }
+
+            [BackgroundDependencyLoader]
+            private void load()
+            {
+                Current = name;
+            }
+        }
+
+        private class RoomStatusText : OnlinePlayComposite
         {
             [Resolved]
             private OsuColour colours { get; set; }
@@ -337,6 +343,7 @@ namespace osu.Game.Screens.OnlinePlay.Lounge.Components
             {
                 RelativeSizeAxes = Axes.X;
                 AutoSizeAxes = Axes.Y;
+                Width = 0.5f;
             }
 
             [BackgroundDependencyLoader]
@@ -427,7 +434,7 @@ namespace osu.Game.Screens.OnlinePlay.Lounge.Components
             }
         }
 
-        public partial class PasswordProtectedIcon : CompositeDrawable
+        public class PasswordProtectedIcon : CompositeDrawable
         {
             [BackgroundDependencyLoader]
             private void load(OsuColour colours)

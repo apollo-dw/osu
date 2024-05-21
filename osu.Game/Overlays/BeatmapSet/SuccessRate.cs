@@ -18,7 +18,7 @@ using osu.Game.Screens.Select.Details;
 
 namespace osu.Game.Overlays.BeatmapSet
 {
-    public partial class SuccessRate : Container
+    public class SuccessRate : Container
     {
         protected readonly FailRetryGraph Graph;
 
@@ -127,7 +127,7 @@ namespace osu.Game.Overlays.BeatmapSet
             Graph.Padding = new MarginPadding { Top = header.DrawHeight };
         }
 
-        private partial class SuccessRatePercentage : OsuSpriteText, IHasTooltip
+        private class SuccessRatePercentage : OsuSpriteText, IHasTooltip
         {
             public LocalisableString TooltipText { get; set; }
         }

@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -13,11 +15,11 @@ namespace osu.Game.Graphics.Containers
     /// <summary>
     /// A container that handles tracking of an <see cref="OsuLogo"/> through different layout scenarios.
     /// </summary>
-    public partial class LogoTrackingContainer : Container
+    public class LogoTrackingContainer : Container
     {
         public Facade LogoFacade => facade;
 
-        protected OsuLogo? Logo { get; private set; }
+        protected OsuLogo Logo { get; private set; }
 
         private readonly InternalFacade facade = new InternalFacade();
 
@@ -34,7 +36,8 @@ namespace osu.Game.Graphics.Containers
         /// <param name="easing">The easing type of the initial transform.</param>
         public void StartTracking(OsuLogo logo, double duration = 0, Easing easing = Easing.None)
         {
-            ArgumentNullException.ThrowIfNull(logo);
+            if (logo == null)
+                throw new ArgumentNullException(nameof(logo));
 
             if (logo.IsTracking && Logo == null)
                 throw new InvalidOperationException($"Cannot track an instance of {typeof(OsuLogo)} to multiple {typeof(LogoTrackingContainer)}s");
@@ -74,15 +77,15 @@ namespace osu.Game.Graphics.Containers
         /// <remarks>Will only be correct if the logo's <see cref="Drawable.RelativePositionAxes"/> are set to Axes.Both</remarks>
         protected Vector2 ComputeLogoTrackingPosition()
         {
-            var absolutePos = Logo!.Parent!.ToLocalSpace(LogoFacade.ScreenSpaceDrawQuad.Centre);
+            var absolutePos = Logo.Parent.ToLocalSpace(LogoFacade.ScreenSpaceDrawQuad.Centre);
 
-            return new Vector2(absolutePos.X / Logo.Parent!.RelativeToAbsoluteFactor.X,
-                absolutePos.Y / Logo.Parent!.RelativeToAbsoluteFactor.Y);
+            return new Vector2(absolutePos.X / Logo.Parent.RelativeToAbsoluteFactor.X,
+                absolutePos.Y / Logo.Parent.RelativeToAbsoluteFactor.Y);
         }
 
-        protected override void UpdateAfterChildren()
+        protected override void Update()
         {
-            base.UpdateAfterChildren();
+            base.Update();
 
             if (Logo == null)
                 return;
@@ -128,7 +131,7 @@ namespace osu.Game.Graphics.Containers
             base.Dispose(isDisposing);
         }
 
-        private partial class InternalFacade : Facade
+        private class InternalFacade : Facade
         {
             public new void SetSize(Vector2 size)
             {
@@ -139,7 +142,7 @@ namespace osu.Game.Graphics.Containers
         /// <summary>
         /// A dummy object used to denote another object's location.
         /// </summary>
-        public abstract partial class Facade : Drawable
+        public abstract class Facade : Drawable
         {
             public override Vector2 Size
             {

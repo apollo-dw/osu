@@ -14,7 +14,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.Toolbar
 {
-    public partial class AnalogClockDisplay : ClockDisplay
+    public class AnalogClockDisplay : ClockDisplay
     {
         private const float hand_thickness = 2.4f;
 
@@ -76,7 +76,7 @@ namespace osu.Game.Overlays.Toolbar
                 hand.RotateTo(rotation, duration, Easing.OutElastic);
         }
 
-        private partial class CentreCircle : CompositeDrawable
+        private class CentreCircle : CompositeDrawable
         {
             [BackgroundDependencyLoader]
             private void load(OsuColour colours)
@@ -101,7 +101,7 @@ namespace osu.Game.Overlays.Toolbar
             }
         }
 
-        private partial class SecondHand : CompositeDrawable
+        private class SecondHand : CompositeDrawable
         {
             [BackgroundDependencyLoader]
             private void load(OsuColour colours)
@@ -126,7 +126,7 @@ namespace osu.Game.Overlays.Toolbar
             }
         }
 
-        private partial class LargeHand : CompositeDrawable
+        private class LargeHand : CompositeDrawable
         {
             public LargeHand(float length)
             {

@@ -21,7 +21,7 @@ using osuTK;
 namespace osu.Game.Screens.Edit.Verify
 {
     [Cached]
-    public partial class IssueList : CompositeDrawable
+    public class IssueList : CompositeDrawable
     {
         private IssueTable table;
 
@@ -72,7 +72,7 @@ namespace osu.Game.Screens.Edit.Verify
                         new RoundedButton
                         {
                             Text = "Refresh",
-                            Action = Refresh,
+                            Action = refresh,
                             Size = new Vector2(120, 40),
                             Anchor = Anchor.BottomRight,
                             Origin = Anchor.BottomRight,
@@ -86,13 +86,13 @@ namespace osu.Game.Screens.Edit.Verify
         {
             base.LoadComplete();
 
-            verify.InterpretedDifficulty.BindValueChanged(_ => Refresh());
-            verify.HiddenIssueTypes.BindCollectionChanged((_, _) => Refresh());
+            verify.InterpretedDifficulty.BindValueChanged(_ => refresh());
+            verify.HiddenIssueTypes.BindCollectionChanged((_, _) => refresh());
 
-            Refresh();
+            refresh();
         }
 
-        public void Refresh()
+        private void refresh()
         {
             var issues = generalVerifier.Run(context);
 

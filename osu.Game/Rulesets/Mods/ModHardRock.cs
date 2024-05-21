@@ -17,9 +17,6 @@ namespace osu.Game.Rulesets.Mods
         public override ModType Type => ModType.DifficultyIncrease;
         public override LocalisableString Description => "Everything just got a bit harder...";
         public override Type[] IncompatibleMods => new[] { typeof(ModEasy), typeof(ModDifficultyAdjust) };
-        public override bool Ranked => UsesDefaultConfiguration;
-
-        protected const float ADJUST_RATIO = 1.4f;
 
         public void ReadFromDifficulty(IBeatmapDifficultyInfo difficulty)
         {
@@ -27,8 +24,11 @@ namespace osu.Game.Rulesets.Mods
 
         public virtual void ApplyToDifficulty(BeatmapDifficulty difficulty)
         {
-            difficulty.DrainRate = Math.Min(difficulty.DrainRate * ADJUST_RATIO, 10.0f);
-            difficulty.OverallDifficulty = Math.Min(difficulty.OverallDifficulty * ADJUST_RATIO, 10.0f);
+            const float ratio = 1.4f;
+            difficulty.CircleSize = Math.Min(difficulty.CircleSize * 1.3f, 10.0f); // CS uses a custom 1.3 ratio.
+            difficulty.ApproachRate = Math.Min(difficulty.ApproachRate * ratio, 10.0f);
+            difficulty.DrainRate = Math.Min(difficulty.DrainRate * ratio, 10.0f);
+            difficulty.OverallDifficulty = Math.Min(difficulty.OverallDifficulty * ratio, 10.0f);
         }
     }
 }

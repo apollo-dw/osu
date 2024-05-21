@@ -11,6 +11,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.Textures;
 using osu.Framework.Utils;
+using osu.Game.Rulesets.Judgements;
 using osu.Game.Screens.Play.HUD;
 using osu.Game.Utils;
 using osuTK;
@@ -18,7 +19,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Skinning
 {
-    public partial class LegacyHealthDisplay : HealthDisplay, ISerialisableDrawable
+    public class LegacyHealthDisplay : HealthDisplay, ISkinnableDrawable
     {
         private const double epic_cutoff = 0.5;
 
@@ -65,7 +66,6 @@ namespace osu.Game.Skinning
             marker.Current.BindTo(Current);
 
             maxFillWidth = fill.Width;
-            fill.Width = 0;
         }
 
         protected override void Update()
@@ -79,14 +79,7 @@ namespace osu.Game.Skinning
             marker.Position = fill.Position + new Vector2(fill.DrawWidth, isNewStyle ? fill.DrawHeight / 2 : 0);
         }
 
-        protected override void HealthChanged(bool increase)
-        {
-            if (increase)
-                marker.Bulge();
-            base.HealthChanged(increase);
-        }
-
-        protected override void Flash() => marker.Flash(Current.Value >= epic_cutoff);
+        protected override void Flash(JudgementResult result) => marker.Flash(result);
 
         private static Texture getTexture(ISkin skin, string name) => skin?.GetTexture($"scorebar-{name}");
 
@@ -101,7 +94,7 @@ namespace osu.Game.Skinning
             return Color4.White;
         }
 
-        public partial class LegacyOldStyleMarker : LegacyMarker
+        public class LegacyOldStyleMarker : LegacyMarker
         {
             private readonly Texture normalTexture;
             private readonly Texture dangerTexture;
@@ -120,20 +113,23 @@ namespace osu.Game.Skinning
                 Origin = Anchor.Centre,
             };
 
-            protected override void Update()
+            protected override void LoadComplete()
             {
-                base.Update();
+                base.LoadComplete();
 
-                if (Current.Value < 0.2f)
-                    Main.Texture = superDangerTexture;
-                else if (Current.Value < epic_cutoff)
-                    Main.Texture = dangerTexture;
-                else
-                    Main.Texture = normalTexture;
+                Current.BindValueChanged(hp =>
+                {
+                    if (hp.NewValue < 0.2f)
+                        Main.Texture = superDangerTexture;
+                    else if (hp.NewValue < epic_cutoff)
+                        Main.Texture = dangerTexture;
+                    else
+                        Main.Texture = normalTexture;
+                });
             }
         }
 
-        public partial class LegacyNewStyleMarker : LegacyMarker
+        public class LegacyNewStyleMarker : LegacyMarker
         {
             private readonly ISkin skin;
 
@@ -157,7 +153,7 @@ namespace osu.Game.Skinning
             }
         }
 
-        internal abstract partial class LegacyFill : LegacyHealthPiece
+        internal abstract class LegacyFill : LegacyHealthPiece
         {
             protected LegacyFill(ISkin skin)
             {
@@ -179,7 +175,7 @@ namespace osu.Game.Skinning
             }
         }
 
-        internal partial class LegacyOldStyleFill : LegacyFill
+        internal class LegacyOldStyleFill : LegacyFill
         {
             public LegacyOldStyleFill(ISkin skin)
                 : base(skin)
@@ -188,7 +184,7 @@ namespace osu.Game.Skinning
             }
         }
 
-        internal partial class LegacyNewStyleFill : LegacyFill
+        internal class LegacyNewStyleFill : LegacyFill
         {
             public LegacyNewStyleFill(ISkin skin)
                 : base(skin)
@@ -203,7 +199,7 @@ namespace osu.Game.Skinning
             }
         }
 
-        public abstract partial class LegacyMarker : LegacyHealthPiece
+        public abstract class LegacyMarker : LegacyHealthPiece
         {
             protected Sprite Main;
 
@@ -230,30 +226,37 @@ namespace osu.Game.Skinning
 
             public abstract Sprite CreateSprite();
 
-            public override void Flash(bool isEpic)
+            protected override void LoadComplete()
             {
-                Bulge();
+                base.LoadComplete();
+
+                Current.BindValueChanged(val =>
+                {
+                    if (val.NewValue > val.OldValue)
+                        bulgeMain();
+                });
+            }
+
+            public override void Flash(JudgementResult result)
+            {
+                bulgeMain();
+
+                bool isEpic = Current.Value >= epic_cutoff;
+
                 explode.Blending = isEpic ? BlendingParameters.Additive : BlendingParameters.Inherit;
                 explode.ScaleTo(1).Then().ScaleTo(isEpic ? 2 : 1.6f, 120);
                 explode.FadeOutFromOne(120);
             }
 
-            public override void Bulge()
-            {
-                base.Bulge();
+            private void bulgeMain() =>
                 Main.ScaleTo(1.4f).Then().ScaleTo(1, 200, Easing.Out);
-            }
         }
 
-        public partial class LegacyHealthPiece : CompositeDrawable
+        public class LegacyHealthPiece : CompositeDrawable
         {
             public Bindable<double> Current { get; } = new Bindable<double>();
 
-            public virtual void Bulge()
-            {
-            }
-
-            public virtual void Flash(bool isEpic)
+            public virtual void Flash(JudgementResult result)
             {
             }
         }

@@ -29,7 +29,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Tests.Rulesets
 {
     [HeadlessTest]
-    public partial class TestSceneDrawableRulesetDependencies : OsuTestScene
+    public class TestSceneDrawableRulesetDependencies : OsuTestScene
     {
         [Test]
         public void TestDisposalDoesNotDisposeParentStores()
@@ -63,7 +63,7 @@ namespace osu.Game.Tests.Rulesets
             AddAssert("parent shader manager not disposed", () => !shaderManager.IsDisposed);
         }
 
-        private partial class DrawableWithDependencies : CompositeDrawable
+        private class DrawableWithDependencies : CompositeDrawable
         {
             public TestTextureStore ParentTextureStore { get; private set; }
             public TestSampleStore ParentSampleStore { get; private set; }
@@ -80,7 +80,7 @@ namespace osu.Game.Tests.Rulesets
 
                 dependencies.CacheAs<TextureStore>(ParentTextureStore = new TestTextureStore(parent.Get<GameHost>().Renderer));
                 dependencies.CacheAs<ISampleStore>(ParentSampleStore = new TestSampleStore());
-                dependencies.CacheAs<ShaderManager>(ParentShaderManager = new TestShaderManager(parent.Get<GameHost>().Renderer, parent.Get<ShaderManager>()));
+                dependencies.CacheAs<ShaderManager>(ParentShaderManager = new TestShaderManager(parent.Get<GameHost>().Renderer));
 
                 return new DrawableRulesetDependencies(new OsuRuleset(), dependencies);
             }
@@ -150,21 +150,16 @@ namespace osu.Game.Tests.Rulesets
             public IBindable<double> AggregateTempo => throw new NotImplementedException();
 
             public int PlaybackConcurrency { get; set; }
-
-            public void AddExtension(string extension) => throw new NotImplementedException();
         }
 
         private class TestShaderManager : ShaderManager
         {
-            private readonly ShaderManager parentManager;
-
-            public TestShaderManager(IRenderer renderer, ShaderManager parentManager)
+            public TestShaderManager(IRenderer renderer)
                 : base(renderer, new ResourceStore<byte[]>())
             {
-                this.parentManager = parentManager;
             }
 
-            public override byte[] GetRawData(string fileName) => parentManager.GetRawData(fileName);
+            public override byte[] LoadRaw(string name) => null;
 
             public bool IsDisposed { get; private set; }
 

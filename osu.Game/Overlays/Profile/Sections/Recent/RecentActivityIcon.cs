@@ -13,7 +13,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays.Profile.Sections.Recent
 {
-    public partial class RecentActivityIcon : Container
+    public class RecentActivityIcon : Container
     {
         private readonly SpriteIcon icon;
         private readonly APIRecentActivity activity;

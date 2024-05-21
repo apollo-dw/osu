@@ -11,6 +11,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Effects;
 using osu.Framework.Utils;
 using osu.Game.Rulesets.Judgements;
+using osu.Game.Rulesets.Mania.Judgements;
 using osu.Game.Rulesets.Mania.Skinning.Default;
 using osu.Game.Rulesets.UI.Scrolling;
 using osuTK;
@@ -18,7 +19,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Mania.UI
 {
-    public partial class DefaultHitExplosion : CompositeDrawable, IHitExplosion
+    public class DefaultHitExplosion : CompositeDrawable, IHitExplosion
     {
         private const float default_large_faint_size = 0.8f;
 
@@ -148,6 +149,9 @@ namespace osu.Game.Rulesets.Mania.UI
         {
             // scale roughly in-line with visual appearance of notes
             Vector2 scale = new Vector2(1, 0.6f);
+
+            if (result.Judgement is HoldNoteTickJudgement)
+                scale *= 0.5f;
 
             this.ScaleTo(scale);
 

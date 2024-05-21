@@ -16,7 +16,7 @@ using osu.Game.Users;
 
 namespace osu.Game.Tests.Visual.Online
 {
-    public partial class TestSceneFriendDisplay : OsuTestScene
+    public class TestSceneFriendDisplay : OsuTestScene
     {
         protected override bool UseOnlineAPI => true;
 

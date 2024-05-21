@@ -16,7 +16,7 @@ using osuTK.Graphics;
 namespace osu.Game.Rulesets.Pippidon.UI
 {
     [Cached]
-    public partial class PippidonPlayfield : ScrollingPlayfield
+    public class PippidonPlayfield : ScrollingPlayfield
     {
         public const float LANE_HEIGHT = 70;
 
@@ -60,7 +60,7 @@ namespace osu.Game.Rulesets.Pippidon.UI
             });
         }
 
-        private partial class LaneContainer : BeatSyncedContainer
+        private class LaneContainer : BeatSyncedContainer
         {
             private OsuColour colours;
             private FillFlowContainer fill;
@@ -99,7 +99,7 @@ namespace osu.Game.Rulesets.Pippidon.UI
                 }
             }
 
-            private partial class Lane : CompositeDrawable
+            private class Lane : CompositeDrawable
             {
                 public Lane()
                 {

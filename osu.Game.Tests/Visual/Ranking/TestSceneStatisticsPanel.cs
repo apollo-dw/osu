@@ -13,7 +13,6 @@ using osu.Framework.Graphics.Shapes;
 using osu.Game.Beatmaps;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
-using osu.Game.Online;
 using osu.Game.Rulesets;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Mods;
@@ -24,28 +23,26 @@ using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.UI;
 using osu.Game.Tests.Resources;
-using osu.Game.Users;
 using osuTK;
 
 namespace osu.Game.Tests.Visual.Ranking
 {
-    public partial class TestSceneStatisticsPanel : OsuTestScene
+    public class TestSceneStatisticsPanel : OsuTestScene
     {
-        [Test]
-        public void TestScoreWithPositionStatistics()
-        {
-            var score = TestResources.CreateTestScoreInfo();
-            score.OnlineID = 1234;
-            score.HitEvents = CreatePositionDistributedHitEvents();
-
-            loadPanel(score);
-        }
-
         [Test]
         public void TestScoreWithTimeStatistics()
         {
             var score = TestResources.CreateTestScoreInfo();
             score.HitEvents = TestSceneHitEventTimingDistributionGraph.CreateDistributedHitEvents();
+
+            loadPanel(score);
+        }
+
+        [Test]
+        public void TestScoreWithPositionStatistics()
+        {
+            var score = TestResources.CreateTestScoreInfo();
+            score.HitEvents = createPositionDistributedHitEvents();
 
             loadPanel(score);
         }
@@ -82,67 +79,28 @@ namespace osu.Game.Tests.Visual.Ranking
 
         private void loadPanel(ScoreInfo score) => AddStep("load panel", () =>
         {
-            Child = new UserStatisticsPanel(score)
+            Child = new StatisticsPanel
             {
                 RelativeSizeAxes = Axes.Both,
                 State = { Value = Visibility.Visible },
-                Score = { Value = score },
-                DisplayedUserStatisticsUpdate =
-                {
-                    Value = new UserStatisticsUpdate(score, new UserStatistics
-                    {
-                        Level = new UserStatistics.LevelInfo
-                        {
-                            Current = 5,
-                            Progress = 20,
-                        },
-                        GlobalRank = 38000,
-                        CountryRank = 12006,
-                        PP = 2134,
-                        RankedScore = 21123849,
-                        Accuracy = 0.985,
-                        PlayCount = 13375,
-                        PlayTime = 354490,
-                        TotalScore = 128749597,
-                        TotalHits = 0,
-                        MaxCombo = 1233,
-                    }, new UserStatistics
-                    {
-                        Level = new UserStatistics.LevelInfo
-                        {
-                            Current = 5,
-                            Progress = 30,
-                        },
-                        GlobalRank = 36000,
-                        CountryRank = 12000,
-                        PP = (decimal)2134.5,
-                        RankedScore = 23897015,
-                        Accuracy = 0.984,
-                        PlayCount = 13376,
-                        PlayTime = 35789,
-                        TotalScore = 132218497,
-                        TotalHits = 0,
-                        MaxCombo = 1233,
-                    })
-                }
+                Score = { Value = score }
             };
         });
 
-        public static List<HitEvent> CreatePositionDistributedHitEvents()
+        private static List<HitEvent> createPositionDistributedHitEvents()
         {
-            var hitEvents = TestSceneHitEventTimingDistributionGraph.CreateDistributedHitEvents();
-
+            var hitEvents = new List<HitEvent>();
             // Use constant seed for reproducibility
             var random = new Random(0);
 
-            for (int i = 0; i < hitEvents.Count; i++)
+            for (int i = 0; i < 500; i++)
             {
                 double angle = random.NextDouble() * 2 * Math.PI;
                 double radius = random.NextDouble() * 0.5f * OsuHitObject.OBJECT_RADIUS;
 
                 var position = new Vector2((float)(radius * Math.Cos(angle)), (float)(radius * Math.Sin(angle)));
 
-                hitEvents[i] = hitEvents[i].With(position);
+                hitEvents.Add(new HitEvent(0, HitResult.Perfect, new HitCircle(), new HitCircle(), position));
             }
 
             return hitEvents;
@@ -203,7 +161,6 @@ namespace osu.Game.Tests.Visual.Ranking
 
                 public IBeatmap Beatmap { get; }
 
-                // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
                 public TestBeatmapConverter(IBeatmap beatmap)
                 {
                     Beatmap = beatmap;
@@ -217,33 +174,78 @@ namespace osu.Game.Tests.Visual.Ranking
 
         private class TestRulesetAllStatsRequireHitEvents : TestRuleset
         {
-            public override StatisticItem[] CreateStatisticsForScore(ScoreInfo score, IBeatmap playableBeatmap) => new[]
+            public override StatisticRow[] CreateStatisticsForScore(ScoreInfo score, IBeatmap playableBeatmap)
             {
-                new StatisticItem("Statistic Requiring Hit Events 1", () => CreatePlaceholderStatistic("Placeholder statistic. Requires hit events"), true),
-                new StatisticItem("Statistic Requiring Hit Events 2", () => CreatePlaceholderStatistic("Placeholder statistic. Requires hit events"), true)
-            };
+                return new[]
+                {
+                    new StatisticRow
+                    {
+                        Columns = new[]
+                        {
+                            new StatisticItem("Statistic Requiring Hit Events 1",
+                                () => CreatePlaceholderStatistic("Placeholder statistic. Requires hit events"), true)
+                        }
+                    },
+                    new StatisticRow
+                    {
+                        Columns = new[]
+                        {
+                            new StatisticItem("Statistic Requiring Hit Events 2",
+                                () => CreatePlaceholderStatistic("Placeholder statistic. Requires hit events"), true)
+                        }
+                    }
+                };
+            }
         }
 
         private class TestRulesetNoStatsRequireHitEvents : TestRuleset
         {
-            public override StatisticItem[] CreateStatisticsForScore(ScoreInfo score, IBeatmap playableBeatmap)
+            public override StatisticRow[] CreateStatisticsForScore(ScoreInfo score, IBeatmap playableBeatmap)
             {
                 return new[]
                 {
-                    new StatisticItem("Statistic Not Requiring Hit Events 1", () => CreatePlaceholderStatistic("Placeholder statistic. Does not require hit events")),
-                    new StatisticItem("Statistic Not Requiring Hit Events 2", () => CreatePlaceholderStatistic("Placeholder statistic. Does not require hit events"))
+                    new StatisticRow
+                    {
+                        Columns = new[]
+                        {
+                            new StatisticItem("Statistic Not Requiring Hit Events 1",
+                                () => CreatePlaceholderStatistic("Placeholder statistic. Does not require hit events"))
+                        }
+                    },
+                    new StatisticRow
+                    {
+                        Columns = new[]
+                        {
+                            new StatisticItem("Statistic Not Requiring Hit Events 2",
+                                () => CreatePlaceholderStatistic("Placeholder statistic. Does not require hit events"))
+                        }
+                    }
                 };
             }
         }
 
         private class TestRulesetMixed : TestRuleset
         {
-            public override StatisticItem[] CreateStatisticsForScore(ScoreInfo score, IBeatmap playableBeatmap)
+            public override StatisticRow[] CreateStatisticsForScore(ScoreInfo score, IBeatmap playableBeatmap)
             {
                 return new[]
                 {
-                    new StatisticItem("Statistic Requiring Hit Events", () => CreatePlaceholderStatistic("Placeholder statistic. Requires hit events"), true),
-                    new StatisticItem("Statistic Not Requiring Hit Events", () => CreatePlaceholderStatistic("Placeholder statistic. Does not require hit events"))
+                    new StatisticRow
+                    {
+                        Columns = new[]
+                        {
+                            new StatisticItem("Statistic Requiring Hit Events",
+                                () => CreatePlaceholderStatistic("Placeholder statistic. Requires hit events"), true)
+                        }
+                    },
+                    new StatisticRow
+                    {
+                        Columns = new[]
+                        {
+                            new StatisticItem("Statistic Not Requiring Hit Events",
+                                () => CreatePlaceholderStatistic("Placeholder statistic. Does not require hit events"))
+                        }
+                    }
                 };
             }
         }

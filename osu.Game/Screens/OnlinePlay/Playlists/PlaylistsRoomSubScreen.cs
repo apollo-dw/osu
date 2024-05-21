@@ -25,7 +25,7 @@ using osuTK;
 
 namespace osu.Game.Screens.OnlinePlay.Playlists
 {
-    public partial class PlaylistsRoomSubScreen : RoomSubScreen
+    public class PlaylistsRoomSubScreen : RoomSubScreen
     {
         public override string Title { get; }
 
@@ -95,34 +95,38 @@ namespace osu.Game.Screens.OnlinePlay.Playlists
                         new Drawable[]
                         {
                             // Playlist items column
-                            new GridContainer
+                            new Container
                             {
                                 RelativeSizeAxes = Axes.Both,
                                 Padding = new MarginPadding { Right = 5 },
-                                Content = new[]
+                                Child = new GridContainer
                                 {
-                                    new Drawable[] { new OverlinedPlaylistHeader(), },
-                                    new Drawable[]
+                                    RelativeSizeAxes = Axes.Both,
+                                    Content = new[]
                                     {
-                                        new DrawableRoomPlaylist
+                                        new Drawable[] { new OverlinedPlaylistHeader(), },
+                                        new Drawable[]
                                         {
-                                            RelativeSizeAxes = Axes.Both,
-                                            Items = { BindTarget = Room.Playlist },
-                                            SelectedItem = { BindTarget = SelectedItem },
-                                            AllowSelection = true,
-                                            AllowShowingResults = true,
-                                            RequestResults = item =>
+                                            new DrawableRoomPlaylist
                                             {
-                                                Debug.Assert(RoomId.Value != null);
-                                                ParentScreen?.Push(new PlaylistsResultsScreen(null, RoomId.Value.Value, item));
+                                                RelativeSizeAxes = Axes.Both,
+                                                Items = { BindTarget = Room.Playlist },
+                                                SelectedItem = { BindTarget = SelectedItem },
+                                                AllowSelection = true,
+                                                AllowShowingResults = true,
+                                                RequestResults = item =>
+                                                {
+                                                    Debug.Assert(RoomId.Value != null);
+                                                    ParentScreen?.Push(new PlaylistsResultsScreen(null, RoomId.Value.Value, item, false));
+                                                }
                                             }
-                                        }
+                                        },
                                     },
-                                },
-                                RowDimensions = new[]
-                                {
-                                    new Dimension(GridSizeMode.AutoSize),
-                                    new Dimension(),
+                                    RowDimensions = new[]
+                                    {
+                                        new Dimension(GridSizeMode.AutoSize),
+                                        new Dimension(),
+                                    }
                                 }
                             },
                             // Spacer

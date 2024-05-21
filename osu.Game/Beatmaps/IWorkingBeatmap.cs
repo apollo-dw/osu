@@ -32,12 +32,12 @@ namespace osu.Game.Beatmaps
         /// <summary>
         /// Whether the Beatmap has finished loading.
         ///</summary>
-        bool BeatmapLoaded { get; }
+        public bool BeatmapLoaded { get; }
 
         /// <summary>
         /// Whether the Track has finished loading.
         ///</summary>
-        bool TrackLoaded { get; }
+        public bool TrackLoaded { get; }
 
         /// <summary>
         /// Retrieves the <see cref="IBeatmap"/> which this <see cref="IWorkingBeatmap"/> represents.
@@ -47,12 +47,7 @@ namespace osu.Game.Beatmaps
         /// <summary>
         /// Retrieves the background for this <see cref="IWorkingBeatmap"/>.
         /// </summary>
-        Texture GetBackground();
-
-        /// <summary>
-        /// Retrieves a cropped background for this <see cref="IWorkingBeatmap"/> used for display on panels.
-        /// </summary>
-        Texture GetPanelBackground();
+        Texture Background { get; }
 
         /// <summary>
         /// Retrieves the <see cref="Waveform"/> for the <see cref="Track"/> of this <see cref="IWorkingBeatmap"/>.
@@ -129,12 +124,12 @@ namespace osu.Game.Beatmaps
         /// <summary>
         /// Beings loading the contents of this <see cref="IWorkingBeatmap"/> asynchronously.
         /// </summary>
-        void BeginAsyncLoad();
+        public void BeginAsyncLoad();
 
         /// <summary>
         /// Cancels the asynchronous loading of the contents of this <see cref="IWorkingBeatmap"/>.
         /// </summary>
-        void CancelAsyncLoad();
+        public void CancelAsyncLoad();
 
         /// <summary>
         /// Reads the correct track restart point from beatmap metadata and sets looping to enabled.

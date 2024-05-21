@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Allocation;
@@ -16,21 +18,21 @@ using osu.Game.Rulesets.Edit.Checks.Components;
 
 namespace osu.Game.Screens.Edit.Verify
 {
-    public partial class IssueTable : EditorTable
+    public class IssueTable : EditorTable
     {
-        private Bindable<Issue> selectedIssue = null!;
+        [Resolved]
+        private VerifyScreen verify { get; set; }
+
+        private Bindable<Issue> selectedIssue;
 
         [Resolved]
-        private VerifyScreen verify { get; set; } = null!;
+        private EditorClock clock { get; set; }
 
         [Resolved]
-        private EditorClock clock { get; set; } = null!;
+        private EditorBeatmap editorBeatmap { get; set; }
 
         [Resolved]
-        private EditorBeatmap editorBeatmap { get; set; } = null!;
-
-        [Resolved]
-        private Editor editor { get; set; } = null!;
+        private Editor editor { get; set; }
 
         public IEnumerable<Issue> Issues
         {
@@ -39,7 +41,7 @@ namespace osu.Game.Screens.Edit.Verify
                 Content = null;
                 BackgroundFlow.Clear();
 
-                if (!value.Any())
+                if (value == null)
                     return;
 
                 foreach (var issue in value)
@@ -77,7 +79,7 @@ namespace osu.Game.Screens.Edit.Verify
             selectedIssue = verify.SelectedIssue.GetBoundCopy();
             selectedIssue.BindValueChanged(issue =>
             {
-                SetSelectedRow(issue.NewValue);
+                foreach (var b in BackgroundFlow) b.Selected = b.Item == issue.NewValue;
             }, true);
         }
 

@@ -15,7 +15,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Background
 {
-    public partial class TestSceneUserDimContainer : OsuTestScene
+    public class TestSceneUserDimContainer : OsuTestScene
     {
         private TestUserDimContainer userDimContainer;
 
@@ -104,7 +104,7 @@ namespace osu.Game.Tests.Visual.Background
             AddAssert("no dim", () => userDimContainer.DimEqual(0));
         }
 
-        private partial class TestUserDimContainer : UserDimContainer
+        private class TestUserDimContainer : UserDimContainer
         {
             public bool DimEqual(float expectedDimLevel) => Content.Colour == OsuColour.Gray(1f - expectedDimLevel);
 

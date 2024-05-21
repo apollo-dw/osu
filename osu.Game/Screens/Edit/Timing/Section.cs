@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -14,26 +16,26 @@ using osuTK;
 
 namespace osu.Game.Screens.Edit.Timing
 {
-    internal abstract partial class Section<T> : CompositeDrawable
+    internal abstract class Section<T> : CompositeDrawable
         where T : ControlPoint
     {
-        private OsuCheckbox checkbox = null!;
-        private Container content = null!;
+        private OsuCheckbox checkbox;
+        private Container content;
 
-        protected FillFlowContainer Flow { get; private set; } = null!;
+        protected FillFlowContainer Flow { get; private set; }
 
-        protected Bindable<T?> ControlPoint { get; } = new Bindable<T?>();
+        protected Bindable<T> ControlPoint { get; } = new Bindable<T>();
 
         private const float header_height = 50;
 
         [Resolved]
-        protected EditorBeatmap Beatmap { get; private set; } = null!;
+        protected EditorBeatmap Beatmap { get; private set; }
 
         [Resolved]
-        protected Bindable<ControlPointGroup> SelectedGroup { get; private set; } = null!;
+        protected Bindable<ControlPointGroup> SelectedGroup { get; private set; }
 
-        [Resolved]
-        protected IEditorChangeHandler? ChangeHandler { get; private set; }
+        [Resolved(canBeNull: true)]
+        protected IEditorChangeHandler ChangeHandler { get; private set; }
 
         [BackgroundDependencyLoader]
         private void load(OverlayColourProvider colours)
@@ -126,7 +128,7 @@ namespace osu.Game.Screens.Edit.Timing
             ControlPoint.BindValueChanged(OnControlPointChanged, true);
         }
 
-        protected abstract void OnControlPointChanged(ValueChangedEvent<T?> point);
+        protected abstract void OnControlPointChanged(ValueChangedEvent<T> point);
 
         protected abstract T CreatePoint();
     }

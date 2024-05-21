@@ -22,7 +22,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.Chat.Listing
 {
-    public partial class ChannelListingItem : OsuClickableContainer, IFilterable
+    public class ChannelListingItem : OsuClickableContainer, IFilterable
     {
         public event Action<Channel>? OnRequestJoin;
         public event Action<Channel>? OnRequestLeave;
@@ -38,13 +38,13 @@ namespace osu.Game.Overlays.Chat.Listing
         private Box hoverBox = null!;
         private SpriteIcon checkbox = null!;
         private OsuSpriteText channelText = null!;
-        private OsuTextFlowContainer topicText = null!;
+        private OsuSpriteText topicText = null!;
         private IBindable<bool> channelJoined = null!;
 
         [Resolved]
         private OverlayColourProvider colourProvider { get; set; } = null!;
 
-        private const float text_size = 14;
+        private const float text_size = 18;
         private const float icon_size = 14;
 
         private const float vertical_margin = 1.5f;
@@ -65,8 +65,8 @@ namespace osu.Game.Overlays.Chat.Listing
 
             Masking = true;
             CornerRadius = 5;
-            RelativeSizeAxes = Content.RelativeSizeAxes = Axes.X;
-            AutoSizeAxes = Content.AutoSizeAxes = Axes.Y;
+            RelativeSizeAxes = Axes.X;
+            Height = 20 + (vertical_margin * 2);
 
             Children = new Drawable[]
             {
@@ -79,19 +79,14 @@ namespace osu.Game.Overlays.Chat.Listing
                 },
                 new GridContainer
                 {
-                    RelativeSizeAxes = Axes.X,
-                    AutoSizeAxes = Axes.Y,
+                    RelativeSizeAxes = Axes.Both,
                     ColumnDimensions = new[]
                     {
                         new Dimension(GridSizeMode.Absolute, 40),
                         new Dimension(GridSizeMode.Absolute, 200),
-                        new Dimension(maxSize: 400),
+                        new Dimension(GridSizeMode.Absolute, 400),
                         new Dimension(GridSizeMode.AutoSize),
-                        new Dimension(GridSizeMode.Absolute, 50), // enough for any 5 digit user count
-                    },
-                    RowDimensions = new[]
-                    {
-                        new Dimension(GridSizeMode.AutoSize, minSize: 20 + (vertical_margin * 2)),
+                        new Dimension(),
                     },
                     Content = new[]
                     {
@@ -113,13 +108,12 @@ namespace osu.Game.Overlays.Chat.Listing
                                 Font = OsuFont.Torus.With(size: text_size, weight: FontWeight.SemiBold),
                                 Margin = new MarginPadding { Bottom = 2 },
                             },
-                            topicText = new OsuTextFlowContainer(t => t.Font = OsuFont.Torus.With(size: text_size))
+                            topicText = new OsuSpriteText
                             {
-                                RelativeSizeAxes = Axes.X,
-                                AutoSizeAxes = Axes.Y,
                                 Anchor = Anchor.CentreLeft,
                                 Origin = Anchor.CentreLeft,
                                 Text = Channel.Topic,
+                                Font = OsuFont.Torus.With(size: text_size),
                                 Margin = new MarginPadding { Bottom = 2 },
                             },
                             new SpriteIcon

@@ -8,7 +8,7 @@ using osu.Game.Utils;
 
 namespace osu.Game.Overlays.Mods
 {
-    public partial class UserModSelectOverlay : ModSelectOverlay
+    public class UserModSelectOverlay : ModSelectOverlay
     {
         public UserModSelectOverlay(OverlayColourScheme colourScheme = OverlayColourScheme.Green)
             : base(colourScheme)
@@ -38,7 +38,7 @@ namespace osu.Game.Overlays.Mods
             return modsAfterRemoval.ToList();
         }
 
-        private partial class UserModColumn : ModColumn
+        private class UserModColumn : ModColumn
         {
             public UserModColumn(ModType modType, bool allowIncompatibleSelection)
                 : base(modType, allowIncompatibleSelection)

@@ -5,15 +5,16 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Game.Rulesets.Osu.Objects;
+using osuTK;
 using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Default
 {
-    public partial class RingPiece : CircularContainer
+    public class RingPiece : CircularContainer
     {
         public RingPiece(float thickness = 9)
         {
-            Size = OsuHitObject.OBJECT_DIMENSIONS;
+            Size = new Vector2(OsuHitObject.OBJECT_RADIUS * 2);
 
             Anchor = Anchor.Centre;
             Origin = Anchor.Centre;

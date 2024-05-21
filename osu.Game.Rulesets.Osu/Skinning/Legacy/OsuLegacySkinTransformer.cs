@@ -1,10 +1,11 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
-using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Skinning;
 using osuTK;
 
@@ -21,17 +22,7 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
         /// Their hittable area is 128px, but the actual circle portion is 118px.
         /// We must account for some gameplay elements such as slider bodies, where this padding is not present.
         /// </summary>
-        public const float LEGACY_CIRCLE_RADIUS = OsuHitObject.OBJECT_RADIUS - 5;
-
-        /// <summary>
-        /// The maximum allowed size of sprites that reside in the follow circle area of a slider.
-        /// </summary>
-        /// <remarks>
-        /// The reason this is extracted out to a constant, rather than be inlined in the follow circle sprite retrieval,
-        /// is that some skins will use `sliderb` elements to emulate a slider follow circle with slightly different visual effects applied
-        /// (`sliderb` is always shown and doesn't pulsate; `sliderfollowcircle` isn't always shown and pulsates).
-        /// </remarks>
-        public static readonly Vector2 MAX_FOLLOW_CIRCLE_AREA_SIZE = OsuHitObject.OBJECT_DIMENSIONS * 3;
+        public const float LEGACY_CIRCLE_RADIUS = 64 - 5;
 
         public OsuLegacySkinTransformer(ISkin skin)
             : base(skin)
@@ -39,28 +30,33 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
             hasHitCircle = new Lazy<bool>(() => GetTexture("hitcircle") != null);
         }
 
-        public override Drawable? GetDrawableComponent(ISkinComponentLookup lookup)
+        public override Drawable GetDrawableComponent(ISkinComponent component)
         {
-            if (lookup is OsuSkinComponentLookup osuComponent)
+            if (component is OsuSkinComponent osuComponent)
             {
                 switch (osuComponent.Component)
                 {
                     case OsuSkinComponents.FollowPoint:
-                        return this.GetAnimation("followpoint", true, true, true, startAtCurrentTime: false, maxSize: new Vector2(OsuHitObject.OBJECT_RADIUS * 2, OsuHitObject.OBJECT_RADIUS));
+                        return this.GetAnimation(component.LookupName, true, true, true, startAtCurrentTime: false);
 
                     case OsuSkinComponents.SliderScorePoint:
-                        return this.GetAnimation("sliderscorepoint", false, false, maxSize: OsuHitObject.OBJECT_DIMENSIONS);
+                        return this.GetAnimation(component.LookupName, false, false);
 
                     case OsuSkinComponents.SliderFollowCircle:
-                        var followCircleContent = this.GetAnimation("sliderfollowcircle", true, true, true, maxSize: MAX_FOLLOW_CIRCLE_AREA_SIZE);
+                        var followCircleContent = this.GetAnimation("sliderfollowcircle", true, true, true);
                         if (followCircleContent != null)
                             return new LegacyFollowCircle(followCircleContent);
 
                         return null;
 
                     case OsuSkinComponents.SliderBall:
-                        if (GetTexture("sliderb") != null || GetTexture("sliderb0") != null)
-                            return new LegacySliderBall(this);
+                        var sliderBallContent = this.GetAnimation("sliderb", true, true, animationSeparator: "");
+
+                        // todo: slider ball has a custom frame delay based on velocity
+                        // Math.Max((150 / Velocity) * GameBase.SIXTY_FRAME_TIME, GameBase.SIXTY_FRAME_TIME);
+
+                        if (sliderBallContent != null)
+                            return new LegacySliderBall(sliderBallContent, this);
 
                         return null;
 
@@ -106,28 +102,6 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
 
                         return null;
 
-                    case OsuSkinComponents.CursorRipple:
-                        if (GetTexture("cursor-ripple") != null)
-                        {
-                            var ripple = this.GetAnimation("cursor-ripple", false, false);
-
-                            // In stable this element was scaled down to 50% and opacity 20%, but this makes the elements WAY too big and inflexible.
-                            // If anyone complains about these not being applied, this can be uncommented.
-                            //
-                            // But if no one complains I'd rather fix this in lazer. Wiki documentation doesn't mention size,
-                            // so we might be okay.
-                            //
-                            // if (ripple != null)
-                            // {
-                            //     ripple.Scale = new Vector2(0.5f);
-                            //     ripple.Alpha = 0.2f;
-                            // }
-
-                            return ripple;
-                        }
-
-                        return null;
-
                     case OsuSkinComponents.CursorParticles:
                         if (GetTexture("star2") != null)
                             return new LegacyCursorParticles();
@@ -144,12 +118,10 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
                         if (!this.HasFont(LegacyFont.HitCircle))
                             return null;
 
-                        const float hitcircle_text_scale = 0.8f;
                         return new LegacySpriteText(LegacyFont.HitCircle)
                         {
                             // stable applies a blanket 0.8x scale to hitcircle fonts
-                            Scale = new Vector2(hitcircle_text_scale),
-                            MaxSizePerGlyph = OsuHitObject.OBJECT_DIMENSIONS * 2 / hitcircle_text_scale,
+                            Scale = new Vector2(0.8f),
                         };
 
                     case OsuSkinComponents.SpinnerBody:
@@ -163,20 +135,17 @@ namespace osu.Game.Rulesets.Osu.Skinning.Legacy
                         return null;
 
                     case OsuSkinComponents.ApproachCircle:
-                        if (GetTexture(@"approachcircle") != null)
-                            return new LegacyApproachCircle();
-
-                        return null;
+                        return new LegacyApproachCircle();
 
                     default:
-                        throw new UnsupportedSkinComponentException(lookup);
+                        throw new UnsupportedSkinComponentException(component);
                 }
             }
 
-            return base.GetDrawableComponent(lookup);
+            return base.GetDrawableComponent(component);
         }
 
-        public override IBindable<TValue>? GetConfig<TLookup, TValue>(TLookup lookup)
+        public override IBindable<TValue> GetConfig<TLookup, TValue>(TLookup lookup)
         {
             switch (lookup)
             {

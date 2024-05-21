@@ -17,7 +17,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneUprightAspectMaintainingContainer : OsuGridTestScene
+    public class TestSceneUprightAspectMaintainingContainer : OsuGridTestScene
     {
         private const int rows = 3;
         private const int columns = 4;

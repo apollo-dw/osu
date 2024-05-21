@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using NUnit.Framework;
 using osu.Framework.Allocation;
@@ -14,7 +16,7 @@ using osu.Game.Tests.Visual;
 namespace osu.Game.Rulesets.Taiko.Tests.Skinning
 {
     [TestFixture]
-    public partial class TestSceneDrawableDrumRoll : TaikoSkinnableTestScene
+    public class TestSceneDrawableDrumRoll : TaikoSkinnableTestScene
     {
         [Cached(typeof(IScrollingInfo))]
         private ScrollingTestContainer.TestScrollingInfo info = new ScrollingTestContainer.TestScrollingInfo
@@ -23,11 +25,9 @@ namespace osu.Game.Rulesets.Taiko.Tests.Skinning
             TimeRange = { Value = 5000 },
         };
 
-        [Test]
-        public void TestDrumroll([Values] bool withKiai)
+        [BackgroundDependencyLoader]
+        private void load()
         {
-            AddStep("set up beatmap", () => setUpBeatmap(withKiai));
-
             AddStep("Drum roll", () => SetContents(_ =>
             {
                 var hoc = new ScrollingHitObjectContainer();
@@ -72,23 +72,6 @@ namespace osu.Game.Rulesets.Taiko.Tests.Skinning
             drumroll.ApplyDefaults(cpi, new BeatmapDifficulty());
 
             return drumroll;
-        }
-
-        private void setUpBeatmap(bool withKiai)
-        {
-            var controlPointInfo = new ControlPointInfo();
-
-            controlPointInfo.Add(0, new TimingControlPoint { BeatLength = 500 });
-
-            if (withKiai)
-                controlPointInfo.Add(0, new EffectControlPoint { KiaiMode = true });
-
-            Beatmap.Value = CreateWorkingBeatmap(new Beatmap
-            {
-                ControlPointInfo = controlPointInfo
-            });
-
-            Beatmap.Value.Track.Start();
         }
     }
 }

@@ -23,7 +23,7 @@ using osu.Game.Skinning;
 
 namespace osu.Game.Tests.Visual
 {
-    public abstract partial class EditorTestScene : ScreenTestScene
+    public abstract class EditorTestScene : ScreenTestScene
     {
         private TestEditorLoader editorLoader;
 
@@ -83,7 +83,7 @@ namespace osu.Game.Tests.Visual
 
         protected sealed override Ruleset CreateRuleset() => CreateEditorRuleset();
 
-        protected partial class TestEditorLoader : EditorLoader
+        protected class TestEditorLoader : EditorLoader
         {
             public TestEditor Editor { get; private set; }
 
@@ -92,7 +92,7 @@ namespace osu.Game.Tests.Visual
             protected virtual TestEditor CreateTestEditor(EditorLoader loader) => new TestEditor(loader);
         }
 
-        protected partial class TestEditor : Editor
+        protected class TestEditor : Editor
         {
             [Resolved(canBeNull: true)]
             [CanBeNull]
@@ -102,8 +102,6 @@ namespace osu.Game.Tests.Visual
 
             public new void Redo() => base.Redo();
 
-            public new void SetPreviewPointToCurrentTime() => base.SetPreviewPointToCurrentTime();
-
             public new bool Save() => base.Save();
 
             public new void Cut() => base.Cut();
@@ -111,8 +109,6 @@ namespace osu.Game.Tests.Visual
             public new void Copy() => base.Copy();
 
             public new void Paste() => base.Paste();
-
-            public new void Clone() => base.Clone();
 
             public new void SwitchToDifficulty(BeatmapInfo beatmapInfo) => base.SwitchToDifficulty(beatmapInfo);
 

@@ -12,7 +12,7 @@ using osu.Game.Input.Bindings;
 
 namespace osu.Game.Overlays.Volume
 {
-    public partial class VolumeControlReceptor : Container, IScrollBindingHandler<GlobalAction>, IHandleGlobalKeyboardInput
+    public class VolumeControlReceptor : Container, IScrollBindingHandler<GlobalAction>, IHandleGlobalKeyboardInput
     {
         public Func<GlobalAction, bool> ActionRequested;
         public Func<GlobalAction, float, bool, bool> ScrollActionRequested;
@@ -23,14 +23,10 @@ namespace osu.Game.Overlays.Volume
             {
                 case GlobalAction.DecreaseVolume:
                 case GlobalAction.IncreaseVolume:
-                    ActionRequested?.Invoke(e.Action);
-                    return true;
-
                 case GlobalAction.ToggleMute:
                 case GlobalAction.NextVolumeMeter:
                 case GlobalAction.PreviousVolumeMeter:
-                    if (!e.Repeat)
-                        ActionRequested?.Invoke(e.Action);
+                    ActionRequested?.Invoke(e.Action);
                     return true;
             }
 

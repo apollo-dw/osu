@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using Moq;
@@ -19,8 +21,8 @@ namespace osu.Game.Tests.Editing.Checks
     [TestFixture]
     public class CheckUnsnappedObjectsTest
     {
-        private CheckUnsnappedObjects check = null!;
-        private ControlPointInfo cpi = null!;
+        private CheckUnsnappedObjects check;
+        private ControlPointInfo cpi;
 
         [SetUp]
         public void Setup()

@@ -27,7 +27,8 @@ namespace osu.Game.Rulesets.Difficulty.Utils
 
         public ReverseQueue(int initialCapacity)
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(initialCapacity);
+            if (initialCapacity <= 0)
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity));
 
             items = new T[initialCapacity];
             capacity = initialCapacity;

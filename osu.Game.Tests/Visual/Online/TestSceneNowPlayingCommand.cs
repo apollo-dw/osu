@@ -10,15 +10,13 @@ using osu.Framework.Testing;
 using osu.Game.Beatmaps;
 using osu.Game.Online.API;
 using osu.Game.Online.Chat;
-using osu.Game.Online.Rooms;
-using osu.Game.Rulesets.Mods;
-using osu.Game.Rulesets.Osu;
+using osu.Game.Rulesets;
 using osu.Game.Users;
 
 namespace osu.Game.Tests.Visual.Online
 {
     [HeadlessTest]
-    public partial class TestSceneNowPlayingCommand : OsuTestScene
+    public class TestSceneNowPlayingCommand : OsuTestScene
     {
         [Cached(typeof(IChannelPostTarget))]
         private PostTarget postTarget { get; set; }
@@ -33,9 +31,9 @@ namespace osu.Game.Tests.Visual.Online
         [Test]
         public void TestGenericActivity()
         {
-            AddStep("Set activity", () => api.Activity.Value = new UserActivity.InLobby(new Room()));
+            AddStep("Set activity", () => api.Activity.Value = new UserActivity.InLobby(null));
 
-            AddStep("Run command", () => Add(new NowPlayingCommand(new Channel())));
+            AddStep("Run command", () => Add(new NowPlayingCommand()));
 
             AddAssert("Check correct response", () => postTarget.LastMessage.Contains("is listening"));
         }
@@ -43,9 +41,9 @@ namespace osu.Game.Tests.Visual.Online
         [Test]
         public void TestEditActivity()
         {
-            AddStep("Set activity", () => api.Activity.Value = new UserActivity.EditingBeatmap(new BeatmapInfo()));
+            AddStep("Set activity", () => api.Activity.Value = new UserActivity.Editing(new BeatmapInfo()));
 
-            AddStep("Run command", () => Add(new NowPlayingCommand(new Channel())));
+            AddStep("Run command", () => Add(new NowPlayingCommand()));
 
             AddAssert("Check correct response", () => postTarget.LastMessage.Contains("is editing"));
         }
@@ -53,9 +51,9 @@ namespace osu.Game.Tests.Visual.Online
         [Test]
         public void TestPlayActivity()
         {
-            AddStep("Set activity", () => api.Activity.Value = new UserActivity.InSoloGame(new BeatmapInfo(), new OsuRuleset().RulesetInfo));
+            AddStep("Set activity", () => api.Activity.Value = new UserActivity.InSoloGame(new BeatmapInfo(), new RulesetInfo()));
 
-            AddStep("Run command", () => Add(new NowPlayingCommand(new Channel())));
+            AddStep("Run command", () => Add(new NowPlayingCommand()));
 
             AddAssert("Check correct response", () => postTarget.LastMessage.Contains("is playing"));
         }
@@ -64,14 +62,14 @@ namespace osu.Game.Tests.Visual.Online
         [TestCase(false)]
         public void TestLinkPresence(bool hasOnlineId)
         {
-            AddStep("Set activity", () => api.Activity.Value = new UserActivity.InLobby(new Room()));
+            AddStep("Set activity", () => api.Activity.Value = new UserActivity.InLobby(null));
 
             AddStep("Set beatmap", () => Beatmap.Value = new DummyWorkingBeatmap(Audio, null)
             {
                 BeatmapInfo = { OnlineID = hasOnlineId ? 1234 : -1 }
             });
 
-            AddStep("Run command", () => Add(new NowPlayingCommand(new Channel())));
+            AddStep("Run command", () => Add(new NowPlayingCommand()));
 
             if (hasOnlineId)
                 AddAssert("Check link presence", () => postTarget.LastMessage.Contains("/b/1234"));
@@ -79,19 +77,7 @@ namespace osu.Game.Tests.Visual.Online
                 AddAssert("Check link not present", () => !postTarget.LastMessage.Contains("https://"));
         }
 
-        [Test]
-        public void TestModPresence()
-        {
-            AddStep("Set activity", () => api.Activity.Value = new UserActivity.InSoloGame(new BeatmapInfo(), new OsuRuleset().RulesetInfo));
-
-            AddStep("Add Hidden mod", () => SelectedMods.Value = new[] { Ruleset.Value.CreateInstance().CreateMod<ModHidden>() });
-
-            AddStep("Run command", () => Add(new NowPlayingCommand(new Channel())));
-
-            AddAssert("Check mod is present", () => postTarget.LastMessage.Contains("+HD"));
-        }
-
-        public partial class PostTarget : Component, IChannelPostTarget
+        public class PostTarget : Component, IChannelPostTarget
         {
             public void PostMessage(string text, bool isAction = false, Channel target = null)
             {

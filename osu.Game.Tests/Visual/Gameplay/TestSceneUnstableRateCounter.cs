@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System;
 using NUnit.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -18,22 +17,16 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {
-    public partial class TestSceneUnstableRateCounter : OsuTestScene
+    public class TestSceneUnstableRateCounter : OsuTestScene
     {
         [Cached(typeof(ScoreProcessor))]
         private TestScoreProcessor scoreProcessor = new TestScoreProcessor();
 
-        private readonly OsuHitWindows hitWindows;
+        private readonly OsuHitWindows hitWindows = new OsuHitWindows();
 
         private UnstableRateCounter counter;
 
         private double prev;
-
-        public TestSceneUnstableRateCounter()
-        {
-            hitWindows = new OsuHitWindows();
-            hitWindows.SetDifficulty(5);
-        }
 
         [SetUpSteps]
         public void SetUp()
@@ -57,7 +50,6 @@ namespace osu.Game.Tests.Visual.Gameplay
                 scoreProcessor.RevertResult(
                     new JudgementResult(new HitCircle { HitWindows = hitWindows }, new Judgement())
                     {
-                        GameplayRate = 1.0,
                         TimeOffset = 25,
                         Type = HitResult.Perfect,
                     });
@@ -82,27 +74,6 @@ namespace osu.Game.Tests.Visual.Gameplay
             AddUntilStep("UR = 250", () => counter.Current.Value == 250.0);
         }
 
-        [Test]
-        public void TestStaticRateChange()
-        {
-            AddStep("Create Display", recreateDisplay);
-
-            AddRepeatStep("Set UR to 250 at 1.5x", () => applyJudgement(25, true, 1.5), 4);
-
-            AddUntilStep("UR = 250/1.5", () => counter.Current.Value == Math.Round(250.0 / 1.5));
-        }
-
-        [Test]
-        public void TestDynamicRateChange()
-        {
-            AddStep("Create Display", recreateDisplay);
-
-            AddRepeatStep("Set UR to 100 at 1.0x", () => applyJudgement(10, true, 1.0), 4);
-            AddRepeatStep("Bring UR to 100 at 1.5x", () => applyJudgement(15, true, 1.5), 4);
-
-            AddUntilStep("UR = 100", () => counter.Current.Value == 100.0);
-        }
-
         private void recreateDisplay()
         {
             Clear();
@@ -115,7 +86,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             });
         }
 
-        private void applyJudgement(double offsetMs, bool alt, double gameplayRate = 1.0)
+        private void applyJudgement(double offsetMs, bool alt)
         {
             double placement = offsetMs;
 
@@ -128,12 +99,11 @@ namespace osu.Game.Tests.Visual.Gameplay
             scoreProcessor.ApplyResult(new JudgementResult(new HitCircle { HitWindows = hitWindows }, new Judgement())
             {
                 TimeOffset = placement,
-                GameplayRate = gameplayRate,
                 Type = HitResult.Perfect,
             });
         }
 
-        private partial class TestScoreProcessor : ScoreProcessor
+        private class TestScoreProcessor : ScoreProcessor
         {
             public TestScoreProcessor()
                 : base(new OsuRuleset())

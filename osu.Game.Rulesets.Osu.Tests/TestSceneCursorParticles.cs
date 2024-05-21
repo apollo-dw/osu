@@ -22,7 +22,7 @@ using osuTK.Input;
 
 namespace osu.Game.Rulesets.Osu.Tests
 {
-    public partial class TestSceneCursorParticles : TestSceneOsuPlayer
+    public class TestSceneCursorParticles : TestSceneOsuPlayer
     {
         protected override bool Autoplay => autoplay;
         protected override bool HasCustomSteps => true;

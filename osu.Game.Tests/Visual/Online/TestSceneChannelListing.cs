@@ -19,7 +19,7 @@ using osuTK;
 namespace osu.Game.Tests.Visual.Online
 {
     [TestFixture]
-    public partial class TestSceneChannelListing : OsuTestScene
+    public class TestSceneChannelListing : OsuTestScene
     {
         [Cached]
         private readonly OverlayColourProvider overlayColours = new OverlayColourProvider(OverlayColourScheme.Pink);

@@ -10,7 +10,7 @@ using osu.Game.Rulesets.Mods;
 namespace osu.Game.Tests.Visual.Gameplay
 {
     [HeadlessTest]
-    public partial class TestSceneModValidity : TestSceneAllRulesetPlayers
+    public class TestSceneModValidity : TestSceneAllRulesetPlayers
     {
         protected override void AddCheckSteps()
         {

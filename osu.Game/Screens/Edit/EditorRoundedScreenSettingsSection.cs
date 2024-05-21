@@ -12,7 +12,7 @@ using osuTK;
 
 namespace osu.Game.Screens.Edit
 {
-    public abstract partial class EditorRoundedScreenSettingsSection : CompositeDrawable
+    public abstract class EditorRoundedScreenSettingsSection : CompositeDrawable
     {
         private const int header_height = 50;
 

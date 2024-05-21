@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
@@ -9,7 +11,7 @@ using osuTK;
 
 namespace osu.Game.Screens.Play.Break
 {
-    public partial class BreakArrows : CompositeDrawable
+    public class BreakArrows : CompositeDrawable
     {
         private const int glow_icon_size = 60;
         private const int glow_icon_blur_sigma = 10;
@@ -18,7 +20,7 @@ namespace osu.Game.Screens.Play.Break
 
         private const int blurred_icon_blur_sigma = 20;
         private const int blurred_icon_size = 130;
-        private const float blurred_icon_final_offset = 0.38f;
+        private const float blurred_icon_final_offset = 0.35f;
         private const float blurred_icon_offscreen_offset = 0.7f;
 
         private readonly GlowIcon leftGlowIcon;

@@ -1,6 +1,9 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
+using JetBrains.Annotations;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Game.Rulesets.Catch.Skinning.Default;
@@ -8,14 +11,14 @@ using osu.Game.Skinning;
 
 namespace osu.Game.Rulesets.Catch.Objects.Drawables
 {
-    public partial class DrawableDroplet : DrawablePalpableCatchHitObject
+    public class DrawableDroplet : DrawablePalpableCatchHitObject
     {
         public DrawableDroplet()
             : this(null)
         {
         }
 
-        public DrawableDroplet(CatchHitObject? h)
+        public DrawableDroplet([CanBeNull] CatchHitObject h)
             : base(h)
         {
         }
@@ -24,7 +27,7 @@ namespace osu.Game.Rulesets.Catch.Objects.Drawables
         private void load()
         {
             ScalingContainer.Child = new SkinnableDrawable(
-                new CatchSkinComponentLookup(CatchSkinComponents.Droplet),
+                new CatchSkinComponent(CatchSkinComponents.Droplet),
                 _ => new DropletPiece());
         }
 

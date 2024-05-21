@@ -14,7 +14,7 @@ using osu.Game.Screens.Select;
 namespace osu.Game.Tests.Visual.SongSelect
 {
     [System.ComponentModel.Description("PlaySongSelect beatmap details")]
-    public partial class TestSceneBeatmapDetails : OsuTestScene
+    public class TestSceneBeatmapDetails : OsuTestScene
     {
         private BeatmapDetails details;
 

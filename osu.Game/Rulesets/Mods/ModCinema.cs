@@ -23,14 +23,14 @@ namespace osu.Game.Rulesets.Mods
         }
     }
 
-    public class ModCinema : ModAutoplay, IApplicableToHUD, IApplicableToPlayer, IApplicableFailOverride
+    public class ModCinema : ModAutoplay, IApplicableToHUD, IApplicableToPlayer
     {
         public override string Name => "Cinema";
         public override string Acronym => "CN";
         public override IconUsage? Icon => OsuIcon.ModCinema;
         public override LocalisableString Description => "Watch the video without visual distractions.";
 
-        public override Type[] IncompatibleMods => base.IncompatibleMods.Concat(new[] { typeof(ModAutoplay), typeof(ModNoFail), typeof(ModFailCondition) }).ToArray();
+        public override Type[] IncompatibleMods => base.IncompatibleMods.Append(typeof(ModAutoplay)).ToArray();
 
         public void ApplyToHUD(HUDOverlay overlay)
         {
@@ -45,9 +45,5 @@ namespace osu.Game.Rulesets.Mods
 
             player.BreakOverlay.Hide();
         }
-
-        public bool PerformFail() => false;
-
-        public bool RestartOnFail => false;
     }
 }

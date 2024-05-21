@@ -18,7 +18,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {
-    public partial class TestSceneGameplayChatDisplay : OsuManualInputManagerTestScene
+    public class TestSceneGameplayChatDisplay : OsuManualInputManagerTestScene
     {
         private GameplayChatDisplay chatDisplay;
 
@@ -84,12 +84,12 @@ namespace osu.Game.Tests.Visual.Multiplayer
         }
 
         [Test]
-        public void TestFocusOnEnterKeyWhenExpanded()
+        public void TestFocusOnTabKeyWhenExpanded()
         {
             setLocalUserPlaying(true);
 
             assertChatFocused(false);
-            AddStep("press enter", () => InputManager.Key(Key.Enter));
+            AddStep("press tab", () => InputManager.Key(Key.Tab));
             assertChatFocused(true);
         }
 
@@ -99,23 +99,38 @@ namespace osu.Game.Tests.Visual.Multiplayer
             setLocalUserPlaying(true);
 
             assertChatFocused(false);
-            AddStep("press enter", () => InputManager.Key(Key.Enter));
+            AddStep("press tab", () => InputManager.Key(Key.Tab));
             assertChatFocused(true);
             AddStep("press escape", () => InputManager.Key(Key.Escape));
             assertChatFocused(false);
         }
 
         [Test]
-        public void TestFocusOnEnterKeyWhenNotExpanded()
+        public void TestFocusOnTabKeyWhenNotExpanded()
         {
             AddStep("set not expanded", () => chatDisplay.Expanded.Value = false);
             AddUntilStep("is not visible", () => !chatDisplay.IsPresent);
 
-            AddStep("press enter", () => InputManager.Key(Key.Enter));
+            AddStep("press tab", () => InputManager.Key(Key.Tab));
             assertChatFocused(true);
             AddUntilStep("is visible", () => chatDisplay.IsPresent);
 
             AddStep("press enter", () => InputManager.Key(Key.Enter));
+            assertChatFocused(false);
+            AddUntilStep("is not visible", () => !chatDisplay.IsPresent);
+        }
+
+        [Test]
+        public void TestFocusToggleViaAction()
+        {
+            AddStep("set not expanded", () => chatDisplay.Expanded.Value = false);
+            AddUntilStep("is not visible", () => !chatDisplay.IsPresent);
+
+            AddStep("press tab", () => InputManager.Key(Key.Tab));
+            assertChatFocused(true);
+            AddUntilStep("is visible", () => chatDisplay.IsPresent);
+
+            AddStep("press tab", () => InputManager.Key(Key.Tab));
             assertChatFocused(false);
             AddUntilStep("is not visible", () => !chatDisplay.IsPresent);
         }

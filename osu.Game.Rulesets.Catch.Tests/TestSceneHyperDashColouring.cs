@@ -24,7 +24,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Catch.Tests
 {
-    public partial class TestSceneHyperDashColouring : OsuTestScene
+    public class TestSceneHyperDashColouring : OsuTestScene
     {
         [Resolved]
         private SkinManager skins { get; set; }

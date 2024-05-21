@@ -1,13 +1,13 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
-using System.Threading;
+using System.Threading.Tasks;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
-using osu.Framework.Configuration;
 using osu.Framework.Extensions.Color4Extensions;
-using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Effects;
@@ -28,51 +28,49 @@ using osuTK.Graphics;
 
 namespace osu.Game.Overlays
 {
-    public partial class NowPlayingOverlay : OsuFocusedOverlayContainer, INamedOverlayComponent
+    public class NowPlayingOverlay : OsuFocusedOverlayContainer, INamedOverlayComponent
     {
-        public IconUsage Icon => OsuIcon.Music;
+        public string IconTexture => "Icons/Hexacons/music";
         public LocalisableString Title => NowPlayingStrings.HeaderTitle;
         public LocalisableString Description => NowPlayingStrings.HeaderDescription;
 
-        private const float player_width = 400;
         private const float player_height = 130;
         private const float transition_length = 800;
         private const float progress_height = 10;
         private const float bottom_black_area_height = 55;
         private const float margin = 10;
 
-        private Drawable background = null!;
-        private ProgressBar progressBar = null!;
+        private Drawable background;
+        private ProgressBar progressBar;
 
-        private IconButton prevButton = null!;
-        private IconButton playButton = null!;
-        private IconButton nextButton = null!;
-        private IconButton playlistButton = null!;
+        private IconButton prevButton;
+        private IconButton playButton;
+        private IconButton nextButton;
+        private IconButton playlistButton;
 
-        private ScrollingTextContainer title = null!, artist = null!;
+        private SpriteText title, artist;
 
-        private PlaylistOverlay? playlist;
+        private PlaylistOverlay playlist;
 
-        private Container dragContainer = null!;
-        private Container playerContainer = null!;
-        private Container playlistContainer = null!;
+        private Container dragContainer;
+        private Container playerContainer;
+        private Container playlistContainer;
 
-        protected override double PopInOutSampleBalance => OsuGameBase.SFX_STEREO_STRENGTH * 0.75f;
-
-        [Resolved]
-        private MusicController musicController { get; set; } = null!;
+        protected override string PopInSampleName => "UI/now-playing-pop-in";
+        protected override string PopOutSampleName => "UI/now-playing-pop-out";
 
         [Resolved]
-        private Bindable<WorkingBeatmap> beatmap { get; set; } = null!;
+        private MusicController musicController { get; set; }
 
         [Resolved]
-        private OsuColour colours { get; set; } = null!;
+        private Bindable<WorkingBeatmap> beatmap { get; set; }
 
-        private Bindable<bool> allowTrackControl = null!;
+        [Resolved]
+        private OsuColour colours { get; set; }
 
         public NowPlayingOverlay()
         {
-            Width = player_width;
+            Width = 400;
             Margin = new MarginPadding(margin);
         }
 
@@ -102,8 +100,8 @@ namespace osu.Game.Overlays
                             },
                             Children = new[]
                             {
-                                background = Empty(),
-                                title = new ScrollingTextContainer
+                                background = new Background(),
+                                title = new OsuSpriteText
                                 {
                                     Origin = Anchor.BottomCentre,
                                     Anchor = Anchor.TopCentre,
@@ -112,7 +110,7 @@ namespace osu.Game.Overlays
                                     Colour = Color4.White,
                                     Text = @"Nothing to play",
                                 },
-                                artist = new ScrollingTextContainer
+                                artist = new OsuSpriteText
                                 {
                                     Origin = Anchor.TopCentre,
                                     Anchor = Anchor.TopCentre,
@@ -222,10 +220,8 @@ namespace osu.Game.Overlays
         {
             base.LoadComplete();
 
-            beatmap.BindDisabledChanged(_ => Scheduler.AddOnce(updateEnabledStates));
-
-            allowTrackControl = musicController.AllowTrackControl.GetBoundCopy();
-            allowTrackControl.BindValueChanged(_ => Scheduler.AddOnce(updateEnabledStates), true);
+            beatmap.BindDisabledChanged(_ => Scheduler.AddOnce(beatmapDisabledChanged));
+            beatmapDisabledChanged();
 
             musicController.TrackChanged += trackChanged;
             trackChanged(beatmap.Value);
@@ -233,6 +229,8 @@ namespace osu.Game.Overlays
 
         protected override void PopIn()
         {
+            base.PopIn();
+
             this.FadeIn(transition_length, Easing.OutQuint);
             dragContainer.ScaleTo(1, transition_length, Easing.OutElastic);
         }
@@ -249,7 +247,7 @@ namespace osu.Game.Overlays
         {
             base.UpdateAfterChildren();
 
-            playlistContainer.Height = MathF.Min(Parent!.DrawHeight - margin * 3 - player_height, PlaylistOverlay.PLAYLIST_HEIGHT);
+            playlistContainer.Height = MathF.Min(Parent.DrawHeight - margin * 3 - player_height, PlaylistOverlay.PLAYLIST_HEIGHT);
 
             float height = player_height;
 
@@ -290,46 +288,43 @@ namespace osu.Game.Overlays
             }
         }
 
-        private Action? pendingBeatmapSwitch;
-
-        private CancellationTokenSource? backgroundLoadCancellation;
-
-        private WorkingBeatmap? currentBeatmap;
+        private Action pendingBeatmapSwitch;
 
         private void trackChanged(WorkingBeatmap beatmap, TrackChangeDirection direction = TrackChangeDirection.None)
         {
-            currentBeatmap = beatmap;
-
             // avoid using scheduler as our scheduler may not be run for a long time, holding references to beatmaps.
             pendingBeatmapSwitch = delegate
             {
-                BeatmapMetadata metadata = beatmap.Metadata;
-
-                title.Text = new RomanisableString(metadata.TitleUnicode, metadata.Title);
-                artist.Text = new RomanisableString(metadata.ArtistUnicode, metadata.Artist);
-
-                backgroundLoadCancellation?.Cancel();
+                // todo: this can likely be replaced with WorkingBeatmap.GetBeatmapAsync()
+                Task.Run(() =>
+                {
+                    if (beatmap?.Beatmap == null) // this is not needed if a placeholder exists
+                    {
+                        title.Text = @"Nothing to play";
+                        artist.Text = @"Nothing to play";
+                    }
+                    else
+                    {
+                        BeatmapMetadata metadata = beatmap.Metadata;
+                        title.Text = new RomanisableString(metadata.TitleUnicode, metadata.Title);
+                        artist.Text = new RomanisableString(metadata.ArtistUnicode, metadata.Artist);
+                    }
+                });
 
                 LoadComponentAsync(new Background(beatmap) { Depth = float.MaxValue }, newBackground =>
                 {
-                    if (beatmap != currentBeatmap)
-                    {
-                        newBackground.Dispose();
-                        return;
-                    }
-
                     switch (direction)
                     {
                         case TrackChangeDirection.Next:
-                            newBackground.Position = new Vector2(player_width, 0);
+                            newBackground.Position = new Vector2(400, 0);
                             newBackground.MoveToX(0, 500, Easing.OutCubic);
-                            background.MoveToX(-player_width, 500, Easing.OutCubic);
+                            background.MoveToX(-400, 500, Easing.OutCubic);
                             break;
 
                         case TrackChangeDirection.Prev:
-                            newBackground.Position = new Vector2(-player_width, 0);
+                            newBackground.Position = new Vector2(-400, 0);
                             newBackground.MoveToX(0, 500, Easing.OutCubic);
-                            background.MoveToX(player_width, 500, Easing.OutCubic);
+                            background.MoveToX(400, 500, Easing.OutCubic);
                             break;
                     }
 
@@ -337,33 +332,31 @@ namespace osu.Game.Overlays
                     background = newBackground;
 
                     playerContainer.Add(newBackground);
-                }, (backgroundLoadCancellation = new CancellationTokenSource()).Token);
+                });
             };
         }
 
-        private void updateEnabledStates()
+        private void beatmapDisabledChanged()
         {
-            bool beatmapDisabled = beatmap.Disabled;
-            bool trackControlDisabled = !musicController.AllowTrackControl.Value;
+            bool disabled = beatmap.Disabled;
 
-            if (beatmapDisabled || trackControlDisabled)
+            if (disabled)
                 playlist?.Hide();
 
-            prevButton.Enabled.Value = !beatmapDisabled && !trackControlDisabled;
-            nextButton.Enabled.Value = !beatmapDisabled && !trackControlDisabled;
-            playlistButton.Enabled.Value = !beatmapDisabled && !trackControlDisabled;
-            playButton.Enabled.Value = !trackControlDisabled;
+            prevButton.Enabled.Value = !disabled;
+            nextButton.Enabled.Value = !disabled;
+            playlistButton.Enabled.Value = !disabled;
         }
 
         protected override void Dispose(bool isDisposing)
         {
             base.Dispose(isDisposing);
 
-            if (musicController.IsNotNull())
+            if (musicController != null)
                 musicController.TrackChanged -= trackChanged;
         }
 
-        private partial class MusicIconButton : IconButton
+        private class MusicIconButton : IconButton
         {
             public MusicIconButton()
             {
@@ -387,12 +380,12 @@ namespace osu.Game.Overlays
             }
         }
 
-        private partial class Background : BufferedContainer
+        private class Background : BufferedContainer
         {
             private readonly Sprite sprite;
             private readonly WorkingBeatmap beatmap;
 
-            public Background(WorkingBeatmap beatmap)
+            public Background(WorkingBeatmap beatmap = null)
                 : base(cachedFrameBuffer: true)
             {
                 this.beatmap = beatmap;
@@ -407,8 +400,6 @@ namespace osu.Game.Overlays
                         RelativeSizeAxes = Axes.Both,
                         Colour = OsuColour.Gray(150),
                         FillMode = FillMode.Fill,
-                        Anchor = Anchor.Centre,
-                        Origin = Anchor.Centre,
                     },
                     new Box
                     {
@@ -422,13 +413,13 @@ namespace osu.Game.Overlays
             }
 
             [BackgroundDependencyLoader]
-            private void load(LargeTextureStore textures)
+            private void load(TextureStore textures)
             {
-                sprite.Texture = beatmap.GetBackground() ?? textures.Get(@"Backgrounds/bg2");
+                sprite.Texture = beatmap?.Background ?? textures.Get(@"Backgrounds/bg4");
             }
         }
 
-        private partial class DragContainer : Container
+        private class DragContainer : Container
         {
             protected override bool OnDragStart(DragStartEvent e)
             {
@@ -452,7 +443,7 @@ namespace osu.Game.Overlays
             }
         }
 
-        private partial class HoverableProgressBar : ProgressBar
+        private class HoverableProgressBar : ProgressBar
         {
             public HoverableProgressBar()
                 : base(true)
@@ -469,112 +460,6 @@ namespace osu.Game.Overlays
             {
                 this.ResizeHeightTo(progress_height / 2, 500, Easing.OutQuint);
                 base.OnHoverLost(e);
-            }
-        }
-
-        private partial class ScrollingTextContainer : CompositeDrawable
-        {
-            private const float initial_move_delay = 1000;
-            private const float pixels_per_second = 50;
-
-            private OsuSpriteText mainSpriteText = null!;
-            private OsuSpriteText fillerSpriteText = null!;
-
-            private Bindable<bool> showUnicode = null!;
-
-            [Resolved]
-            private FrameworkConfigManager frameworkConfig { get; set; } = null!;
-
-            private LocalisableString text;
-
-            public LocalisableString Text
-            {
-                get => text;
-                set
-                {
-                    text = value;
-
-                    if (IsLoaded)
-                        updateText();
-                }
-            }
-
-            private FontUsage font = OsuFont.Default;
-
-            public FontUsage Font
-            {
-                get => font;
-                set
-                {
-                    font = value;
-
-                    if (IsLoaded)
-                        updateFontAndText();
-                }
-            }
-
-            public ScrollingTextContainer()
-            {
-                AutoSizeAxes = Axes.Both;
-            }
-
-            [BackgroundDependencyLoader]
-            private void load()
-            {
-                InternalChild = new FillFlowContainer<OsuSpriteText>
-                {
-                    AutoSizeAxes = Axes.Both,
-                    Direction = FillDirection.Horizontal,
-                    Children = new[]
-                    {
-                        mainSpriteText = new OsuSpriteText { Padding = new MarginPadding { Horizontal = margin } },
-                        fillerSpriteText = new OsuSpriteText { Padding = new MarginPadding { Horizontal = margin }, Alpha = 0 },
-                    }
-                };
-            }
-
-            protected override void LoadComplete()
-            {
-                base.LoadComplete();
-
-                showUnicode = frameworkConfig.GetBindable<bool>(FrameworkSetting.ShowUnicode);
-                showUnicode.BindValueChanged(_ => updateText());
-
-                updateFontAndText();
-            }
-
-            private void updateFontAndText()
-            {
-                mainSpriteText.Font = font;
-                fillerSpriteText.Font = font;
-
-                updateText();
-            }
-
-            private void updateText()
-            {
-                mainSpriteText.Text = text;
-                fillerSpriteText.Alpha = 0;
-
-                ClearTransforms();
-                X = 0;
-
-                float textOverflowWidth = mainSpriteText.Width - player_width;
-
-                // apply half margin of tolerance on both sides before the text scrolls
-                if (textOverflowWidth > margin)
-                {
-                    fillerSpriteText.Alpha = 1;
-                    fillerSpriteText.Text = text;
-
-                    float initialX = (textOverflowWidth + mainSpriteText.Width) / 2;
-                    float targetX = (textOverflowWidth - mainSpriteText.Width) / 2;
-
-                    this.MoveToX(initialX)
-                        .Delay(initial_move_delay)
-                        .MoveToX(targetX, mainSpriteText.Width * 1000 / pixels_per_second)
-                        .Loop();
-                }
             }
         }
     }

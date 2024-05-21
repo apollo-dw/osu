@@ -3,17 +3,14 @@
 
 #nullable disable
 
-using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.PolygonExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Shapes;
 using osu.Framework.Testing;
 using osu.Framework.Utils;
-using osu.Game.Online.API;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Screens.Play.HUD;
 using osuTK;
@@ -21,11 +18,11 @@ using osuTK;
 namespace osu.Game.Tests.Visual.Gameplay
 {
     [TestFixture]
-    public partial class TestSceneGameplayLeaderboard : OsuTestScene
+    public class TestSceneGameplayLeaderboard : OsuTestScene
     {
         private TestGameplayLeaderboard leaderboard;
 
-        private readonly BindableLong playerScore = new BindableLong();
+        private readonly BindableDouble playerScore = new BindableDouble();
 
         public TestSceneGameplayLeaderboard()
         {
@@ -79,8 +76,8 @@ namespace osu.Game.Tests.Visual.Gameplay
             createLeaderboard();
             addLocalPlayer();
 
-            var player2Score = new BindableLong(1234567);
-            var player3Score = new BindableLong(1111111);
+            var player2Score = new BindableDouble(1234567);
+            var player3Score = new BindableDouble(1111111);
 
             AddStep("add player 2", () => createLeaderboardScore(player2Score, new APIUser { Username = "Player 2" }));
             AddStep("add player 3", () => createLeaderboardScore(player3Score, new APIUser { Username = "Player 3" }));
@@ -142,37 +139,6 @@ namespace osu.Game.Tests.Visual.Gameplay
                 => AddAssert($"leaderboard height is {panelCount} panels high", () => leaderboard.DrawHeight == (GameplayLeaderboardScore.PANEL_HEIGHT + leaderboard.Spacing) * panelCount);
         }
 
-        [Test]
-        public void TestFriendScore()
-        {
-            APIUser friend = new APIUser { Username = "my friend", Id = 10000 };
-
-            createLeaderboard();
-            addLocalPlayer();
-
-            AddStep("Add friend to API", () =>
-            {
-                var api = (DummyAPIAccess)API;
-
-                api.Friends.Clear();
-                api.Friends.Add(friend);
-            });
-
-            int playerNumber = 1;
-
-            AddRepeatStep("add 3 other players", () => createRandomScore(new APIUser { Username = $"Player {playerNumber++}" }), 3);
-            AddUntilStep("no pink color scores",
-                () => leaderboard.ChildrenOfType<Box>().Select(b => ((Colour4)b.Colour).ToHex()),
-                () => Does.Not.Contain("#FF549A"));
-
-            AddRepeatStep("add 3 friend score", () => createRandomScore(friend), 3);
-            AddUntilStep("at least one friend score is pink",
-                () => leaderboard.GetAllScoresForUsername("my friend")
-                                 .SelectMany(score => score.ChildrenOfType<Box>())
-                                 .Select(b => ((Colour4)b.Colour).ToHex()),
-                () => Does.Contain("#FF549A"));
-        }
-
         private void addLocalPlayer()
         {
             AddStep("add local player", () =>
@@ -195,15 +161,15 @@ namespace osu.Game.Tests.Visual.Gameplay
             });
         }
 
-        private void createRandomScore(APIUser user) => createLeaderboardScore(new BindableLong(RNG.Next(0, 5_000_000)), user);
+        private void createRandomScore(APIUser user) => createLeaderboardScore(new BindableDouble(RNG.Next(0, 5_000_000)), user);
 
-        private void createLeaderboardScore(BindableLong score, APIUser user, bool isTracked = false)
+        private void createLeaderboardScore(BindableDouble score, APIUser user, bool isTracked = false)
         {
             var leaderboardScore = leaderboard.Add(user, isTracked);
             leaderboardScore.TotalScore.BindTo(score);
         }
 
-        private partial class TestGameplayLeaderboard : GameplayLeaderboard
+        private class TestGameplayLeaderboard : GameplayLeaderboard
         {
             public float Spacing => Flow.Spacing.Y;
 
@@ -213,9 +179,6 @@ namespace osu.Game.Tests.Visual.Gameplay
 
                 return scoreItem != null && scoreItem.ScorePosition == expectedPosition;
             }
-
-            public IEnumerable<GameplayLeaderboardScore> GetAllScoresForUsername(string username)
-                => Flow.Where(i => i.User?.Username == username);
         }
     }
 }

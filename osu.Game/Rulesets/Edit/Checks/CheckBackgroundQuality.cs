@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.IO;
 using osu.Game.Beatmaps;
@@ -33,11 +35,11 @@ namespace osu.Game.Rulesets.Edit.Checks
 
         public IEnumerable<Issue> Run(BeatmapVerifierContext context)
         {
-            string backgroundFile = context.Beatmap.Metadata.BackgroundFile;
-            if (string.IsNullOrEmpty(backgroundFile))
+            string backgroundFile = context.Beatmap.Metadata?.BackgroundFile;
+            if (backgroundFile == null)
                 yield break;
 
-            var texture = context.WorkingBeatmap.GetBackground();
+            var texture = context.WorkingBeatmap.Background;
             if (texture == null)
                 yield break;
 
@@ -49,7 +51,7 @@ namespace osu.Game.Rulesets.Edit.Checks
             else if (texture.Width < low_width || texture.Height < low_height)
                 yield return new IssueTemplateLowResolution(this).Create(texture.Width, texture.Height);
 
-            string? storagePath = context.Beatmap.BeatmapInfo.BeatmapSet?.GetPathForFile(backgroundFile);
+            string storagePath = context.Beatmap.BeatmapInfo.BeatmapSet?.GetPathForFile(backgroundFile);
 
             using (Stream stream = context.WorkingBeatmap.GetStream(storagePath))
             {

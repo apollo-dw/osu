@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Mods;
@@ -70,10 +71,7 @@ namespace osu.Game.Rulesets.Difficulty
         /// <remarks>
         /// See: osu_difficulty_attribs table.
         /// </remarks>
-        public virtual IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
-        {
-            yield return (ATTRIB_ID_MAX_COMBO, MaxCombo);
-        }
+        public virtual IEnumerable<(int attributeId, object value)> ToDatabaseAttributes() => Enumerable.Empty<(int, object)>();
 
         /// <summary>
         /// Reads osu-web database attribute mappings into this <see cref="DifficultyAttributes"/> object.
@@ -82,7 +80,6 @@ namespace osu.Game.Rulesets.Difficulty
         /// <param name="onlineInfo">The <see cref="IBeatmapOnlineInfo"/> where more information about the beatmap may be extracted from (such as AR/CS/OD/etc).</param>
         public virtual void FromDatabaseAttributes(IReadOnlyDictionary<int, double> values, IBeatmapOnlineInfo onlineInfo)
         {
-            MaxCombo = (int)values[ATTRIB_ID_MAX_COMBO];
         }
     }
 }

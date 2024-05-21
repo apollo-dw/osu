@@ -7,7 +7,7 @@ using osu.Game.Overlays.Dialog;
 
 namespace osu.Game.Screens.Select
 {
-    public partial class BeatmapDeleteDialog : DangerousActionDialog
+    public class BeatmapDeleteDialog : DeleteConfirmationDialog
     {
         private readonly BeatmapSetInfo beatmapSet;
 
@@ -20,7 +20,7 @@ namespace osu.Game.Screens.Select
         [BackgroundDependencyLoader]
         private void load(BeatmapManager beatmapManager)
         {
-            DangerousAction = () => beatmapManager.Delete(beatmapSet);
+            DeleteAction = () => beatmapManager.Delete(beatmapSet);
         }
     }
 }

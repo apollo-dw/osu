@@ -35,12 +35,10 @@ namespace osu.Game.Rulesets.Mania.Skinning.Default
 
                         var stage = beatmap.GetStageForColumnIndex(column);
 
-                        int columnInStage = column % stage.Columns;
-
-                        if (stage.IsSpecialColumn(columnInStage))
+                        if (stage.IsSpecialColumn(column))
                             return SkinUtils.As<TValue>(new Bindable<Color4>(colourSpecial));
 
-                        int distanceToEdge = Math.Min(columnInStage, (stage.Columns - 1) - columnInStage);
+                        int distanceToEdge = Math.Min(column, (stage.Columns - 1) - column);
                         return SkinUtils.As<TValue>(new Bindable<Color4>(distanceToEdge % 2 == 0 ? colourOdd : colourEven));
                 }
             }

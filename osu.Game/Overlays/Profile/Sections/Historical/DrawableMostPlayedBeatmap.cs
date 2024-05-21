@@ -1,6 +1,9 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
+using System.Diagnostics;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -18,7 +21,7 @@ using osu.Game.Resources.Localisation.Web;
 
 namespace osu.Game.Overlays.Profile.Sections.Historical
 {
-    public partial class DrawableMostPlayedBeatmap : CompositeDrawable
+    public class DrawableMostPlayedBeatmap : CompositeDrawable
     {
         private const int cover_width = 100;
         private const int corner_radius = 6;
@@ -107,17 +110,17 @@ namespace osu.Game.Overlays.Profile.Sections.Historical
             });
         }
 
-        private partial class MostPlayedBeatmapContainer : ProfileItemContainer
+        private class MostPlayedBeatmapContainer : ProfileItemContainer
         {
             [BackgroundDependencyLoader]
             private void load(OverlayColourProvider colourProvider)
             {
-                IdleColour = colourProvider.Background3;
-                HoverColour = colourProvider.Background2;
+                IdleColour = colourProvider.Background4;
+                HoverColour = colourProvider.Background3;
             }
         }
 
-        private partial class MostPlayedBeatmapMetadataContainer : BeatmapMetadataContainer
+        private class MostPlayedBeatmapMetadataContainer : BeatmapMetadataContainer
         {
             public MostPlayedBeatmapMetadataContainer(IBeatmapInfo beatmapInfo)
                 : base(beatmapInfo)
@@ -127,6 +130,8 @@ namespace osu.Game.Overlays.Profile.Sections.Historical
             protected override Drawable[] CreateText(IBeatmapInfo beatmapInfo)
             {
                 var metadata = beatmapInfo.Metadata;
+
+                Debug.Assert(metadata != null);
 
                 return new Drawable[]
                 {
@@ -154,7 +159,7 @@ namespace osu.Game.Overlays.Profile.Sections.Historical
             }
         }
 
-        private partial class PlayCountText : CompositeDrawable, IHasTooltip
+        private class PlayCountText : CompositeDrawable, IHasTooltip
         {
             public LocalisableString TooltipText => UsersStrings.ShowExtraHistoricalMostPlayedCount;
 

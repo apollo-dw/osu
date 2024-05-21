@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -22,24 +24,23 @@ using osuTK;
 
 namespace osu.Game.Screens.Ranking.Statistics
 {
-    public partial class StatisticsPanel : VisibilityContainer
+    public class StatisticsPanel : VisibilityContainer
     {
         public const float SIDE_PADDING = 30;
 
-        public readonly Bindable<ScoreInfo?> Score = new Bindable<ScoreInfo?>();
+        public readonly Bindable<ScoreInfo> Score = new Bindable<ScoreInfo>();
 
         protected override bool StartHidden => true;
 
         [Resolved]
-        private BeatmapManager beatmapManager { get; set; } = null!;
+        private BeatmapManager beatmapManager { get; set; }
 
         private readonly Container content;
         private readonly LoadingSpinner spinner;
 
         private bool wasOpened;
-        private Sample? popInSample;
-        private Sample? popOutSample;
-        private CancellationTokenSource? loadCancellation;
+        private Sample popInSample;
+        private Sample popOutSample;
 
         public StatisticsPanel()
         {
@@ -70,7 +71,9 @@ namespace osu.Game.Screens.Ranking.Statistics
             popOutSample = audio.Samples.Get(@"Results/statistics-panel-pop-out");
         }
 
-        private void populateStatistics(ValueChangedEvent<ScoreInfo?> score)
+        private CancellationTokenSource loadCancellation;
+
+        private void populateStatistics(ValueChangedEvent<ScoreInfo> score)
         {
             loadCancellation?.Cancel();
             loadCancellation = null;
@@ -97,9 +100,9 @@ namespace osu.Game.Screens.Ranking.Statistics
                 bool hitEventsAvailable = newScore.HitEvents.Count != 0;
                 Container<Drawable> container;
 
-                var statisticItems = CreateStatisticItems(newScore, task.GetResultSafely());
+                var statisticRows = newScore.Ruleset.CreateInstance().CreateStatisticsForScore(newScore, task.GetResultSafely());
 
-                if (!hitEventsAvailable && statisticItems.All(c => c.RequiresHitEvents))
+                if (!hitEventsAvailable && statisticRows.SelectMany(r => r.Columns).All(c => c.RequiresHitEvents))
                 {
                     container = new FillFlowContainer
                     {
@@ -121,47 +124,68 @@ namespace osu.Game.Screens.Ranking.Statistics
                 }
                 else
                 {
-                    FillFlowContainer flow;
+                    FillFlowContainer rows;
                     container = new OsuScrollContainer(Direction.Vertical)
                     {
                         RelativeSizeAxes = Axes.Both,
                         Anchor = Anchor.Centre,
                         Origin = Anchor.Centre,
-                        Masking = false,
-                        ScrollbarOverlapsContent = false,
                         Alpha = 0,
                         Children = new[]
                         {
-                            flow = new FillFlowContainer
+                            rows = new FillFlowContainer
                             {
                                 RelativeSizeAxes = Axes.X,
                                 AutoSizeAxes = Axes.Y,
-                                Spacing = new Vector2(30, 15),
-                                Direction = FillDirection.Full,
+                                Spacing = new Vector2(30, 15)
                             }
                         }
                     };
 
                     bool anyRequiredHitEvents = false;
 
-                    foreach (var item in statisticItems)
+                    foreach (var row in statisticRows)
                     {
-                        if (!hitEventsAvailable && item.RequiresHitEvents)
-                        {
-                            anyRequiredHitEvents = true;
+                        var columns = row.Columns;
+
+                        if (columns.Length == 0)
                             continue;
+
+                        var columnContent = new List<Drawable>();
+                        var dimensions = new List<Dimension>();
+
+                        foreach (var col in columns)
+                        {
+                            if (!hitEventsAvailable && col.RequiresHitEvents)
+                            {
+                                anyRequiredHitEvents = true;
+                                continue;
+                            }
+
+                            columnContent.Add(new StatisticContainer(col)
+                            {
+                                Anchor = Anchor.Centre,
+                                Origin = Anchor.Centre,
+                            });
+
+                            dimensions.Add(col.Dimension ?? new Dimension());
                         }
 
-                        flow.Add(new StatisticItemContainer(item)
+                        rows.Add(new GridContainer
                         {
                             Anchor = Anchor.TopCentre,
                             Origin = Anchor.TopCentre,
+                            RelativeSizeAxes = Axes.X,
+                            AutoSizeAxes = Axes.Y,
+                            Content = new[] { columnContent.ToArray() },
+                            ColumnDimensions = dimensions.ToArray(),
+                            RowDimensions = new[] { new Dimension(GridSizeMode.AutoSize) }
                         });
                     }
 
                     if (anyRequiredHitEvents)
                     {
-                        flow.Add(new FillFlowContainer
+                        rows.Add(new FillFlowContainer
                         {
                             RelativeSizeAxes = Axes.X,
                             AutoSizeAxes = Axes.Y,
@@ -184,7 +208,7 @@ namespace osu.Game.Screens.Ranking.Statistics
 
                 LoadComponentAsync(container, d =>
                 {
-                    if (Score.Value?.Equals(newScore) != true)
+                    if (!Score.Value.Equals(newScore))
                         return;
 
                     spinner.Hide();
@@ -194,14 +218,6 @@ namespace osu.Game.Screens.Ranking.Statistics
             }), localCancellationSource.Token);
         }
 
-        /// <summary>
-        /// Creates the <see cref="StatisticItem"/>s to be displayed in this panel for a given <paramref name="newScore"/>.
-        /// </summary>
-        /// <param name="newScore">The score to create the rows for.</param>
-        /// <param name="playableBeatmap">The beatmap on which the score was set.</param>
-        protected virtual ICollection<StatisticItem> CreateStatisticItems(ScoreInfo newScore, IBeatmap playableBeatmap)
-            => newScore.Ruleset.CreateInstance().CreateStatisticsForScore(newScore, playableBeatmap);
-
         protected override bool OnClick(ClickEvent e)
         {
             ToggleVisibility();
@@ -210,7 +226,7 @@ namespace osu.Game.Screens.Ranking.Statistics
 
         protected override void PopIn()
         {
-            this.FadeIn(350, Easing.OutQuint);
+            this.FadeIn(150, Easing.OutQuint);
 
             popInSample?.Play();
             wasOpened = true;
@@ -218,7 +234,7 @@ namespace osu.Game.Screens.Ranking.Statistics
 
         protected override void PopOut()
         {
-            this.FadeOut(250, Easing.OutQuint);
+            this.FadeOut(150, Easing.OutQuint);
 
             if (wasOpened)
                 popOutSample?.Play();

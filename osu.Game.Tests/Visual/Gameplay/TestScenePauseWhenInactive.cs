@@ -20,7 +20,7 @@ using osuTK;
 namespace osu.Game.Tests.Visual.Gameplay
 {
     [HeadlessTest] // we alter unsafe properties on the game host to test inactive window state.
-    public partial class TestScenePauseWhenInactive : OsuPlayerTestScene
+    public class TestScenePauseWhenInactive : OsuPlayerTestScene
     {
         [Resolved]
         private GameHost host { get; set; }

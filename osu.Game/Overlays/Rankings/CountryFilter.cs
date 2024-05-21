@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -14,7 +16,7 @@ using osuTK;
 
 namespace osu.Game.Overlays.Rankings
 {
-    public partial class CountryFilter : CompositeDrawable, IHasCurrentValue<CountryCode>
+    public class CountryFilter : CompositeDrawable, IHasCurrentValue<CountryCode>
     {
         private const int duration = 200;
         private const int height = 70;
@@ -52,7 +54,7 @@ namespace osu.Game.Overlays.Rankings
                         Origin = Anchor.CentreLeft,
                         Direction = FillDirection.Horizontal,
                         Spacing = new Vector2(10, 0),
-                        Margin = new MarginPadding { Left = WaveOverlayContainer.HORIZONTAL_PADDING },
+                        Margin = new MarginPadding { Left = UserProfileOverlay.CONTENT_X_MARGIN },
                         Children = new Drawable[]
                         {
                             new OsuSpriteText

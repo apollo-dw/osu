@@ -13,7 +13,7 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.Beatmaps
 {
-    public partial class TestSceneDifficultySpectrumDisplay : OsuTestScene
+    public class TestSceneDifficultySpectrumDisplay : OsuTestScene
     {
         private DifficultySpectrumDisplay display;
 

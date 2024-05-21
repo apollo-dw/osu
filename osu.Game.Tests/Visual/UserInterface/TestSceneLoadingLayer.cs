@@ -10,13 +10,12 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Utils;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
-using osu.Game.Graphics.UserInterfaceV2;
 using osuTK;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneLoadingLayer : OsuTestScene
+    public class TestSceneLoadingLayer : OsuTestScene
     {
         private TestLoadingLayer overlay;
 
@@ -50,8 +49,8 @@ namespace osu.Game.Tests.Visual.UserInterface
                             Children = new Drawable[]
                             {
                                 new OsuSpriteText { Text = "Sample content" },
-                                new RoundedButton { Text = "can't puush me", Width = 200, },
-                                new RoundedButton { Text = "puush me", Width = 200, Action = () => { } },
+                                new TriangleButton { Text = "can't puush me", Width = 200, },
+                                new TriangleButton { Text = "puush me", Width = 200, Action = () => { } },
                             }
                         },
                         overlay = new TestLoadingLayer(true),
@@ -88,7 +87,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             AddStep("hide", () => overlay.Hide());
         }
 
-        private partial class TestLoadingLayer : LoadingLayer
+        private class TestLoadingLayer : LoadingLayer
         {
             public new Box BackgroundDimLayer => base.BackgroundDimLayer;
 

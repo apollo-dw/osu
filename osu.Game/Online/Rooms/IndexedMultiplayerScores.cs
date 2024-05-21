@@ -17,7 +17,7 @@ namespace osu.Game.Online.Rooms
         /// The total scores in the playlist item.
         /// </summary>
         [JsonProperty("total")]
-        public long? TotalScores { get; set; }
+        public int? TotalScores { get; set; }
 
         /// <summary>
         /// The user's score, if any.

@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -9,10 +11,10 @@ using osu.Game.Graphics.Sprites;
 
 namespace osu.Game.Screens.Edit.Timing.RowAttributes
 {
-    public partial class SampleRowAttribute : RowAttribute
+    public class SampleRowAttribute : RowAttribute
     {
-        private AttributeText sampleText = null!;
-        private OsuSpriteText volumeText = null!;
+        private AttributeText sampleText;
+        private OsuSpriteText volumeText;
 
         private readonly Bindable<string> sampleBank;
         private readonly BindableNumber<int> volume;

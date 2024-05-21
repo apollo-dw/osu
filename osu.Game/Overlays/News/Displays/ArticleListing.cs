@@ -19,7 +19,7 @@ namespace osu.Game.Overlays.News.Displays
     /// <summary>
     /// Lists articles in a vertical flow for a specified year.
     /// </summary>
-    public partial class ArticleListing : CompositeDrawable
+    public class ArticleListing : CompositeDrawable
     {
         private readonly Action fetchMorePosts;
 
@@ -43,7 +43,7 @@ namespace osu.Game.Overlays.News.Displays
             {
                 Vertical = 20,
                 Left = 30,
-                Right = WaveOverlayContainer.HORIZONTAL_PADDING
+                Right = 50
             };
 
             InternalChild = new FillFlowContainer

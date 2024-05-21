@@ -8,7 +8,7 @@ using osu.Game.Rulesets.UI;
 namespace osu.Game.Rulesets.EmptyFreeform.UI
 {
     [Cached]
-    public partial class EmptyFreeformPlayfield : Playfield
+    public class EmptyFreeformPlayfield : Playfield
     {
         [BackgroundDependencyLoader]
         private void load()

@@ -1,9 +1,12 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -21,7 +24,7 @@ namespace osu.Game.Rulesets.Catch.Edit
     /// The guide lines used in the osu!catch editor to compose patterns that can be caught with constant speed.
     /// Currently, only forward placement (an object is snapped based on the previous object, not the opposite) is supported.
     /// </summary>
-    public partial class CatchDistanceSnapGrid : CompositeDrawable
+    public class CatchDistanceSnapGrid : CompositeDrawable
     {
         public double StartTime { get; set; }
 
@@ -36,7 +39,7 @@ namespace osu.Game.Rulesets.Catch.Edit
         private readonly List<Vector2[]> verticalLineVertices = new List<Vector2[]>();
 
         [Resolved]
-        private Playfield playfield { get; set; } = null!;
+        private Playfield playfield { get; set; }
 
         private ScrollingHitObjectContainer hitObjectContainer => (ScrollingHitObjectContainer)playfield.HitObjectContainer;
 
@@ -103,7 +106,8 @@ namespace osu.Game.Rulesets.Catch.Edit
             }
         }
 
-        public SnapResult? GetSnappedPosition(Vector2 screenSpacePosition)
+        [CanBeNull]
+        public SnapResult GetSnappedPosition(Vector2 screenSpacePosition)
         {
             double time = hitObjectContainer.TimeAtScreenSpacePosition(screenSpacePosition);
 
@@ -117,7 +121,9 @@ namespace osu.Game.Rulesets.Catch.Edit
                 return new SnapResult(originPosition, StartTime);
             }
 
-            return enumerateSnappingCandidates(time).MinBy(pos => Vector2.DistanceSquared(screenSpacePosition, pos.ScreenSpacePosition));
+            return enumerateSnappingCandidates(time)
+                   .OrderBy(pos => Vector2.DistanceSquared(screenSpacePosition, pos.ScreenSpacePosition))
+                   .FirstOrDefault();
         }
 
         private IEnumerable<SnapResult> enumerateSnappingCandidates(double time)

@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,9 +15,7 @@ using osu.Framework.Graphics.Textures;
 using osu.Game.Beatmaps;
 using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Beatmaps.Formats;
-using osu.Game.Extensions;
 using osu.Game.IO;
-using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Skinning;
 using Decoder = osu.Game.Beatmaps.Formats.Decoder;
 
@@ -45,7 +42,6 @@ namespace osu.Game.Screens.Edit
             editorBeatmap.BeginChange();
             processHitObjects(result, () => newBeatmap ??= readBeatmap(newState));
             processTimingPoints(() => newBeatmap ??= readBeatmap(newState));
-            processHitObjectLocalData(() => newBeatmap ??= readBeatmap(newState));
             editorBeatmap.EndChange();
         }
 
@@ -88,43 +84,6 @@ namespace osu.Game.Screens.Edit
 
                 foreach (int i in addedIndices)
                     editorBeatmap.Insert(i, newBeatmap.HitObjects[i]);
-            }
-        }
-
-        private void processHitObjectLocalData(Func<IBeatmap> getNewBeatmap)
-        {
-            // This method handles data that are stored in control points in the legacy format,
-            // but were moved to the hitobjects themselves in lazer.
-            // Specifically, the data being referred to here consists of: slider velocity and sample information.
-
-            // For simplicity, this implementation relies on the editor beatmap already having the same hitobjects in sequence as the new beatmap.
-            // To guarantee that, `processHitObjects()` must be ran prior to this method for correct operation.
-            // This is done to avoid the necessity of reimplementing/reusing parts of LegacyBeatmapDecoder that already treat this data correctly.
-
-            var oldObjects = editorBeatmap.HitObjects;
-            var newObjects = getNewBeatmap().HitObjects;
-
-            Debug.Assert(oldObjects.Count == newObjects.Count);
-
-            foreach (var (oldObject, newObject) in oldObjects.Zip(newObjects))
-            {
-                // if `oldObject` and `newObject` are the same, it means that `oldObject` was inserted into `editorBeatmap` by `processHitObjects()`.
-                // in that case, there is nothing to do (and some of the subsequent changes may even prove destructive).
-                if (ReferenceEquals(oldObject, newObject))
-                    continue;
-
-                if (oldObject is IHasSliderVelocity oldWithVelocity && newObject is IHasSliderVelocity newWithVelocity)
-                    oldWithVelocity.SliderVelocityMultiplier = newWithVelocity.SliderVelocityMultiplier;
-
-                oldObject.Samples = newObject.Samples;
-
-                if (oldObject is IHasRepeats oldWithRepeats && newObject is IHasRepeats newWithRepeats)
-                {
-                    oldWithRepeats.NodeSamples.Clear();
-                    oldWithRepeats.NodeSamples.AddRange(newWithRepeats.NodeSamples);
-                }
-
-                editorBeatmap.Update(oldObject);
             }
         }
 
@@ -206,7 +165,7 @@ namespace osu.Game.Screens.Edit
 
             protected override IBeatmap GetBeatmap() => beatmap;
 
-            public override Texture GetBackground() => throw new NotImplementedException();
+            protected override Texture GetBackground() => throw new NotImplementedException();
 
             protected override Track GetBeatmapTrack() => throw new NotImplementedException();
 

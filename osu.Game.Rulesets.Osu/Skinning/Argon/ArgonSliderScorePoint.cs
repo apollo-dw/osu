@@ -12,18 +12,18 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning.Argon
 {
-    public partial class ArgonSliderScorePoint : CircularContainer
+    public class ArgonSliderScorePoint : CircularContainer
     {
         private Bindable<Color4> accentColour = null!;
 
-        public const float SIZE = 12;
+        private const float size = 12;
 
         [BackgroundDependencyLoader]
         private void load(DrawableHitObject hitObject)
         {
             Masking = true;
             Origin = Anchor.Centre;
-            Size = new Vector2(SIZE);
+            Size = new Vector2(size);
             BorderThickness = 3;
             BorderColour = Color4.White;
             Child = new Box

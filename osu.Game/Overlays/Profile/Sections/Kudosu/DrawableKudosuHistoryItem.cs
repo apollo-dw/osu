@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -13,9 +15,12 @@ using osuTK;
 
 namespace osu.Game.Overlays.Profile.Sections.Kudosu
 {
-    public partial class DrawableKudosuHistoryItem : CompositeDrawable
+    public class DrawableKudosuHistoryItem : CompositeDrawable
     {
         private const int height = 25;
+
+        [Resolved]
+        private OsuColour colours { get; set; }
 
         private readonly APIKudosuHistory historyItem;
         private readonly LinkFlowContainer linkFlowContainer;
@@ -45,9 +50,9 @@ namespace osu.Game.Overlays.Profile.Sections.Kudosu
         }
 
         [BackgroundDependencyLoader]
-        private void load(OverlayColourProvider colourProvider)
+        private void load()
         {
-            date.Colour = colourProvider.Foreground1;
+            date.Colour = colours.GreySeaFoamLighter;
             var formattedSource = MessageFormatter.FormatText(getString(historyItem));
             linkFlowContainer.AddLinks(formattedSource.Text, formattedSource.Links);
         }

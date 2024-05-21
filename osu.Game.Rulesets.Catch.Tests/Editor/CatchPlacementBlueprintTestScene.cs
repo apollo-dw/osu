@@ -21,7 +21,7 @@ using osuTK.Input;
 
 namespace osu.Game.Rulesets.Catch.Tests.Editor
 {
-    public abstract partial class CatchPlacementBlueprintTestScene : PlacementBlueprintTestScene
+    public abstract class CatchPlacementBlueprintTestScene : PlacementBlueprintTestScene
     {
         protected const double TIME_SNAP = 100;
 

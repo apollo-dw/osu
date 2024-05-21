@@ -1,6 +1,8 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -10,11 +12,7 @@ using osuTK;
 
 namespace osu.Game.Users
 {
-    /// <summary>
-    /// A user "card", commonly used in a grid layout or in popovers.
-    /// Comes with a preset height, but width must be specified.
-    /// </summary>
-    public partial class UserGridPanel : ExtendedUserPanel
+    public class UserGridPanel : ExtendedUserPanel
     {
         private const int margin = 10;
 
@@ -35,84 +33,96 @@ namespace osu.Game.Users
         {
             FillFlowContainer details;
 
-            var layout = new GridContainer
+            var layout = new Container
             {
                 RelativeSizeAxes = Axes.Both,
                 Padding = new MarginPadding(margin),
-                ColumnDimensions = new[]
+                Child = new GridContainer
                 {
-                    new Dimension(GridSizeMode.AutoSize),
-                    new Dimension()
-                },
-                RowDimensions = new[]
-                {
-                    new Dimension(GridSizeMode.AutoSize),
-                    new Dimension()
-                },
-                Content = new[]
-                {
-                    new Drawable[]
+                    RelativeSizeAxes = Axes.Both,
+                    ColumnDimensions = new[]
                     {
-                        CreateAvatar().With(avatar =>
+                        new Dimension(GridSizeMode.AutoSize),
+                        new Dimension()
+                    },
+                    RowDimensions = new[]
+                    {
+                        new Dimension(GridSizeMode.AutoSize),
+                        new Dimension(GridSizeMode.Absolute, margin),
+                        new Dimension()
+                    },
+                    Content = new[]
+                    {
+                        new Drawable[]
                         {
-                            avatar.Size = new Vector2(60);
-                            avatar.Masking = true;
-                            avatar.CornerRadius = 6;
-                            avatar.Margin = new MarginPadding { Bottom = margin };
-                        }),
-                        new GridContainer
-                        {
-                            RelativeSizeAxes = Axes.Both,
-                            Padding = new MarginPadding { Left = margin, Bottom = margin },
-                            ColumnDimensions = new[]
+                            CreateAvatar().With(avatar =>
                             {
-                                new Dimension()
-                            },
-                            RowDimensions = new[]
+                                avatar.Size = new Vector2(60);
+                                avatar.Masking = true;
+                                avatar.CornerRadius = 6;
+                            }),
+                            new Container
                             {
-                                new Dimension(GridSizeMode.AutoSize),
-                                new Dimension()
-                            },
-                            Content = new[]
-                            {
-                                new Drawable[]
+                                RelativeSizeAxes = Axes.Both,
+                                Padding = new MarginPadding { Left = margin },
+                                Child = new GridContainer
                                 {
-                                    details = new FillFlowContainer
+                                    RelativeSizeAxes = Axes.Both,
+                                    ColumnDimensions = new[]
                                     {
-                                        AutoSizeAxes = Axes.Both,
-                                        Direction = FillDirection.Horizontal,
-                                        Spacing = new Vector2(6),
-                                        Children = new Drawable[]
+                                        new Dimension()
+                                    },
+                                    RowDimensions = new[]
+                                    {
+                                        new Dimension(GridSizeMode.AutoSize),
+                                        new Dimension()
+                                    },
+                                    Content = new[]
+                                    {
+                                        new Drawable[]
                                         {
-                                            CreateFlag(),
-                                            // supporter icon is being added later
+                                            details = new FillFlowContainer
+                                            {
+                                                AutoSizeAxes = Axes.Both,
+                                                Direction = FillDirection.Horizontal,
+                                                Spacing = new Vector2(6),
+                                                Children = new Drawable[]
+                                                {
+                                                    CreateFlag(),
+                                                }
+                                            }
+                                        },
+                                        new Drawable[]
+                                        {
+                                            CreateUsername().With(username =>
+                                            {
+                                                username.Anchor = Anchor.CentreLeft;
+                                                username.Origin = Anchor.CentreLeft;
+                                            })
                                         }
                                     }
-                                },
-                                new Drawable[]
-                                {
-                                    CreateUsername().With(username =>
-                                    {
-                                        username.Anchor = Anchor.CentreLeft;
-                                        username.Origin = Anchor.CentreLeft;
-                                    })
                                 }
                             }
+                        },
+                        new[]
+                        {
+                            Empty(),
+                            Empty()
+                        },
+                        new Drawable[]
+                        {
+                            CreateStatusIcon().With(icon =>
+                            {
+                                icon.Anchor = Anchor.Centre;
+                                icon.Origin = Anchor.Centre;
+                            }),
+                            CreateStatusMessage(false).With(message =>
+                            {
+                                message.Anchor = Anchor.CentreLeft;
+                                message.Origin = Anchor.CentreLeft;
+                                message.Margin = new MarginPadding { Left = margin };
+                            })
                         }
-                    },
-                    new Drawable[]
-                    {
-                        CreateStatusIcon().With(icon =>
-                        {
-                            icon.Anchor = Anchor.Centre;
-                            icon.Origin = Anchor.Centre;
-                        }),
-                        CreateStatusMessage(false).With(message =>
-                        {
-                            message.Anchor = Anchor.CentreLeft;
-                            message.Origin = Anchor.CentreLeft;
-                            message.Margin = new MarginPadding { Left = margin };
-                        })
                     }
                 }
             };

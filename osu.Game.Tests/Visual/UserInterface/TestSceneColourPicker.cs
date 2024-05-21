@@ -1,5 +1,7 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
+
+#nullable disable
 
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -13,7 +15,7 @@ using osu.Game.Overlays;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneColourPicker : OsuTestScene
+    public class TestSceneColourPicker : OsuTestScene
     {
         private readonly Bindable<Colour4> colour = new Bindable<Colour4>(Colour4.Aquamarine);
 
@@ -77,7 +79,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             AddStep("set red", () => colour.Value = Colour4.Red);
         }
 
-        private partial class ColourProvidingContainer : Container
+        private class ColourProvidingContainer : Container
         {
             [Cached]
             private OverlayColourProvider provider { get; }

@@ -15,9 +15,9 @@ using osuTK;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {
-    public partial class TestSceneClicksPerSecondCalculator : OsuTestScene
+    public class TestSceneClicksPerSecondCalculator : OsuTestScene
     {
-        private ClicksPerSecondController controller = null!;
+        private ClicksPerSecondCalculator calculator = null!;
 
         private TestGameplayClock manualGameplayClock = null!;
 
@@ -34,11 +34,11 @@ namespace osu.Game.Tests.Visual.Gameplay
                     CachedDependencies = new (Type, object)[] { (typeof(IGameplayClock), manualGameplayClock) },
                     Children = new Drawable[]
                     {
-                        controller = new ClicksPerSecondController(),
+                        calculator = new ClicksPerSecondCalculator(),
                         new DependencyProvidingContainer
                         {
                             RelativeSizeAxes = Axes.Both,
-                            CachedDependencies = new (Type, object)[] { (typeof(ClicksPerSecondController), controller) },
+                            CachedDependencies = new (Type, object)[] { (typeof(ClicksPerSecondCalculator), calculator) },
                             Child = new ClicksPerSecondCounter
                             {
                                 Anchor = Anchor.Centre,
@@ -81,7 +81,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             checkClicksPerSecondValue(6);
         }
 
-        private void checkClicksPerSecondValue(int i) => AddAssert("clicks/s is correct", () => controller.Value, () => Is.EqualTo(i));
+        private void checkClicksPerSecondValue(int i) => AddAssert("clicks/s is correct", () => calculator.Value, () => Is.EqualTo(i));
 
         private void seekClockImmediately(double time) => manualGameplayClock.CurrentTime = time;
 
@@ -94,7 +94,7 @@ namespace osu.Game.Tests.Visual.Gameplay
             foreach (double timestamp in inputs)
             {
                 seekClockImmediately(timestamp);
-                controller.AddInputTimestamp();
+                calculator.AddInputTimestamp();
             }
 
             seekClockImmediately(baseTime);
@@ -125,7 +125,6 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             public IEnumerable<double> NonGameplayAdjustments => throw new NotImplementedException();
             public IBindable<bool> IsPaused => throw new NotImplementedException();
-            public bool IsRewinding => false;
         }
     }
 }

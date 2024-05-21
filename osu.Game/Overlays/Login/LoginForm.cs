@@ -11,17 +11,15 @@ using osu.Framework.Input.Events;
 using osu.Game.Configuration;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
-using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Online.API;
 using osu.Game.Overlays.Settings;
 using osu.Game.Resources.Localisation.Web;
 using osuTK;
-using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.Login
 {
-    public partial class LoginForm : FillFlowContainer
+    public class LoginForm : FillFlowContainer
     {
         private TextBox username = null!;
         private TextBox password = null!;
@@ -32,69 +30,58 @@ namespace osu.Game.Overlays.Login
 
         public Action? RequestHide;
 
-        public override bool AcceptsFocus => true;
+        private void performLogin()
+        {
+            if (!string.IsNullOrEmpty(username.Text) && !string.IsNullOrEmpty(password.Text))
+                api.Login(username.Text, password.Text);
+            else
+                shakeSignIn.Shake();
+        }
 
         [BackgroundDependencyLoader(permitNulls: true)]
         private void load(OsuConfigManager config, AccountCreationOverlay accountCreation)
         {
-            RelativeSizeAxes = Axes.X;
-            AutoSizeAxes = Axes.Y;
             Direction = FillDirection.Vertical;
-            Spacing = new Vector2(0, SettingsSection.ITEM_SPACING);
+            Spacing = new Vector2(0, 5);
+            AutoSizeAxes = Axes.Y;
+            RelativeSizeAxes = Axes.X;
 
             ErrorTextFlowContainer errorText;
-            LinkFlowContainer forgottenPasswordLink;
+            LinkFlowContainer forgottenPaswordLink;
 
             Children = new Drawable[]
             {
-                new FillFlowContainer
+                username = new OsuTextBox
+                {
+                    PlaceholderText = UsersStrings.LoginUsername.ToLower(),
+                    RelativeSizeAxes = Axes.X,
+                    Text = api.ProvidedUsername,
+                    TabbableContentContainer = this
+                },
+                password = new OsuPasswordTextBox
+                {
+                    PlaceholderText = UsersStrings.LoginPassword.ToLower(),
+                    RelativeSizeAxes = Axes.X,
+                    TabbableContentContainer = this,
+                },
+                errorText = new ErrorTextFlowContainer
                 {
                     RelativeSizeAxes = Axes.X,
                     AutoSizeAxes = Axes.Y,
-                    Padding = new MarginPadding { Horizontal = SettingsPanel.CONTENT_MARGINS },
-                    Direction = FillDirection.Vertical,
-                    Spacing = new Vector2(0f, SettingsSection.ITEM_SPACING),
-                    Children = new Drawable[]
-                    {
-                        new OsuSpriteText
-                        {
-                            Text = LoginPanelStrings.Account.ToUpper(),
-                            Font = OsuFont.GetFont(weight: FontWeight.Bold),
-                        },
-                        username = new OsuTextBox
-                        {
-                            PlaceholderText = UsersStrings.LoginUsername.ToLower(),
-                            RelativeSizeAxes = Axes.X,
-                            Text = api.ProvidedUsername,
-                            TabbableContentContainer = this
-                        },
-                        password = new OsuPasswordTextBox
-                        {
-                            PlaceholderText = UsersStrings.LoginPassword.ToLower(),
-                            RelativeSizeAxes = Axes.X,
-                            TabbableContentContainer = this,
-                        },
-                        errorText = new ErrorTextFlowContainer
-                        {
-                            RelativeSizeAxes = Axes.X,
-                            AutoSizeAxes = Axes.Y,
-                            Alpha = 0,
-                        },
-                    },
                 },
                 new SettingsCheckbox
                 {
-                    LabelText = LoginPanelStrings.RememberUsername,
+                    LabelText = "Remember username",
                     Current = config.GetBindable<bool>(OsuSetting.SaveUsername),
                 },
                 new SettingsCheckbox
                 {
-                    LabelText = LoginPanelStrings.StaySignedIn,
+                    LabelText = "Stay signed in",
                     Current = config.GetBindable<bool>(OsuSetting.SavePassword),
                 },
-                forgottenPasswordLink = new LinkFlowContainer
+                forgottenPaswordLink = new LinkFlowContainer
                 {
-                    Padding = new MarginPadding { Horizontal = SettingsPanel.CONTENT_MARGINS },
+                    Padding = new MarginPadding { Left = SettingsPanel.CONTENT_MARGINS },
                     RelativeSizeAxes = Axes.X,
                     AutoSizeAxes = Axes.Y,
                 },
@@ -118,7 +105,7 @@ namespace osu.Game.Overlays.Login
                 },
                 new SettingsButton
                 {
-                    Text = LoginPanelStrings.Register,
+                    Text = "Register",
                     Action = () =>
                     {
                         RequestHide?.Invoke();
@@ -127,24 +114,15 @@ namespace osu.Game.Overlays.Login
                 }
             };
 
-            forgottenPasswordLink.AddLink(LayoutStrings.PopupLoginLoginForgot, $"{api.WebsiteRootUrl}/home/password-reset");
+            forgottenPaswordLink.AddLink(LayoutStrings.PopupLoginLoginForgot, $"{api.WebsiteRootUrl}/home/password-reset");
 
             password.OnCommit += (_, _) => performLogin();
 
             if (api.LastLoginError?.Message is string error)
-            {
-                errorText.Alpha = 1;
                 errorText.AddErrors(new[] { error });
-            }
         }
 
-        private void performLogin()
-        {
-            if (!string.IsNullOrEmpty(username.Text) && !string.IsNullOrEmpty(password.Text))
-                api.Login(username.Text, password.Text);
-            else
-                shakeSignIn.Shake();
-        }
+        public override bool AcceptsFocus => true;
 
         protected override bool OnClick(ClickEvent e) => true;
 

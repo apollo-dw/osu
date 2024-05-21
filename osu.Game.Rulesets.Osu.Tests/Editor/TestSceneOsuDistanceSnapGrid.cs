@@ -4,16 +4,12 @@
 #nullable disable
 
 using System;
-using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Cursor;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input;
-using osu.Framework.Testing;
 using osu.Framework.Utils;
 using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Overlays;
@@ -28,7 +24,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Tests.Editor
 {
-    public partial class TestSceneOsuDistanceSnapGrid : OsuManualInputManagerTestScene
+    public class TestSceneOsuDistanceSnapGrid : OsuManualInputManagerTestScene
     {
         private const float beat_length = 100;
 
@@ -47,7 +43,8 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
         [Cached]
         private readonly BindableBeatDivisor beatDivisor = new BindableBeatDivisor();
 
-        private readonly TestHitObjectComposer composer = new TestHitObjectComposer
+        [Cached(typeof(IDistanceSnapProvider))]
+        private readonly OsuHitObjectComposer snapProvider = new OsuHitObjectComposer(new OsuRuleset())
         {
             // Just used for the snap implementation, so let's hide from vision.
             AlwaysPresent = true,
@@ -55,7 +52,6 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
         };
 
         private OsuDistanceSnapGrid grid;
-        private SnappingCursorContainer cursor;
 
         public TestSceneOsuDistanceSnapGrid()
         {
@@ -70,19 +66,12 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
             base.Content.Children = new Drawable[]
             {
                 editorClock = new EditorClock(editorBeatmap),
-                new PopoverContainer { Child = composer },
+                snapProvider,
                 Content
             };
         }
 
-        protected override IReadOnlyDependencyContainer CreateChildDependencies(IReadOnlyDependencyContainer parent)
-        {
-            var dependencies = new DependencyContainer(base.CreateChildDependencies(parent));
-            dependencies.CacheAs(composer.DistanceSnapProvider);
-            return dependencies;
-        }
-
-        protected override Container<Drawable> Content { get; } = new PopoverContainer { RelativeSizeAxes = Axes.Both };
+        protected override Container<Drawable> Content { get; } = new Container { RelativeSizeAxes = Axes.Both };
 
         [SetUp]
         public void Setup() => Schedule(() =>
@@ -90,7 +79,7 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
             editorBeatmap.Difficulty.SliderMultiplier = 1;
             editorBeatmap.ControlPointInfo.Clear();
             editorBeatmap.ControlPointInfo.Add(0, new TimingControlPoint { BeatLength = beat_length });
-            composer.DistanceSnapProvider.DistanceSpacingMultiplier.Value = 1;
+            snapProvider.DistanceSpacingMultiplier.Value = 1;
 
             Children = new Drawable[]
             {
@@ -99,8 +88,8 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
                     RelativeSizeAxes = Axes.Both,
                     Colour = Color4.SlateGray
                 },
-                cursor = new SnappingCursorContainer { GetSnapPosition = v => grid.GetSnappedPosition(grid.ToLocalSpace(v)).position },
                 grid = new OsuDistanceSnapGrid(new HitCircle { Position = grid_position }),
+                new SnappingCursorContainer { GetSnapPosition = v => grid.GetSnappedPosition(grid.ToLocalSpace(v)).position }
             };
         });
 
@@ -122,7 +111,7 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
         [TestCase(0.5f)]
         public void TestDistanceSpacing(float multiplier)
         {
-            AddStep($"set distance spacing = {multiplier}", () => composer.DistanceSnapProvider.DistanceSpacingMultiplier.Value = multiplier);
+            AddStep($"set distance spacing = {multiplier}", () => snapProvider.DistanceSpacingMultiplier.Value = multiplier);
         }
 
         [Test]
@@ -159,52 +148,10 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
         [TestCase(2f, beat_length * 2)]
         public void TestDistanceSpacingAdjust(float multiplier, float expectedDistance)
         {
-            AddStep($"Set distance spacing to {multiplier}", () => composer.DistanceSnapProvider.DistanceSpacingMultiplier.Value = multiplier);
+            AddStep($"Set distance spacing to {multiplier}", () => snapProvider.DistanceSpacingMultiplier.Value = multiplier);
             AddStep("move mouse to point", () => InputManager.MoveMouseTo(grid.ToScreenSpace(grid_position + new Vector2(beat_length, 0) * 2)));
 
             assertSnappedDistance(expectedDistance);
-        }
-
-        [Test]
-        public void TestReferenceObjectNotOnSnapGrid()
-        {
-            AddStep("create grid", () =>
-            {
-                Children = new Drawable[]
-                {
-                    new Box
-                    {
-                        RelativeSizeAxes = Axes.Both,
-                        Colour = Color4.SlateGray
-                    },
-                    cursor = new SnappingCursorContainer { GetSnapPosition = v => grid.GetSnappedPosition(grid.ToLocalSpace(v)).position },
-                    grid = new OsuDistanceSnapGrid(new HitCircle
-                    {
-                        Position = grid_position,
-                        // This is important. It sets the reference object to a point in time that isn't on the current snap divisor's grid.
-                        // We are testing that the grid's display is offset correctly.
-                        StartTime = 40,
-                    }),
-                };
-            });
-
-            AddStep("move mouse to point", () => InputManager.MoveMouseTo(grid.ToScreenSpace(grid_position + new Vector2(beat_length, 0) * 2)));
-
-            AddAssert("Ensure cursor is on a grid line", () =>
-            {
-                return grid.ChildrenOfType<CircularProgress>().Any(ring =>
-                {
-                    // the grid rings are actually slightly _larger_ than the snapping radii.
-                    // this is done such that the snapping radius falls right in the middle of each grid ring thickness-wise,
-                    // but it does however complicate the following calculations slightly.
-
-                    // we want to calculate the coordinates of the rightmost point on the grid line, which is in the exact middle of the ring thickness-wise.
-                    // for the X component, we take the entire width of the ring, minus one half of the inner radius (since we want the middle of the line on the right side).
-                    // for the Y component, we just take 0.5f.
-                    var rightMiddleOfGridLine = ring.ToScreenSpace(ring.DrawSize * new Vector2(1 - ring.InnerRadius / 2, 0.5f));
-                    return Precision.AlmostEquals(rightMiddleOfGridLine.X, grid.ToScreenSpace(cursor.LastSnappedPosition).X);
-                });
-            });
         }
 
         [Test]
@@ -219,8 +166,8 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
                         RelativeSizeAxes = Axes.Both,
                         Colour = Color4.SlateGray
                     },
-                    cursor = new SnappingCursorContainer { GetSnapPosition = v => grid.GetSnappedPosition(grid.ToLocalSpace(v)).position },
                     grid = new OsuDistanceSnapGrid(new HitCircle { Position = grid_position }, new HitCircle { StartTime = 200 }),
+                    new SnappingCursorContainer { GetSnapPosition = v => grid.GetSnappedPosition(grid.ToLocalSpace(v)).position }
                 };
             });
 
@@ -235,11 +182,9 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
             return Precision.AlmostEquals(expectedDistance, Vector2.Distance(snappedPosition, grid_position));
         });
 
-        private partial class SnappingCursorContainer : CompositeDrawable
+        private class SnappingCursorContainer : CompositeDrawable
         {
             public Func<Vector2, Vector2> GetSnapPosition;
-
-            public Vector2 LastSnappedPosition { get; private set; }
 
             private readonly Drawable cursor;
 
@@ -269,17 +214,7 @@ namespace osu.Game.Rulesets.Osu.Tests.Editor
             protected override void Update()
             {
                 base.Update();
-                cursor.Position = LastSnappedPosition = GetSnapPosition.Invoke(inputManager.CurrentState.Mouse.Position);
-            }
-        }
-
-        private partial class TestHitObjectComposer : OsuHitObjectComposer
-        {
-            public new IDistanceSnapProvider DistanceSnapProvider => base.DistanceSnapProvider;
-
-            public TestHitObjectComposer()
-                : base(new OsuRuleset())
-            {
+                cursor.Position = GetSnapPosition.Invoke(inputManager.CurrentState.Mouse.Position);
             }
         }
     }

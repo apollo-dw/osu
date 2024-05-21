@@ -1,8 +1,9 @@
-﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Allocation;
-using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Rulesets.Edit;
@@ -14,10 +15,10 @@ namespace osu.Game.Screens.Edit.Compose.Components
     /// <summary>
     /// A container for <see cref="SelectionBlueprint{HitObject}"/> ordered by their <see cref="HitObject"/> start times.
     /// </summary>
-    public sealed partial class HitObjectOrderedSelectionContainer : Container<SelectionBlueprint<HitObject>>
+    public sealed class HitObjectOrderedSelectionContainer : Container<SelectionBlueprint<HitObject>>
     {
         [Resolved]
-        private EditorBeatmap editorBeatmap { get; set; } = null!;
+        private EditorBeatmap editorBeatmap { get; set; }
 
         protected override void LoadComplete()
         {
@@ -68,7 +69,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
         {
             base.Dispose(isDisposing);
 
-            if (editorBeatmap.IsNotNull())
+            if (editorBeatmap != null)
                 editorBeatmap.BeatmapReprocessed -= SortInternal;
         }
     }

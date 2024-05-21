@@ -14,7 +14,7 @@ using osuTK.Graphics;
 namespace osu.Game.Tests.Visual.UserInterface
 {
     [TestFixture]
-    public partial class TestSceneOsuHoverContainer : OsuManualInputManagerTestScene
+    public class TestSceneOsuHoverContainer : OsuManualInputManagerTestScene
     {
         private OsuHoverTestContainer hoverContainer;
         private Box colourContainer;
@@ -181,7 +181,7 @@ namespace osu.Game.Tests.Visual.UserInterface
         private void doMoveOut()
             => InputManager.MoveMouseTo(new Vector2(InputManager.ScreenSpaceDrawQuad.TopLeft.X, InputManager.ScreenSpaceDrawQuad.TopLeft.Y));
 
-        private sealed partial class OsuHoverTestContainer : OsuHoverContainer
+        private sealed class OsuHoverTestContainer : OsuHoverContainer
         {
             public static readonly Color4 HOVER_COLOUR = Color4.Red;
             public static readonly Color4 IDLE_COLOUR = Color4.Green;

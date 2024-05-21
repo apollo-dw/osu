@@ -2,9 +2,8 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using osu.Framework.Graphics;
-using osu.Game.Graphics.Containers;
+using osu.Framework.Graphics.Containers;
 using osu.Game.Rulesets.Catch.UI;
-using osu.Game.Screens.Play;
 using osu.Game.Skinning;
 using osuTK;
 using osuTK.Graphics;
@@ -14,7 +13,7 @@ namespace osu.Game.Rulesets.Catch.Skinning.Legacy
     /// <summary>
     /// A combo counter implementation that visually behaves almost similar to stable's osu!catch combo counter.
     /// </summary>
-    public partial class LegacyCatchComboCounter : UprightAspectMaintainingContainer, ICatchComboCounter
+    public class LegacyCatchComboCounter : CompositeDrawable, ICatchComboCounter
     {
         private readonly LegacyRollingCounter counter;
 
@@ -60,7 +59,7 @@ namespace osu.Game.Rulesets.Catch.Skinning.Legacy
 
             lastDisplayedCombo = combo;
 
-            if ((Clock as IGameplayClock)?.IsRewinding == true)
+            if (Time.Elapsed < 0)
             {
                 // needs more work to make rewind somehow look good.
                 // basically we want the previous increment to play... or turning off RemoveCompletedTransforms (not feasible from a performance angle).

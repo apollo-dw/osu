@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Graphics.Containers;
@@ -13,7 +15,7 @@ using osu.Game.Overlays.BeatmapSet;
 
 namespace osu.Game.Tests.Visual.Navigation
 {
-    public partial class TestSceneStartupBeatmapDisplay : OsuGameTestScene
+    public class TestSceneStartupBeatmapDisplay : OsuGameTestScene
     {
         private const int requested_beatmap_id = 75;
         private const int requested_beatmap_set_id = 1;
@@ -48,7 +50,7 @@ namespace osu.Game.Tests.Visual.Navigation
         public void TestBeatmapLink()
         {
             AddUntilStep("Beatmap overlay displayed", () => Game.ChildrenOfType<BeatmapSetOverlay>().FirstOrDefault()?.State.Value == Visibility.Visible);
-            AddUntilStep("Beatmap overlay showing content", () => Game.ChildrenOfType<BeatmapPicker>().FirstOrDefault()?.Beatmap.Value?.OnlineID == requested_beatmap_id);
+            AddUntilStep("Beatmap overlay showing content", () => Game.ChildrenOfType<BeatmapPicker>().FirstOrDefault()?.Beatmap.Value.OnlineID == requested_beatmap_id);
         }
     }
 }

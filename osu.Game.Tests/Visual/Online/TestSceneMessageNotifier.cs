@@ -23,7 +23,7 @@ using APIUser = osu.Game.Online.API.Requests.Responses.APIUser;
 
 namespace osu.Game.Tests.Visual.Online
 {
-    public partial class TestSceneMessageNotifier : OsuManualInputManagerTestScene
+    public class TestSceneMessageNotifier : OsuManualInputManagerTestScene
     {
         private APIUser friend;
         private Channel publicChannel;
@@ -228,7 +228,7 @@ namespace osu.Game.Tests.Visual.Online
             InputManager.Click(MouseButton.Left);
         }
 
-        private partial class TestContainer : Container
+        private class TestContainer : Container
         {
             [Cached]
             public ChannelManager ChannelManager { get; }

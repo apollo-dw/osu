@@ -12,7 +12,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneOsuMenu : OsuManualInputManagerTestScene
+    public class TestSceneOsuMenu : OsuManualInputManagerTestScene
     {
         private OsuMenu menu;
         private bool actionPerformed;

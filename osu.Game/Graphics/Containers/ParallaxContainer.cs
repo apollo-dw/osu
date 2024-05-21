@@ -15,7 +15,7 @@ using osu.Framework.Utils;
 
 namespace osu.Game.Graphics.Containers
 {
-    public partial class ParallaxContainer : Container, IRequireHighFrequencyMousePosition
+    public class ParallaxContainer : Container, IRequireHighFrequencyMousePosition
     {
         public const float DEFAULT_PARALLAX_AMOUNT = 0.02f;
 

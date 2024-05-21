@@ -9,7 +9,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.EmptyScrolling.Tests
 {
-    public partial class TestSceneOsuGame : OsuTestScene
+    public class TestSceneOsuGame : OsuTestScene
     {
         [BackgroundDependencyLoader]
         private void load()

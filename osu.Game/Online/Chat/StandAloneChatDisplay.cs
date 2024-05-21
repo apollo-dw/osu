@@ -23,9 +23,8 @@ namespace osu.Game.Online.Chat
     /// <summary>
     /// Display a chat channel in an insolated region.
     /// </summary>
-    public partial class StandAloneChatDisplay : CompositeDrawable
+    public class StandAloneChatDisplay : CompositeDrawable
     {
-        [Cached]
         public readonly Bindable<Channel> Channel = new Bindable<Channel>();
 
         protected readonly ChatTextBox TextBox;
@@ -112,12 +111,7 @@ namespace osu.Game.Online.Chat
         {
             drawableChannel?.Expire();
 
-            if (e.OldValue != null)
-                TextBox?.Current.UnbindFrom(e.OldValue.TextBoxMessage);
-
             if (e.NewValue == null) return;
-
-            TextBox?.Current.BindTo(e.NewValue.TextBoxMessage);
 
             drawableChannel = CreateDrawableChannel(e.NewValue);
             drawableChannel.CreateChatLineAction = CreateMessage;
@@ -126,20 +120,17 @@ namespace osu.Game.Online.Chat
             AddInternal(drawableChannel);
         }
 
-        public partial class ChatTextBox : HistoryTextBox
+        public class ChatTextBox : FocusedTextBox
         {
             protected override bool OnKeyDown(KeyDownEvent e)
             {
                 // Chat text boxes are generally used in places where they retain focus, but shouldn't block interaction with other
                 // elements on the same screen.
-                if (!HoldFocus)
+                switch (e.Key)
                 {
-                    switch (e.Key)
-                    {
-                        case Key.Up:
-                        case Key.Down:
-                            return false;
-                    }
+                    case Key.Up:
+                    case Key.Down:
+                        return false;
                 }
 
                 return base.OnKeyDown(e);
@@ -162,7 +153,7 @@ namespace osu.Game.Online.Chat
             public Action FocusLost;
         }
 
-        public partial class StandAloneDrawableChannel : DrawableChannel
+        public class StandAloneDrawableChannel : DrawableChannel
         {
             public Func<Message, ChatLine> CreateChatLineAction;
 
@@ -176,15 +167,15 @@ namespace osu.Game.Online.Chat
             protected override DaySeparator CreateDaySeparator(DateTimeOffset time) => new StandAloneDaySeparator(time);
         }
 
-        protected partial class StandAloneDaySeparator : DaySeparator
+        protected class StandAloneDaySeparator : DaySeparator
         {
             protected override float TextSize => 14;
             protected override float LineHeight => 1;
             protected override float Spacing => 5;
             protected override float DateAlign => 125;
 
-            public StandAloneDaySeparator(DateTimeOffset date)
-                : base(date)
+            public StandAloneDaySeparator(DateTimeOffset time)
+                : base(time)
             {
             }
 
@@ -196,10 +187,11 @@ namespace osu.Game.Online.Chat
             }
         }
 
-        protected partial class StandAloneMessage : ChatLine
+        protected class StandAloneMessage : ChatLine
         {
-            protected override float FontSize => 15;
+            protected override float TextSize => 15;
             protected override float Spacing => 5;
+            protected override float TimestampWidth => 45;
             protected override float UsernameWidth => 75;
 
             public StandAloneMessage(Message message)

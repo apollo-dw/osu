@@ -11,10 +11,9 @@ using osuTK;
 
 namespace osu.Game.Screens
 {
-    public abstract partial class BackgroundScreen : Screen, IEquatable<BackgroundScreen>
+    public abstract class BackgroundScreen : Screen, IEquatable<BackgroundScreen>
     {
-        public const float TRANSITION_LENGTH = 500;
-
+        protected const float TRANSITION_LENGTH = 500;
         private const float x_movement_amount = 50;
 
         private readonly bool animateOnEnter;

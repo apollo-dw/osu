@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using Newtonsoft.Json;
 
 namespace osu.Game.Tournament.Models
@@ -8,9 +10,9 @@ namespace osu.Game.Tournament.Models
     public class RoundBeatmap
     {
         public int ID;
-        public string Mods = string.Empty;
+        public string Mods;
 
         [JsonProperty("BeatmapInfo")]
-        public TournamentBeatmap? Beatmap;
+        public TournamentBeatmap Beatmap;
     }
 }

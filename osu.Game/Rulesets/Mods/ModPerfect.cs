@@ -19,9 +19,8 @@ namespace osu.Game.Rulesets.Mods
         public override ModType Type => ModType.DifficultyIncrease;
         public override double ScoreMultiplier => 1;
         public override LocalisableString Description => "SS or quit.";
-        public override bool Ranked => true;
 
-        public override Type[] IncompatibleMods => base.IncompatibleMods.Concat(new[] { typeof(ModSuddenDeath), typeof(ModAccuracyChallenge) }).ToArray();
+        public override Type[] IncompatibleMods => base.IncompatibleMods.Append(typeof(ModSuddenDeath)).ToArray();
 
         protected ModPerfect()
         {
@@ -29,9 +28,7 @@ namespace osu.Game.Rulesets.Mods
         }
 
         protected override bool FailCondition(HealthProcessor healthProcessor, JudgementResult result)
-            => (isRelevantResult(result.Judgement.MinResult) || isRelevantResult(result.Judgement.MaxResult) || isRelevantResult(result.Type))
+            => result.Type.AffectsAccuracy()
                && result.Type != result.Judgement.MaxResult;
-
-        private bool isRelevantResult(HitResult result) => result.AffectsAccuracy() || result.AffectsCombo();
     }
 }

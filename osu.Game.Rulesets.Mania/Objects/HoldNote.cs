@@ -6,6 +6,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using osu.Game.Audio;
+using osu.Game.Beatmaps;
+using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.Scoring;
@@ -80,16 +82,23 @@ namespace osu.Game.Rulesets.Mania.Objects
         public TailNote Tail { get; private set; }
 
         /// <summary>
-        /// The body of the hold.
-        /// This is an invisible and silent object that tracks the holding state of the <see cref="HoldNote"/>.
+        /// The time between ticks of this hold.
         /// </summary>
-        public HoldNoteBody Body { get; private set; }
+        private double tickSpacing = 50;
 
-        public override double MaximumJudgementOffset => Tail.MaximumJudgementOffset;
+        protected override void ApplyDefaultsToSelf(ControlPointInfo controlPointInfo, IBeatmapDifficultyInfo difficulty)
+        {
+            base.ApplyDefaultsToSelf(controlPointInfo, difficulty);
+
+            TimingControlPoint timingPoint = controlPointInfo.TimingPointAt(StartTime);
+            tickSpacing = timingPoint.BeatLength / difficulty.SliderTickRate;
+        }
 
         protected override void CreateNestedHitObjects(CancellationToken cancellationToken)
         {
             base.CreateNestedHitObjects(cancellationToken);
+
+            createTicks(cancellationToken);
 
             AddNested(Head = new HeadNote
             {
@@ -104,12 +113,23 @@ namespace osu.Game.Rulesets.Mania.Objects
                 Column = Column,
                 Samples = GetNodeSamples((NodeSamples?.Count - 1) ?? 1),
             });
+        }
 
-            AddNested(Body = new HoldNoteBody
+        private void createTicks(CancellationToken cancellationToken)
+        {
+            if (tickSpacing == 0)
+                return;
+
+            for (double t = StartTime + tickSpacing; t <= EndTime - tickSpacing; t += tickSpacing)
             {
-                StartTime = StartTime,
-                Column = Column
-            });
+                cancellationToken.ThrowIfCancellationRequested();
+
+                AddNested(new HoldNoteTick
+                {
+                    StartTime = t,
+                    Column = Column
+                });
+            }
         }
 
         public override Judgement CreateJudgement() => new IgnoreJudgement();

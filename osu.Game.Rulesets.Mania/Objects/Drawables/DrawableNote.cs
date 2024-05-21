@@ -24,7 +24,7 @@ namespace osu.Game.Rulesets.Mania.Objects.Drawables
     /// <summary>
     /// Visualises a <see cref="Note"/> hit object.
     /// </summary>
-    public partial class DrawableNote : DrawableManiaHitObject<Note>, IKeyBindingHandler<ManiaAction>
+    public class DrawableNote : DrawableManiaHitObject<Note>, IKeyBindingHandler<ManiaAction>
     {
         [Resolved]
         private OsuColour colours { get; set; }
@@ -54,7 +54,7 @@ namespace osu.Game.Rulesets.Mania.Objects.Drawables
         {
             rulesetConfig?.BindWith(ManiaRulesetSetting.TimingBasedNoteColouring, configTimingBasedNoteColouring);
 
-            AddInternal(headPiece = new SkinnableDrawable(new ManiaSkinComponentLookup(Component), _ => new DefaultNotePiece())
+            AddInternal(headPiece = new SkinnableDrawable(new ManiaSkinComponent(Component), _ => new DefaultNotePiece())
             {
                 RelativeSizeAxes = Axes.X,
                 AutoSizeAxes = Axes.Y
@@ -89,24 +89,16 @@ namespace osu.Game.Rulesets.Mania.Objects.Drawables
             if (!userTriggered)
             {
                 if (!HitObject.HitWindows.CanBeHit(timeOffset))
-                    ApplyMinResult();
-
+                    ApplyResult(r => r.Type = r.Judgement.MinResult);
                 return;
             }
 
             var result = HitObject.HitWindows.ResultFor(timeOffset);
-
             if (result == HitResult.None)
                 return;
 
-            result = GetCappedResult(result);
-            ApplyResult(result);
+            ApplyResult(r => r.Type = result);
         }
-
-        /// <summary>
-        /// Some objects in mania may want to limit the max result.
-        /// </summary>
-        protected virtual HitResult GetCappedResult(HitResult result) => result;
 
         public virtual bool OnPressed(KeyBindingPressEvent<ManiaAction> e)
         {

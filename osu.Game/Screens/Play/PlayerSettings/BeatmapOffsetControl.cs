@@ -7,11 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
-using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Input.Bindings;
-using osu.Framework.Input.Events;
 using osu.Framework.Localisation;
 using osu.Framework.Utils;
 using osu.Game.Beatmaps;
@@ -19,12 +16,8 @@ using osu.Game.Database;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
-using osu.Game.Input.Bindings;
 using osu.Game.Localisation;
-using osu.Game.Overlays;
 using osu.Game.Overlays.Settings;
-using osu.Game.Overlays.Settings.Sections.Audio;
-using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Scoring;
 using osu.Game.Screens.Ranking.Statistics;
@@ -32,9 +25,9 @@ using osuTK;
 
 namespace osu.Game.Screens.Play.PlayerSettings
 {
-    public partial class BeatmapOffsetControl : CompositeDrawable, IKeyBindingHandler<GlobalAction>
+    public class BeatmapOffsetControl : CompositeDrawable
     {
-        public Bindable<ScoreInfo?> ReferenceScore { get; } = new Bindable<ScoreInfo?>();
+        public Bindable<ScoreInfo> ReferenceScore { get; } = new Bindable<ScoreInfo>();
 
         public BindableDouble Current { get; } = new BindableDouble
         {
@@ -53,12 +46,6 @@ namespace osu.Game.Screens.Play.PlayerSettings
 
         [Resolved]
         private OsuColour colours { get; set; } = null!;
-
-        [Resolved]
-        private Player? player { get; set; }
-
-        [Resolved]
-        private IGameplayClock? gameplayClock { get; set; }
 
         private double lastPlayAverage;
         private double lastPlayBeatmapOffset;
@@ -86,7 +73,7 @@ namespace osu.Game.Screens.Play.PlayerSettings
                     new OffsetSliderBar
                     {
                         KeyboardStep = 5,
-                        LabelText = BeatmapOffsetControlStrings.AudioOffsetThisBeatmap,
+                        LabelText = BeatmapOffsetControlStrings.BeatmapOffset,
                         Current = Current,
                     },
                     referenceScoreContainer = new FillFlowContainer
@@ -98,6 +85,28 @@ namespace osu.Game.Screens.Play.PlayerSettings
                     },
                 }
             };
+        }
+
+        public class OffsetSliderBar : PlayerSliderBar<double>
+        {
+            protected override Drawable CreateControl() => new CustomSliderBar();
+
+            protected class CustomSliderBar : SliderBar
+            {
+                public override LocalisableString TooltipText =>
+                    Current.Value == 0
+                        ? LocalisableString.Interpolate($@"{base.TooltipText} ms")
+                        : LocalisableString.Interpolate($@"{base.TooltipText} ms {getEarlyLateText(Current.Value)}");
+
+                private LocalisableString getEarlyLateText(double value)
+                {
+                    Debug.Assert(value != 0);
+
+                    return value > 0
+                        ? BeatmapOffsetControlStrings.HitObjectsAppearEarlier
+                        : BeatmapOffsetControlStrings.HitObjectsAppearLater;
+                }
+            }
         }
 
         protected override void LoadComplete()
@@ -152,35 +161,29 @@ namespace osu.Game.Screens.Play.PlayerSettings
 
                 realmWriteTask = realm.WriteAsync(r =>
                 {
-                    var setInfo = r.Find<BeatmapSetInfo>(beatmap.Value.BeatmapSetInfo.ID);
+                    var settings = r.Find<BeatmapInfo>(beatmap.Value.BeatmapInfo.ID)?.UserSettings;
 
-                    if (setInfo == null) // only the case for tests.
+                    if (settings == null) // only the case for tests.
                         return;
 
-                    // Apply to all difficulties in a beatmap set for now (they generally always share timing).
-                    foreach (var b in setInfo.Beatmaps)
-                    {
-                        BeatmapUserSettings userSettings = b.UserSettings;
-                        double val = Current.Value;
+                    double val = Current.Value;
 
-                        if (userSettings.Offset != val)
-                            userSettings.Offset = val;
-                    }
+                    if (settings.Offset == val)
+                        return;
+
+                    settings.Offset = val;
                 });
             }
         }
 
-        private void scoreChanged(ValueChangedEvent<ScoreInfo?> score)
+        private void scoreChanged(ValueChangedEvent<ScoreInfo> score)
         {
             referenceScoreContainer.Clear();
 
             if (score.NewValue == null)
                 return;
 
-            if (!score.NewValue.BeatmapInfo.AsNonNull().Equals(beatmap.Value.BeatmapInfo))
-                return;
-
-            if (score.NewValue.Mods.Any(m => !m.UserPlayable || m is IHasNoTimedInputs))
+            if (score.NewValue.Mods.Any(m => !m.UserPlayable))
                 return;
 
             var hitEvents = score.NewValue.HitEvents;
@@ -215,8 +218,6 @@ namespace osu.Game.Screens.Play.PlayerSettings
             lastPlayAverage = average;
             lastPlayBeatmapOffset = Current.Value;
 
-            LinkFlowContainer globalOffsetText;
-
             referenceScoreContainer.AddRange(new Drawable[]
             {
                 lastPlayGraph = new HitEventTimingDistributionGraph(hitEvents)
@@ -230,91 +231,13 @@ namespace osu.Game.Screens.Play.PlayerSettings
                     Text = BeatmapOffsetControlStrings.CalibrateUsingLastPlay,
                     Action = () => Current.Value = lastPlayBeatmapOffset - lastPlayAverage
                 },
-                globalOffsetText = new LinkFlowContainer
-                {
-                    RelativeSizeAxes = Axes.X,
-                    AutoSizeAxes = Axes.Y,
-                }
             });
-
-            if (settings != null)
-            {
-                globalOffsetText.AddText("You can also ");
-                globalOffsetText.AddLink("adjust the global offset", () => settings.ShowAtControl<AudioOffsetAdjustControl>());
-                globalOffsetText.AddText(" based off this play.");
-            }
         }
-
-        [Resolved]
-        private SettingsOverlay? settings { get; set; }
 
         protected override void Dispose(bool isDisposing)
         {
             base.Dispose(isDisposing);
             beatmapOffsetSubscription?.Dispose();
-        }
-
-        public bool OnPressed(KeyBindingPressEvent<GlobalAction> e)
-        {
-            // General limitations to ensure players don't do anything too weird.
-            // These match stable for now.
-            if (player is SubmittingPlayer)
-            {
-                // TODO: the blocking conditions should probably display a message.
-                if (player?.IsBreakTime.Value == false && gameplayClock?.CurrentTime - gameplayClock?.StartTime > 10000)
-                    return false;
-
-                if (gameplayClock?.IsPaused.Value == true)
-                    return false;
-            }
-
-            // To match stable, this should adjust by 5 ms, or 1 ms when holding alt.
-            // But that is hard to make work with global actions due to the operating mode.
-            // Let's use the more precise as a default for now.
-            const double amount = 1;
-
-            switch (e.Action)
-            {
-                case GlobalAction.IncreaseOffset:
-                    Current.Value += amount;
-                    return true;
-
-                case GlobalAction.DecreaseOffset:
-                    Current.Value -= amount;
-                    return true;
-            }
-
-            return false;
-        }
-
-        public void OnReleased(KeyBindingReleaseEvent<GlobalAction> e)
-        {
-        }
-
-        public static LocalisableString GetOffsetExplanatoryText(double offset)
-        {
-            return offset == 0
-                ? LocalisableString.Interpolate($@"{offset:0.0} ms")
-                : LocalisableString.Interpolate($@"{offset:0.0} ms {getEarlyLateText(offset)}");
-
-            LocalisableString getEarlyLateText(double value)
-            {
-                Debug.Assert(value != 0);
-
-                return value > 0
-                    ? BeatmapOffsetControlStrings.HitObjectsAppearEarlier
-                    : BeatmapOffsetControlStrings.HitObjectsAppearLater;
-            }
-        }
-
-        private partial class OffsetSliderBar : PlayerSliderBar<double>
-        {
-            protected override Drawable CreateControl() => new CustomSliderBar();
-
-            protected partial class CustomSliderBar : SliderBar
-            {
-                public override LocalisableString TooltipText => GetOffsetExplanatoryText(Current.Value);
-            }
         }
     }
 }

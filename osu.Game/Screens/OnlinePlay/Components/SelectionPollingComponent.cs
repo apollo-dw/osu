@@ -11,7 +11,7 @@ namespace osu.Game.Screens.OnlinePlay.Components
     /// <summary>
     /// A <see cref="RoomPollingComponent"/> that polls for the currently-selected room.
     /// </summary>
-    public partial class SelectionPollingComponent : RoomPollingComponent
+    public class SelectionPollingComponent : RoomPollingComponent
     {
         private readonly Room room;
 

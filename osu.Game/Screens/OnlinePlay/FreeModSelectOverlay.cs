@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System;
 using osu.Game.Overlays;
 using System.Collections.Generic;
@@ -12,9 +14,9 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Screens.OnlinePlay
 {
-    public partial class FreeModSelectOverlay : ModSelectOverlay
+    public class FreeModSelectOverlay : ModSelectOverlay
     {
-        protected override bool ShowModEffects => false;
+        protected override bool ShowTotalMultiplier => false;
 
         protected override bool AllowCustomisation => false;
 
@@ -32,12 +34,11 @@ namespace osu.Game.Screens.OnlinePlay
 
         protected override ModColumn CreateModColumn(ModType modType) => new ModColumn(modType, true);
 
-        protected override IEnumerable<ShearedButton> CreateFooterButtons()
-            => base.CreateFooterButtons()
-                   .Prepend(SelectAllModsButton = new SelectAllModsButton(this)
-                   {
-                       Anchor = Anchor.BottomLeft,
-                       Origin = Anchor.BottomLeft,
-                   });
+        protected override IEnumerable<ShearedButton> CreateFooterButtons() => base.CreateFooterButtons().Prepend(
+            new SelectAllModsButton(this)
+            {
+                Anchor = Anchor.BottomLeft,
+                Origin = Anchor.BottomLeft,
+            });
     }
 }

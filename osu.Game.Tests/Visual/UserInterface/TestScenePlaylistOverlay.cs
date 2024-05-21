@@ -20,7 +20,7 @@ using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestScenePlaylistOverlay : OsuManualInputManagerTestScene
+    public class TestScenePlaylistOverlay : OsuManualInputManagerTestScene
     {
         protected override bool UseFreshStoragePerRun => true;
 

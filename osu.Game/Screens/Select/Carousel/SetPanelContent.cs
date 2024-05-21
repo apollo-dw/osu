@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Allocation;
@@ -14,14 +16,12 @@ using osuTK;
 
 namespace osu.Game.Screens.Select.Carousel
 {
-    public partial class SetPanelContent : CompositeDrawable
+    public class SetPanelContent : CompositeDrawable
     {
         // Disallow interacting with difficulty icons on a panel until the panel has been selected.
         public override bool PropagatePositionalInputSubTree => carouselSet.State.Value == CarouselItemState.Selected;
 
         private readonly CarouselBeatmapSet carouselSet;
-
-        private FillFlowContainer<DifficultyIcon> iconFlow = null!;
 
         public SetPanelContent(CarouselBeatmapSet carouselSet)
         {
@@ -84,23 +84,18 @@ namespace osu.Game.Screens.Select.Carousel
                                 TextPadding = new MarginPadding { Horizontal = 8, Vertical = 2 },
                                 Status = beatmapSet.Status
                             },
-                            iconFlow = new FillFlowContainer<DifficultyIcon>
+                            new FillFlowContainer<DifficultyIcon>
                             {
                                 AutoSizeAxes = Axes.Both,
                                 Origin = Anchor.CentreLeft,
                                 Anchor = Anchor.CentreLeft,
                                 Spacing = new Vector2(3),
+                                ChildrenEnumerable = getDifficultyIcons(),
                             },
                         }
                     }
                 }
             };
-        }
-
-        protected override void LoadComplete()
-        {
-            base.LoadComplete();
-            iconFlow.ChildrenEnumerable = getDifficultyIcons();
         }
 
         private const int maximum_difficulty_icons = 18;

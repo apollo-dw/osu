@@ -1,18 +1,19 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+#nullable disable
+
 using osu.Framework.Graphics.Containers;
 using osu.Game.Overlays;
 using osu.Framework.Graphics;
 using osu.Game.Graphics.Sprites;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics.Shapes;
-using osu.Game.Graphics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
-    public partial class TestSceneOverlayHeader : OsuTestScene
+    public class TestSceneOverlayHeader : OsuTestScene
     {
         private readonly FillFlowContainer flow;
 
@@ -69,7 +70,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             });
         }
 
-        private partial class ColourProvidedContainer : Container
+        private class ColourProvidedContainer : Container
         {
             [Cached]
             private readonly OverlayColourProvider colourProvider;
@@ -84,7 +85,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             }
         }
 
-        private partial class TestNoBackgroundHeader : OverlayHeader
+        private class TestNoBackgroundHeader : OverlayHeader
         {
             protected override OverlayTitle CreateTitle() => new TestTitle();
 
@@ -94,20 +95,20 @@ namespace osu.Game.Tests.Visual.UserInterface
             }
         }
 
-        private partial class TestNoControlHeader : OverlayHeader
+        private class TestNoControlHeader : OverlayHeader
         {
             protected override Drawable CreateBackground() => new OverlayHeaderBackground(@"Headers/changelog");
 
             protected override OverlayTitle CreateTitle() => new TestTitle();
         }
 
-        private partial class TestStringTabControlHeader : TabControlOverlayHeader<string>
+        private class TestStringTabControlHeader : TabControlOverlayHeader<string>
         {
             protected override Drawable CreateBackground() => new OverlayHeaderBackground(@"Headers/news");
 
             protected override OverlayTitle CreateTitle() => new TestTitle();
 
-            protected override Drawable CreateTabControlContent() => new OverlayRulesetSelector();
+            protected override Drawable CreateTitleContent() => new OverlayRulesetSelector();
 
             public TestStringTabControlHeader()
             {
@@ -116,7 +117,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             }
         }
 
-        private partial class TestEnumTabControlHeader : TabControlOverlayHeader<TestEnum>
+        private class TestEnumTabControlHeader : TabControlOverlayHeader<TestEnum>
         {
             public TestEnumTabControlHeader()
             {
@@ -135,7 +136,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             Tabs
         }
 
-        private partial class TestBreadcrumbControlHeader : BreadcrumbControlOverlayHeader
+        private class TestBreadcrumbControlHeader : BreadcrumbControlOverlayHeader
         {
             protected override OverlayTitle CreateTitle() => new TestTitle();
 
@@ -149,12 +150,12 @@ namespace osu.Game.Tests.Visual.UserInterface
             }
         }
 
-        private partial class TestTitle : OverlayTitle
+        private class TestTitle : OverlayTitle
         {
             public TestTitle()
             {
                 Title = "title";
-                Icon = OsuIcon.ChangelogB;
+                IconTexture = "Icons/changelog";
             }
         }
     }

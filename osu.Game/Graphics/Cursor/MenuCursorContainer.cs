@@ -18,7 +18,7 @@ using osuTK;
 
 namespace osu.Game.Graphics.Cursor
 {
-    public partial class MenuCursorContainer : CursorContainer
+    public class MenuCursorContainer : CursorContainer
     {
         private readonly IBindable<bool> screenshotCursorVisibility = new Bindable<bool>(true);
         public override bool IsPresent => screenshotCursorVisibility.Value && base.IsPresent;
@@ -70,8 +70,7 @@ namespace osu.Game.Graphics.Cursor
         private OsuGame? game { get; set; }
 
         private readonly IBindable<bool> lastInputWasMouse = new BindableBool();
-        private readonly IBindable<bool> gameActive = new BindableBool(true);
-        private readonly IBindable<bool> gameIdle = new BindableBool();
+        private readonly IBindable<bool> isIdle = new BindableBool();
 
         protected override void LoadComplete()
         {
@@ -82,11 +81,8 @@ namespace osu.Game.Graphics.Cursor
 
             if (game != null)
             {
-                gameIdle.BindTo(game.IsIdle);
-                gameIdle.BindValueChanged(_ => updateState());
-
-                gameActive.BindTo(game.IsActive);
-                gameActive.BindValueChanged(_ => updateState());
+                isIdle.BindTo(game.IsIdle);
+                isIdle.BindValueChanged(_ => updateState());
             }
         }
 
@@ -94,7 +90,7 @@ namespace osu.Game.Graphics.Cursor
 
         private void updateState()
         {
-            bool combinedVisibility = getCursorVisibility();
+            bool combinedVisibility = State.Value == Visibility.Visible && (lastInputWasMouse.Value || !hideCursorOnNonMouseInput) && !isIdle.Value;
 
             if (visible == combinedVisibility)
                 return;
@@ -105,27 +101,6 @@ namespace osu.Game.Graphics.Cursor
                 PopIn();
             else
                 PopOut();
-        }
-
-        private bool getCursorVisibility()
-        {
-            // do not display when explicitly set to hidden state.
-            if (State.Value == Visibility.Hidden)
-                return false;
-
-            // only hide cursor when game is focused, otherwise it should always be displayed.
-            if (gameActive.Value)
-            {
-                // do not display when last input is not mouse.
-                if (hideCursorOnNonMouseInput && !lastInputWasMouse.Value)
-                    return false;
-
-                // do not display when game is idle.
-                if (gameIdle.Value)
-                    return false;
-            }
-
-            return true;
         }
 
         protected override void Update()
@@ -157,7 +132,7 @@ namespace osu.Game.Graphics.Cursor
                 if (dragRotationState == DragRotationState.Rotating && distance > 0)
                 {
                     Vector2 offset = e.MousePosition - positionMouseDown;
-                    float degrees = float.RadiansToDegrees(MathF.Atan2(-offset.X, offset.Y)) + 24.3f;
+                    float degrees = MathUtils.RadiansToDegrees(MathF.Atan2(-offset.X, offset.Y)) + 24.3f;
 
                     // Always rotate in the direction of least distance
                     float diff = (degrees - activeCursor.Rotation) % 360;
@@ -220,16 +195,12 @@ namespace osu.Game.Graphics.Cursor
         {
             activeCursor.FadeTo(1, 250, Easing.OutQuint);
             activeCursor.ScaleTo(1, 400, Easing.OutQuint);
-            activeCursor.RotateTo(0, 400, Easing.OutQuint);
-            dragRotationState = DragRotationState.NotDragging;
         }
 
         protected override void PopOut()
         {
             activeCursor.FadeTo(0, 250, Easing.OutQuint);
             activeCursor.ScaleTo(0.6f, 250, Easing.In);
-            activeCursor.RotateTo(0, 400, Easing.OutQuint);
-            dragRotationState = DragRotationState.NotDragging;
         }
 
         private void playTapSample(double baseFrequency = 1f)
@@ -238,14 +209,14 @@ namespace osu.Game.Graphics.Cursor
             SampleChannel channel = tapSample.GetChannel();
 
             // Scale to [-0.75, 0.75] so that the sample isn't fully panned left or right (sounds weird)
-            channel.Balance.Value = ((activeCursor.X / DrawWidth) * 2 - 1) * OsuGameBase.SFX_STEREO_STRENGTH;
+            channel.Balance.Value = ((activeCursor.X / DrawWidth) * 2 - 1) * 0.75;
             channel.Frequency.Value = baseFrequency - (random_range / 2f) + RNG.NextDouble(random_range);
             channel.Volume.Value = baseFrequency;
 
             channel.Play();
         }
 
-        public partial class Cursor : Container
+        public class Cursor : Container
         {
             private Container cursorContainer = null!;
             private Bindable<float> cursorScale = null!;
@@ -288,7 +259,7 @@ namespace osu.Game.Graphics.Cursor
             }
         }
 
-        private partial class MouseInputDetector : Component
+        private class MouseInputDetector : Component
         {
             /// <summary>
             /// Whether the last input applied to the game is sourced from mouse.

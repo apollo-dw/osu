@@ -12,7 +12,7 @@ using osu.Game.Beatmaps;
 
 namespace osu.Game.Audio
 {
-    public partial class PreviewTrackManager : Component
+    public class PreviewTrackManager : Component
     {
         private readonly IAdjustableAudioComponent mainTrackAdjustments;
 
@@ -85,7 +85,7 @@ namespace osu.Game.Audio
         protected virtual TrackManagerPreviewTrack CreatePreviewTrack(IBeatmapSetInfo beatmapSetInfo, ITrackStore trackStore) =>
             new TrackManagerPreviewTrack(beatmapSetInfo, trackStore);
 
-        public partial class TrackManagerPreviewTrack : PreviewTrack
+        public class TrackManagerPreviewTrack : PreviewTrack
         {
             [Resolved]
             public IPreviewTrackOwner? Owner { get; private set; }
